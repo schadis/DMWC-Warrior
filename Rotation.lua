@@ -6,6 +6,10 @@ local Player, Buff, Debuff, Spell, Stance, Target, Talent, Item, GCD, CDs, HUD, 
       Enemy30YC, Enemy8Y, Enemy8YC, rageLost, dumpEnabled, castTime, syncSS, combatLeftCheck, stanceChangedSkill,
       stanceChangedSkillTimer, stanceChangedSkillUnit, targetChange, whatIsQueued, oldTarget, rageLeftAfterStance, firstCheck,
       secondCheck, thirdCheck, mainSwing, ohSwing, mainSpeed
+local ItemUsage = GetTime()
+local SunderStacks = 0
+local SunderedMobStacks = {}
+
 	  
 local stanceNumber = {[1] = "Battle", [2] = "Defensive", [3] = "Berserk"}	  
 -- if stanceChangedSkillTimer == nil then stanceChangedSkillTimer = DMW.Time end
@@ -89,6 +93,39 @@ local interruptList = {
     ["Renew"] = true
 }
 local SunderImmune = {["Totem"] = true, ["Mechanical"] = true}
+
+-- Getting SunderStacks
+local function CombatLogEvent(...)
+	local timeStamp, subEvent, _, sourceID, sourceName, _, _, targetID = ...;
+	
+		if DMW.Player.Target ~= nil 
+		and DMW.Player.Target.Distance < 50 then
+			for i = 1, 16 do
+				if UnitGUID("target") == nil then
+					break		
+				elseif DMW.Player.Target.ValidEnemy and UnitDebuff("target", i) == "Sunder Armor" then
+					SunderedMobStacks[UnitGUID("target")] = select(3, UnitDebuff("target", i))
+					break
+				elseif DMW.Player.Target.ValidEnemy and UnitDebuff("target", i) ~= "Sunder Armor" then
+					SunderedMobStacks[UnitGUID("target")] = 0
+				end
+			end
+		end
+		if DMW.Player.Target ~= nil 
+		and DMW.Player.Target.Distance < 50 then
+			for k, v in pairs(SunderedMobStacks) do
+				if k == UnitGUID("target") 
+					then
+					SunderStacks = v
+					break
+				elseif k ~= UnitGUID("target") then
+				SunderStacks = 0
+				end
+			end	
+		end
+end
+
+
 
 
 -- cancel Yellow hit
@@ -580,7 +617,17 @@ end
 
 -- Cooldowns and Racial
 local function CoolDowns()
-    if Spell.DeathWish:IsReady() then
+	if GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 then
+		name = GetItemInfo(13442)
+		RunMacroText("/use " .. name)
+		return true
+	elseif GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 then
+		name = GetItemInfo(5633)
+		RunMacroText("/use " .. name)
+		return true 
+	elseif Item.DiamondFlask:Equipped() and Item.DiamondFlask:IsReady() then 
+		if Item.DiamondFlask:Use(Player) then return true end
+    elseif Spell.DeathWish:IsReady() then
         if smartCast("DeathWish", Player, true) then return true end
     elseif Spell.BloodFury:IsReady() and Player.HP > 70 then
         if Spell.BloodFury:Cast(Player) then return true end
@@ -873,7 +920,7 @@ function Warrior.Rotation()
     ---FURY DW PART--------------------FURY DW PART--------------------FURY DW PART--------------------FURY DW PART--------------------
     -----------------FURY DW PART--------------------FURY DW PART--------------------FURY DW PART--------------------FURY DW PART------
 
-
+	
     if Setting("RotationType") == 1 --or (Target and Target.Player) 
 		then
         
@@ -893,7 +940,6 @@ function Warrior.Rotation()
 			-- Bers Rage --
 			if Setting("Berserker Rage") 
 			and Spell.BersRage:CD() == 0 
-			and Target.TTD >= 4 
 			and Spell.BersRage:Known() 
 			and	smartCast("BersRage", Player)
 				then return true
@@ -914,7 +960,10 @@ function Warrior.Rotation()
 			end
 			
 			-- When DeathWish_Racial in Hud is 1 it uses cooldowns
-            if HUD.DeathWish_Racial == 1 and Target and Target.TTD >= 7 
+            if HUD.DeathWish_Racial == 1 
+			and Target 
+			and Target:IsBoss() 
+			and Target.TTD >= 10 and  Target.TTD <= 60
 				then 
 				if CoolDowns() then return true 
 				end 
@@ -957,7 +1006,7 @@ function Warrior.Rotation()
                 else				
 				
                     if Setting("SunderArmor") 
-					and (Debuff.SunderArmor:Stacks(Target) < Setting("Apply # Stacks of Sunder Armor") or Debuff.SunderArmor:Refresh(Target))
+					and SunderStacks < Setting("Apply Stacks of Sunder Armor")
 					and smartCast("SunderArmor", Target, true)
 						then return true 
 					end
@@ -1141,7 +1190,7 @@ function Warrior.Rotation()
 					and Spell.SunderArmor:IsReady() 
 					and not SunderImmune[Unit.CreatureType] 
 						then
-                        if (Debuff.SunderArmor:Stacks(Unit) < Setting("Apply # Stacks of Sunder Armor") 
+                        if (Debuff.SunderArmor:Stacks(Unit) < Setting("Apply Stacks of Sunder Armor") 
 						or Debuff.SunderArmor:Refresh(Unit)) 
 						and Unit.TTD >= 4 
 							then 
@@ -1184,9 +1233,16 @@ function Warrior.Rotation()
 end		
 		
 	
+local eventFrame = CreateFrame("Frame")
+eventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
 
-
-
+eventFrame:SetScript("OnEvent", function(self, event, ...)
+	if(event == "COMBAT_LOG_EVENT_UNFILTERED" ) 
+		then
+		CombatLogEvent(CombatLogGetCurrentEventInfo())
+	
+	end
+end)
 	
 	-------------------Other Rotations -------- I Am Looking only on a Furry Rota ATM--------------------------------------------------	
 		

@@ -37,7 +37,7 @@ function Warrior.Settings()
         Charge = {
             [1] = {Text = "Charge |cFF00FF00And_InterCept", Tooltip = ""},
             [2] = {Text = "Only |cFFFFFF00InterCept", Tooltip = ""},
-            [3] = {Text = "|cFFFFFF0No_Moving", Tooltip = ""}
+            [3] = {Text = "|cFFFFFF00No_Moving", Tooltip = ""}
         }
     }
     UI.HUD.Options[3] = {
@@ -92,9 +92,9 @@ function Warrior.Settings()
 		UI.AddToggle("Bloodrage", "Use Bloodrage when available", false)
 		UI.AddToggle("Berserker Rage", "Use Berserker Rage", false)
         UI.AddToggle("Rage Dump?", "Shall we Dump the Rage that is too much", false)
-        UI.AddRange("Rage Dump", "On witch Value do we have too much Rage", 50, 100, 5, 60)
+        UI.AddRange("Rage Dump", "On witch Value do we have too much Rage", 0, 100, 1, 60)
         UI.AddToggle("Hamstring Dump", "Dumps Rage also with Hamstring, good with Windfurry", false)
-		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 5, 30)
+		-- UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 5, 30)
         -- UI.AddToggle("Slam Dump", nil, false)	
 
     UI.AddHeader("Tanky Stuff")
