@@ -80,14 +80,14 @@ function Warrior.Settings()
         --UI.AddToggle("Racial", nil, false)	not programmed
 		--UI.AddToggle("Bloodrage", nil, false)	not programmed
 		
-    UI.AddHeader("Dps Shit")
+    UI.AddHeader("DPS Shit")
         -- UI.AddToggle("Rend", nil, false)	not programmed
 		-- UI.AddToggle("SweepingStrikes", nil, false) not programmed
         UI.AddToggle("BThirst", nil, true)
         UI.AddToggle("Whirlwind", nil, true)
         UI.AddToggle("Overpower", nil, true)
 		UI.AddToggle("Hamstring < 35% Enemy HP", nil, true)
-		
+		UI.AddToggle("Hamstring PvP", nil, true)
 	UI.AddHeader("Rage Settings")
 		UI.AddToggle("Bloodrage", "Use Bloodrage when available", false)
 		UI.AddToggle("Berserker Rage", "Use Berserker Rage", false)
@@ -96,7 +96,8 @@ function Warrior.Settings()
         UI.AddToggle("Hamstring Dump", "Dumps Rage also with Hamstring, good with Windfurry", false)
 		-- UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 5, 30)
         -- UI.AddToggle("Slam Dump", nil, false)	
-
+------------------------------------------------------------------------------------------------------------------------------	
+	UI.AddTab("Tanky&Debuffs")
     UI.AddHeader("Tanky Stuff")
         UI.AddToggle("SunderArmor", "Applies SunderArmor debuff to Targets", true)
 		UI.AddDropdown("Apply Stacks of Sunder Armor", "Apply # Stacks of Sunder Armor", {"1","2","3","4","5"}, "5")
@@ -105,7 +106,10 @@ function Warrior.Settings()
         UI.AddRange("Shieldblock HP", nil, 30, 100, 10, 50)
         UI.AddToggle("MockingBlow", nil, false)
         UI.AddToggle("Taunt", nil, false)
-    
+		
+    UI.AddHeader("Lifesaver for 2Hand Furry - if Aggro in Raid from boss")		
+		UI.AddToggle("Lifesaver", "Will equip a shield and 1h and cast shieldwall if Aggro in RAID", false)
+		UI.AddDropdown("Min Q. gear equiped with Lifesaver", "searches for the first item it can equip", {"white","green","blue","purple"}, "blue")
 	UI.AddHeader("Debuffs")
         if DMW.Player.Spells.PiercingHowl:Known() 
 		then
@@ -117,11 +121,19 @@ function Warrior.Settings()
 	-- UI.AddHeader("Experiments")
         -- UI.AddToggle("abuse", nil, false)
         -- UI.AddRange("abuse range", "qwe", 0, 3, 0.01, 0.5)
-
+------------------------------------------------------------------------------------------------------------------------------
     UI.AddTab("Consumables")
 	UI.AddHeader("Consumables")
 	UI.AddToggle("Use Best HP Potion", "Check back for Potions and use best available one")
 	UI.AddRange("Use Potion at #% HP", nil, 10, 100, 1, 50, true)
-
-		
+	UI.AddToggle("Use Best Rage Potion", "Check back for Potions and use best available one", false)
+------------------------------------------------------------------------------------------------------------------------------	
+	UI.AddTab("Buff Sniper")
+	UI.AddHeader("If World buff drops log off")
+	UI.AddHeader("Only select one")
+	UI.AddToggle("WCB", "If Warchiefsblessing is on you log off", false)
+	UI.AddToggle("Ony_Nef", "If Dragonslayer is on you log off", false)
+	UI.AddToggle("ZG", "If Spirit of Zandalar is on you log off", false)
+	
+	
 end

@@ -5,7 +5,7 @@ local Setting = DMW.Helpers.Rotation.Setting
 local Player, Buff, Debuff, Spell, Stance, Target, Talent, Item, GCD, CDs, HUD, Enemy5Y, Enemy5YC, Enemy10Y, Enemy10YC, Enemy30Y,
       Enemy30YC, Enemy8Y, Enemy8YC, rageLost, dumpEnabled, castTime, syncSS, combatLeftCheck, stanceChangedSkill,
       stanceChangedSkillTimer, stanceChangedSkillUnit, targetChange, whatIsQueued, oldTarget, rageLeftAfterStance, firstCheck,
-      secondCheck, thirdCheck, mainSwing, ohSwing, mainSpeed
+      secondCheck, thirdCheck, SwingMH, SwingOH, MHSpeed
 local ItemUsage = GetTime()
 local SunderStacks = 0
 local SunderedMobStacks = {}
@@ -125,10 +125,54 @@ local function CombatLogEvent(...)
 		end
 end
 
+local function Buffsniper()
+local worldbufffound = false
+	
+	if (Setting("WCB") or Setting("Ony_Nef") or Setting("ZG"))
+		then
+		if Setting("WCB") 
+		and not Setting("Ony_Nef")
+		and not Setting("ZG")
+		then
+			
+			for i = 1, 32 do
+				if select(10, UnitAura("player", i)) == 16609 then
+				worldbufffound = true
+				break end
+			end	
+		elseif Setting("Ony_Nef")
+		and not Setting("WCB") 
+		and not Setting("ZG")
+		then
+			
+			for i = 1, 32 do
+				if select(10, UnitAura("player", i)) == 22888 then
+				worldbufffound = true
+				break end
+			end	
+		elseif Setting("ZG") 
+		and not Setting("WCB") 
+		and not Setting("Ony_Nef")		
+		then
+			
+			for i = 1, 32 do
+				if select(10, UnitAura("player", i)) == 24425 then
+				worldbufffound = true
+				break end
+			end			
+		end
+		
+		if worldbufffound then		
+		DMW.Settings.profile.Rotation.WCB = false
+		DMW.Settings.profile.Rotation.Ony_Nef = false
+		DMW.Settings.profile.Rotation.ZG = false
+		Logout()
+		end
+	end	
+end
 
 
-
--- cancel Yellow hit
+-- cancel Yellow hit when the mod is called
 local function cancelAAmod()
     if IsCurrentSpell(Spell.Cleave.SpellID) 
 	or IsCurrentSpell(Spell.HeroicStrike.SpellID) 
@@ -314,7 +358,7 @@ local function smartCast(spell, Unit, pool)
         -- castTime = DMW.Time
         -- if forcedStance then if forceStance(spell) then return true end end
 
-        if Setting("RotationType") == 1 or Setting("RotationType") == 2 then
+        if (Setting("RotationType") == 1 or Setting("RotationType") == 10 or Setting("RotationType") == 2) then
             if stanceCheck[firstCheck][spell] then
                 if Stance == firstCheck then
 					if Spell[spell]:Cast(Unit) then return true end
@@ -508,7 +552,11 @@ end
 local function AutoOverpower()
     if Setting("Overpower") then
         for _, Unit in ipairs(Enemy5Y) do
-            if Player.OverpowerUnit[Unit.Pointer] ~= nil 
+            if Player.OverpowerUnit[Unit.Pointer] ~= nil
+			and Player.Power <= 25 
+			and Target.HP > 20 
+			and Player.SwingMH >= 1
+			and Spell.Bloodthirst:CD() >= 2
 			and Spell.Overpower:CD() < Player.OverpowerUnit[Unit.Pointer].time - 0.3 
 			then
                 if smartCast("Overpower", Unit, nil) 
@@ -521,7 +569,8 @@ end
 
 --Auto Revenge
 local function AutoRevenge()
-    if Setting("Revenge") then for _, Unit in ipairs(Enemy5Y) do if Spell.Revenge:Cast(Unit) then return true end end end
+    if (Setting("Revenge") or DMW.Settings.profile.Rotation.RotationType == 10) 
+	then for _, Unit in ipairs(Enemy5Y) do if Spell.Revenge:Cast(Unit) then return true end end end
 end
 
 local function AutoBuff()
@@ -617,21 +666,21 @@ end
 
 -- Cooldowns and Racial
 local function CoolDowns()
-	if GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 then
+	if Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 and Player.Target.TTD <= 35 then
 		name = GetItemInfo(13442)
 		RunMacroText("/use " .. name)
 		return true
-	elseif GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 then
+	elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 and Player.Target.TTD <= 35 then
 		name = GetItemInfo(5633)
 		RunMacroText("/use " .. name)
 		return true 
 	elseif Item.DiamondFlask:Equipped() and Item.DiamondFlask:IsReady() then 
 		if Item.DiamondFlask:Use(Player) then return true end
-    elseif Spell.DeathWish:IsReady() then
+    elseif Spell.DeathWish:IsReady() and Player.Target.TTD <= 40 then
         if smartCast("DeathWish", Player, true) then return true end
-    elseif Spell.BloodFury:IsReady() and Player.HP > 70 then
+    elseif Spell.BloodFury:IsReady() and Player.HP > 70 and Player.Target.TTD <= 40 then
         if Spell.BloodFury:Cast(Player) then return true end
-    elseif Spell.BerserkingTroll:IsReady() then
+    elseif Spell.BerserkingTroll:IsReady() and Player.Target.TTD <= 40 then
         if Spell.BerserkingTroll:Cast(Player) then return true end
     end
 end
@@ -656,6 +705,42 @@ local function StanceChangedSpell()
     end
 end
 
+
+	
+	
+function UseContainerItemByItemtype(itemtype)
+  for bag = 0,4 do
+    for slot = 1,GetContainerNumSlots(bag) do
+		local item = GetContainerItemID(bag,slot)
+		
+		if item ~= nil
+		and select(7, GetItemInfo(item)) == itemtype
+		and select(3, GetItemInfo(item)) >= Setting("Min Q. gear equiped with Lifesaver") --minimum blue
+		then
+			UseContainerItem(bag,slot)
+			
+      end
+    end
+  end
+end
+
+
+
+local function lifesaver()
+
+	DMW.Settings.profile.Rotation.RotationType = 10
+	
+	if IsEquippedItemType("Two-Hand")
+	and UnitIsEnemy("player", "target")
+	and not UnitPlayerControlled("target")
+	and UnitInRaid("player") ~= nil
+	and Target:IsBoss()
+		then
+			UseContainerItemByItemtype("One-Handed Axes" or "One-Handed Maces" or "One-Handed Swords" or "Daggers")
+			UseContainerItemByItemtype("Shields")
+			
+	end
+end
 
 -- Slam Function
 -- local function CanSlam()
@@ -797,6 +882,11 @@ local function Locals()
 		firstCheck = "Defensive"
 		secondCheck = "Battle"
 		thirdCheck = "Berserk"
+	elseif Setting("RotationType") == 10 --deffskillstance for furry
+		then 
+		firstCheck = "Defensive"
+		secondCheck = "Battle"
+		thirdCheck = "Berserk"
 	end
 	
 	
@@ -813,7 +903,7 @@ local function Locals()
 	
 	if Target and Player.Combat
 	then
-		threatPercent = select(3, Target:UnitDetailedThreatSituation())
+		threatPercent = select(4, Target:UnitDetailedThreatSituation())
 		if threatPercent == nil 
 			then
 		threatPercent = 0
@@ -867,8 +957,9 @@ end
 function Warrior.Rotation()
     Locals()
 	Consumes()
-	
-	-- print(Stance)
+
+
+
 	
 -- got Battlestance out of Combat
     if Setting("BattleStance NoCombat") and Player.CombatLeft then
@@ -902,9 +993,11 @@ function Warrior.Rotation()
 			and Player.Power >= 10 
 			and not Spell.Charge:LastCast(1) 
 				then
-                if smartCast("Intercept", Target) then return true end
-                end
-            end	
+                if smartCast("Intercept", Target) 
+					then return true 
+				end
+            end
+    end	
 
 	
 --	checks the Spell Why Stance was changed
@@ -936,6 +1029,22 @@ function Warrior.Rotation()
         if Player.Combat 
 		and Enemy5YC > 0 
 			then
+
+			-----life safer if aggro---------
+			if Setting("Lifesaver") 
+			and UnitName("targettarget") == UnitName("player")
+				then
+					lifesaver()
+			elseif Setting("Lifesaver") 
+			and UnitName("targettarget") ~= UnitName("player")
+			and UnitInRaid("player") ~= nil
+			and not IsEquippedItemType("Two-Hand")
+				then
+					UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")
+					DMW.Settings.profile.Rotation.RotationType = 1
+			end
+			
+			
 			
 			-- Bers Rage --
 			if Setting("Berserker Rage") 
@@ -963,7 +1072,7 @@ function Warrior.Rotation()
             if HUD.DeathWish_Racial == 1 
 			and Target 
 			and Target:IsBoss() 
-			and Target.TTD >= 10 and  Target.TTD <= 60
+			and Target.TTD >= 10 and  Target.TTD <= 65
 				then 
 				if CoolDowns() then return true 
 				end 
@@ -997,7 +1106,8 @@ function Warrior.Rotation()
                     -- end
 
 					if Setting("BThirst") 
-					and (Spell.Whirlwind:CD() >= 1 or Player.Power >= 35)
+					and Spell.Whirlwind:CD() >= 2 
+					and Player.Power >= 30
 					and smartCast("Bloodthirst", Target, true) 
 						then return true 
 					end
@@ -1020,7 +1130,8 @@ function Warrior.Rotation()
 					end
                         
                     if Setting("Whirlwind") 
-					and (Spell.Bloodthirst:CD() >= 1 or Player.Power >= 40) 
+					and Spell.Bloodthirst:CD() >= 3 
+					and Player.Power >= 25
 					and smartCast("Whirlwind", Player, true) 
 						then return true 
                     end
@@ -1028,33 +1139,182 @@ function Warrior.Rotation()
                 end
 				
 					-- Hamstring --
-					if Setting("Hamstring < 30% Enemy HP") 
+					if (Setting("Hamstring < 30% Enemy HP") or Setting("Hamstring PvP"))
 					and Player.Combat 
 					and Spell.Hamstring:Known() 
-					and Target.HP <= 35 
+					and (Target.HP <= 35 or Setting("Hamstring PvP"))
 					and Target.Distance <= 5 
 					and not Debuff.Hamstring:Exist(Target) 
 					and smartCast("Hamstring", Target, true) 
 						then return true
 					end
-					
-					
-					
 				
                 -- AbuseHS()
-                if Setting("Rage Dump?") and Player.Power >= Setting("Rage Dump") 
+				--Rage dump with HS or Cleave if there is still rage with harmstring if activated
+                if Setting("Rage Dump?") 
+				and Player.Power >= Setting("Rage Dump") 
+				and Spell.Bloodthirst:CD() >= 3		
 					then
 						if dumpRage(Player.Power - Setting("Rage Dump")) 
 							then return true 
 						end
                 end
-            
+				
+				--unqueue HS or Cleave when low rage
+				if Player.Power <= 20
+					and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
+					and Player.SwingMH <= 0.3
+					and Player.SwingMH > 0
+						then				
+						cancelAAmod()
+				end
+				
+
+				
+				
 			end	
         end
 		
-	-- -----------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART------
-    -- ---TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------
-    -- -----------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART------
+	--------------------------------------------switch to deff stance with lifesaver rotation---------------------------------------
+	elseif Setting("RotationType") == 10 --or (Target and Target.Player) 
+			then
+
+			if not Player.Combat
+				then
+				UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")
+				DMW.Settings.profile.Rotation.RotationType = 1
+			end
+			
+			
+			-- AutoAttack
+			if Target 
+			and not Target.Dead 
+			and Target.Distance <= 5 
+			and Target.Attackable 
+			and not IsCurrentSpell(Spell.Attack.SpellID) then
+				StartAttack()
+			end
+			
+			if Player.Combat 
+			and Enemy5YC > 0 
+				then
+
+				-----life safer if aggro---------
+				if Setting("Lifesaver") 
+				and UnitName("targettarget") ~= UnitName("player")
+				and UnitInRaid("player") ~= nil
+				and not IsEquippedItemType("Two-Hand")
+					then
+						UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")
+						DMW.Settings.profile.Rotation.RotationType = 1
+				end
+				
+				
+				-- Bloodrage --
+				if Setting("Bloodrage") 
+				and Spell.Bloodrage:IsReady() 
+				and Player.Power <= 50 
+				and Player.HP >= 30
+				and regularCast("Bloodrage", Player)
+					then return true
+				end
+				
+				-- Buffs Battleshout
+				if AutoBuff() or AutoRevenge()
+					then return true 
+				end
+
+				if Target 
+					then
+					
+					-- AutoKICK with Shield Bash if something in 5Yards casts something
+					if Setting("Pummel/ShildBash") 
+					and IsEquippedItemType("Shields") 
+						then
+							local castName = Target:CastingInfo()
+							if castName ~= nil 
+							and (Target:Interrupt() or interruptList[castName]) 
+								then
+								if smartCast("ShieldBash", Target, true) 
+									then return true 
+								end
+							end
+						end
+					
+					--wall if low health
+					if Player.HP <= 40 
+					and IsEquippedItemType("Shields")
+					and smartCast("ShieldWall", Player, true)
+						then return true 
+					end
+					
+					if Setting("BThirst") 
+					and Player.Power >= 30
+					and smartCast("Bloodthirst", Target, true) 
+						then return true 
+					end
+					
+					if Spell.Bloodthirst:CD() >= 3
+					and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
+					and SunderStacks < 5
+					and smartCast("SunderArmor", Target, true)
+						then return true 
+					end
+					
+					for k, v in pairs(Enemy10Y) do
+						if v.Target 
+						and Spell.ShieldBlock:Known()
+						and IsEquippedItemType("Shields") 
+						and Player.HP <= 80 
+						and UnitIsUnit(v.Target, "player") 
+						and (v.SwingMH > 0 or v.SwingMH <= 0.5) 
+							then
+							smartCast("ShieldBlock", Player)
+							break
+						end
+					end
+	
+					-- AbuseHS()
+					--Rage dump with HS or Cleave if there is still rage with harmstring if activated
+					if Setting("Rage Dump?") 
+					and Player.Power >= Setting("Rage Dump") 
+					and Spell.Bloodthirst:CD() >= 3		
+						then
+							if dumpRage(Player.Power - Setting("Rage Dump")) 
+								then return true 
+							end
+					end
+					
+					--unqueue HS or Cleave when low rage
+					if Player.Power <= 20
+						and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
+						and Player.SwingMH <= 0.3
+						and Player.SwingMH > 0
+							then				
+							cancelAAmod()
+					end
+					
+								
+					
+					
+				end
+				
+
+					
+			
+			end
+		
+		
+		
+		
+
+		
+		
+		
+		
+	---------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART------
+    --TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------
+    ---------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART------
     
 	elseif Setting("RotationType") == 2 
 		then
@@ -1094,13 +1354,13 @@ function Warrior.Rotation()
                 -- end
             end
             
-			-- -- for _, v in ipairs(Enemy5Y) do end
+			for _, v in ipairs(Enemy5Y) do end
             -- if Enemy30YC >= 2 then
                 -- table.sort(Enemy30Y, function(x, y) return x.threatDelta < y.threatDelta end)
-                -- -- table.sort(Enemy30Y, function(x) if x.Classification ~= "Normal" then return true else return false end end)
-                -- -- table.sort(Enemy30Y, function(x) if x.ForceSort then return true else return false end end)
+                table.sort(Enemy30Y, function(x) if x.Classification ~= "Normal" then return true else return false end end)
+                table.sort(Enemy30Y, function(x) if x.ForceSort then return true else return false end end)
                 -- if Setting("AutoTreatTarget") then
-                    -- -- if Enemy30Y[1] then Enemy30Y[1]:CustomTarget() end
+                    if Enemy30Y[1] then Enemy30Y[1]:CustomTarget() end
                     -- for i = 1, #Enemy30Y do if Enemy30Y[i].threatDelta <= 500 then Enemy30Y[i]:CustomTarget() end end
                 -- end
             -- end
@@ -1232,17 +1492,88 @@ function Warrior.Rotation()
 	end	
 end		
 		
+
+
+
 	
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
+eventFrame:RegisterEvent("UNIT_AURA");
+eventFrame:RegisterEvent("CHAT_MSG_ADDON");
+
+
+
+
+
 
 eventFrame:SetScript("OnEvent", function(self, event, ...)
-	if(event == "COMBAT_LOG_EVENT_UNFILTERED" ) 
-		then
+	if(event == "COMBAT_LOG_EVENT_UNFILTERED") then
 		CombatLogEvent(CombatLogGetCurrentEventInfo())
-	
+	elseif(event == "UNIT_AURA") and DMW.UI.MinimapIcon then
+		Buffsniper()		
+	-- elseif(event == "CHAT_MSG_ADDON") then
+		-- Buffsniper()		
 	end
 end)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	
 	-------------------Other Rotations -------- I Am Looking only on a Furry Rota ATM--------------------------------------------------	
 		
