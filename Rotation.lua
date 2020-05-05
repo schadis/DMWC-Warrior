@@ -554,7 +554,7 @@ local function AutoOverpower()
         for _, Unit in ipairs(Enemy5Y) do
             if Player.OverpowerUnit[Unit.Pointer] ~= nil
 			and Player.Power <= 25 
-			and Target.HP > 20 
+			and Unit.HP > 20 
 			and Player.SwingMH >= 1
 			and Spell.Bloodthirst:CD() >= 2
 			and Spell.Overpower:CD() < Player.OverpowerUnit[Unit.Pointer].time - 0.3 
