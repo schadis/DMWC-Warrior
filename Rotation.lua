@@ -119,12 +119,13 @@ local function CombatLogEvent(...)
 					then
 					SunderStacks = v
 					break
-				elseif v == nil
+				elseif k == UnitGUID("target")
+				and v ~= (0 or 1 or 2 or 3 or 4 or 5)
 					then
-					SunderStacks = 0
+					SunderStacks = 5
 					break
 				elseif k ~= UnitGUID("target") then
-				SunderStacks = 0
+				SunderStacks = 5
 				end
 			end	
 		end
