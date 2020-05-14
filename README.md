@@ -1,7 +1,6 @@
 # DMWC-Warrior
 
 * all the best to immortalhz (its the most of his code)
-* I hope you arent angry immy
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 
 ## 14.05.2020
