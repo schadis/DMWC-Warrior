@@ -1,6 +1,6 @@
 # DMWC-Warrior
 
-* 2h Furry/Furry is working (tank is only usable for dugeons)
+* 2h Fury/Fury is working (tank is only usable for dugeons)
 * all the best to immortalhz (its the most of his code)
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 
@@ -18,7 +18,7 @@
 * added my buff sniper (it only logs you out when the slected buff is droped, pls only select one at a time)
 * if cooldows are activated in the Hud it will use flask if equiped 
 * for the last 60 seconds and the rest of your CDs about 30 Time to Die 
-* pls dont tank a raid with this rotation play furry or 2h furry thx
+* pls dont tank a raid with this rotation play fury or 2h fury thx
 
 ## 20.04.2020
 
@@ -26,6 +26,6 @@
 
 ## 14.04.2020
 
-* DMWC-Warrior furry 2h with hamstring dump or tank (for dungeons tank shall work) 
+* DMWC-Warrior fury 2h with hamstring dump or tank (for dungeons tank shall work) 
 * working with uploaded DMWC
 * all not working thing are commented out 
