@@ -114,9 +114,14 @@ local function CombatLogEvent(...)
 		if DMW.Player.Target ~= nil 
 		and DMW.Player.Target.Distance < 50 then
 			for k, v in pairs(SunderedMobStacks) do
-				if k == UnitGUID("target") 
+				if k == UnitGUID("target")
+				and v == (0 or 1 or 2 or 3 or 4 or 5) 
 					then
 					SunderStacks = v
+					break
+				elseif v == nil
+					then
+					SunderStacks = 0
 					break
 				elseif k ~= UnitGUID("target") then
 				SunderStacks = 0
