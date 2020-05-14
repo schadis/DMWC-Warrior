@@ -57,7 +57,7 @@ function Warrior.Settings()
 	
     UI.AddHeader("Usual Options")
 	    -- UI.AddToggle("Debug", nil, false)
-		UI.AddDropdown("RotationType", nil, {"Fury","Tank"}, "Fury")
+		UI.AddDropdown("RotationType", nil, {"2HFury/Fury","Tank"}, "2HFury/Fury")
 		UI.AddBlank()
 		UI.AddToggle("BattleStance NoCombat", "Switches to Battle Stance if we are not InCombat" , false)
         UI.AddToggle("Charge&Intercept", nil, false)
