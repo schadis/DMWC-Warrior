@@ -95,8 +95,8 @@ local interruptList = {
 local SunderImmune = {["Totem"] = true, ["Mechanical"] = true}
 
 -- Getting SunderStacks
-local function CombatLogEvent(...)
-	local timeStamp, subEvent, _, sourceID, sourceName, _, _, targetID = ...;
+local function GetSunderStacks()
+	--local timeStamp, subEvent, _, sourceID, sourceName, _, _, targetID = ...;
 	
 		if DMW.Player.Target ~= nil 
 		and DMW.Player.Target.Distance < 50 then
@@ -735,17 +735,25 @@ end
 local function lifesaver()
 
 	DMW.Settings.profile.Rotation.RotationType = 10
-	
-	if IsEquippedItemType("Two-Hand")
+
+	if not ("One-Handed Axes" or "One-Handed Maces" or "One-Handed Swords" or "Daggers")
 	and UnitIsEnemy("player", "target")
 	and not UnitPlayerControlled("target")
 	and UnitInRaid("player") ~= nil
-	and Target:IsBoss()
+	--and Target:IsBoss()
 		then
 			UseContainerItemByItemtype("One-Handed Axes" or "One-Handed Maces" or "One-Handed Swords" or "Daggers")
-			UseContainerItemByItemtype("Shields")
-			
 	end
+	
+	if not IsEquippedItemType("Shields")
+	and UnitIsEnemy("player", "target")
+	and not UnitPlayerControlled("target")
+	and UnitInRaid("player") ~= nil
+	--and Target:IsBoss()
+		then
+			UseContainerItemByItemtype("Shields")
+	end
+
 end
 
 -- Slam Function
@@ -965,7 +973,6 @@ function Warrior.Rotation()
 	Consumes()
 
 
-
 	
 -- got Battlestance out of Combat
     if Setting("BattleStance NoCombat") and Player.CombatLeft then
@@ -1036,7 +1043,7 @@ function Warrior.Rotation()
 		and Enemy5YC > 0 
 			then
 
-			-----life safer if aggro---------
+			-----life saver if aggro---------
 			if Setting("Lifesaver") 
 			and UnitName("targettarget") == UnitName("player")
 				then
@@ -1185,7 +1192,7 @@ function Warrior.Rotation()
 	elseif Setting("RotationType") == 10 --or (Target and Target.Player) 
 			then
 
-			if not Player.Combat
+			if not Player.Combat and Setting("Lifesaver")
 				then
 				UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")
 				DMW.Settings.profile.Rotation.RotationType = 1
@@ -1205,8 +1212,13 @@ function Warrior.Rotation()
 			and Enemy5YC > 0 
 				then
 
-				-----life safer if aggro---------
+				-----life saver if aggro---------
+				
 				if Setting("Lifesaver") 
+				and UnitName("targettarget") == UnitName("player")
+					then
+						lifesaver()
+				elseif Setting("Lifesaver") 
 				and UnitName("targettarget") ~= UnitName("player")
 				and UnitInRaid("player") ~= nil
 				and not IsEquippedItemType("Two-Hand")
@@ -1214,8 +1226,7 @@ function Warrior.Rotation()
 						UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")
 						DMW.Settings.profile.Rotation.RotationType = 1
 				end
-				
-				
+
 				-- Bloodrage --
 				if Setting("Bloodrage") 
 				and Spell.Bloodrage:IsReady() 
@@ -1248,7 +1259,7 @@ function Warrior.Rotation()
 						end
 					
 					--wall if low health
-					if Player.HP <= 40 
+					if Player.HP <= 60 
 					and IsEquippedItemType("Shields")
 					and smartCast("ShieldWall", Player, true)
 						then return true 
@@ -1513,9 +1524,8 @@ eventFrame:RegisterEvent("CHAT_MSG_ADDON");
 
 
 eventFrame:SetScript("OnEvent", function(self, event, ...)
-	if(event == "COMBAT_LOG_EVENT_UNFILTERED") then
-		CombatLogEvent(CombatLogGetCurrentEventInfo())
-	elseif(event == "UNIT_AURA") and DMW.UI.MinimapIcon then
+	if(event == "UNIT_AURA") and DMW.UI.MinimapIcon then
+		GetSunderStacks()
 		Buffsniper()		
 	-- elseif(event == "CHAT_MSG_ADDON") then
 		-- Buffsniper()		
