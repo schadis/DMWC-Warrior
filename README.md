@@ -4,6 +4,10 @@
 * I hope you arent angry immy
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 
+## 14.05.2020
+
+* If unitdebuff returns something else for sunder armor than 0-5 stacks sunder armor will be ignored
+
 ## 04.05.2020
 
 * New settings Tabs for better overview
