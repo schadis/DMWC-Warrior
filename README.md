@@ -1,5 +1,6 @@
 # DMWC-Warrior
 
+* 2h Furry/Furry is working (tank is only usable for dugeons)
 * all the best to immortalhz (its the most of his code)
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 
