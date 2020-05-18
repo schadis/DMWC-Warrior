@@ -736,13 +736,16 @@ local function lifesaver()
 
 	DMW.Settings.profile.Rotation.RotationType = 10
 
-	if not ("One-Handed Axes" or "One-Handed Maces" or "One-Handed Swords" or "Daggers")
+	if not IsEquippedItemType("One-Handed Axes" or "One-Handed Maces" or "One-Handed Swords" or "Daggers")
 	and UnitIsEnemy("player", "target")
 	and not UnitPlayerControlled("target")
 	and UnitInRaid("player") ~= nil
 	--and Target:IsBoss()
 		then
-			UseContainerItemByItemtype("One-Handed Axes" or "One-Handed Maces" or "One-Handed Swords" or "Daggers")
+			UseContainerItemByItemtype("One-Handed Maces")
+			UseContainerItemByItemtype("One-Handed Swords")
+			UseContainerItemByItemtype("Daggers")
+			UseContainerItemByItemtype("One-Handed Axes")
 	end
 	
 	if not IsEquippedItemType("Shields")
@@ -1045,6 +1048,7 @@ function Warrior.Rotation()
 
 			-----life saver if aggro---------
 			if Setting("Lifesaver") 
+			and not UnitPlayerControlled("target")
 			and UnitName("targettarget") == UnitName("player")
 				then
 					lifesaver()
@@ -1215,6 +1219,7 @@ function Warrior.Rotation()
 				-----life saver if aggro---------
 				
 				if Setting("Lifesaver") 
+				and not UnitPlayerControlled("target")
 				and UnitName("targettarget") == UnitName("player")
 					then
 						lifesaver()
