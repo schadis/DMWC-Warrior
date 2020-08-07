@@ -541,7 +541,7 @@ local function AutoExecute()
     elseif HUD.Execute == 3 
 		then
         if Target 
-		and Target.HP < 20 
+		and Target.HP <= 20 
 		and not Target.Dead 
 		and Target.Distance <= 2 
 		and Target.Attackable 
@@ -684,6 +684,10 @@ local function CoolDowns()
 		if Item.DiamondFlask:Use(Player) then return true end
     elseif Spell.DeathWish:IsReady() and Player.Target.TTD <= 40 then
         if smartCast("DeathWish", Player, true) then return true end
+    elseif Item.Earthstrike:Equipped() and Player.Target.TTD <= 40 then
+ 		if Item.Earthstrike:Use(Player) then return true end
+    elseif Item.JomGabbar:Equipped() and Player.Target.TTD <= 40 then
+		if Item.JomGabbar:Use(Player) then return true end		
     elseif Spell.BloodFury:IsReady() and Player.HP > 70 and Player.Target.TTD <= 40 then
         if Spell.BloodFury:Cast(Player) then return true end
     elseif Spell.BerserkingTroll:IsReady() and Player.Target.TTD <= 40 then
