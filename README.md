@@ -4,6 +4,11 @@
 * all the best to immortalhz (its the most of his code)
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 
+## 07.08.2020
+
+* added auto trinked use for Earthstrike and JomGabbar
+* removed tank setting and rotation(out commented)
+
 ## 18.05.2020
 
 * fixed lifesaver
