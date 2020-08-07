@@ -1338,182 +1338,7 @@ function Warrior.Rotation()
 		
 		
 		
-	---------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART------
-    --TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------
-    ---------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART------
-    
-	elseif Setting("RotationType") == 2 
-		then
-        
-		if Target 
-		and not Target.Dead 
-		and Target.Distance <= 5 
-		and Target.Attackable 
-		and not IsCurrentSpell(Spell.Attack.SpellID) then
-            StartAttack()
-        end
-		
-        if Player.Combat then
-            -- Enemy5Y Threat Sorting
-            
-			for _, v in ipairs(Enemy30Y) do
-                v.Threat = v:UnitThreatSituation()
-                v.SelfThreat = select(5, v:UnitDetailedThreatSituation())
-                -- v.ThreatTa
-                -- local highestValue
-                for k, Friend in pairs(DMW.Friends.Units) do
-                    if Friend.Name ~= "LocalPlayer" then
-                        local FriendThreat = select(5, v:UnitDetailedThreatSituation(Friend)) or 0
-                        if v.highestValue == nil or v.highestValue < FriendThreat then v.highestValue = FriendThreat end
-                    end
-                end
-                if v.highestValue then
-                     v.threatDelta = v.SelfThreat - v.highestValue
-                else
-                    v.threatDelta = 0
-                end
-                -- if v.Target and UnitName(v.Target) == "Saaulgoodman" then
-                    -- v.ForceSort = true
-                    -- v:CustomTarget()
-                -- else
-                    -- v.ForceSort = false
-                -- end
-            end
-            
-			for _, v in ipairs(Enemy5Y) do end
-            -- if Enemy30YC >= 2 then
-                -- table.sort(Enemy30Y, function(x, y) return x.threatDelta < y.threatDelta end)
-                table.sort(Enemy30Y, function(x) if x.Classification ~= "Normal" then return true else return false end end)
-                table.sort(Enemy30Y, function(x) if x.ForceSort then return true else return false end end)
-                -- if Setting("AutoTreatTarget") then
-                    if Enemy30Y[1] then Enemy30Y[1]:CustomTarget() end
-                    -- for i = 1, #Enemy30Y do if Enemy30Y[i].threatDelta <= 500 then Enemy30Y[i]:CustomTarget() end end
-                -- end
-            -- end
 
-
-
-            if Setting("Taunt") 
-			or Setting("MockingBlow") 
-				then
-                for _, Unit in ipairs(Enemy5Y) do
-                    -- if not Unit:UnitDetailedThreatSituation(Player) then
-                    if Unit.Threat <= 1 
-					and Unit.highestValue 
-					and Unit.highestValue > 0 
-						then
-                        -- Taunt -- if there is a sort of taunt debuff do not taunt
-                        if Setting("Taunt") and Spell.Taunt:Known() and Spell.Taunt:CD() == 0 and not Unit:AuraByID(7922) and
-                            not Unit:AuraByID(20560) and not Unit:AuraByID(355) then
-                            if smartCast("Taunt", Unit) then return true end
-                        end
-                        -- Mockingblow -- if there is a sort of taunt debuff do not taunt
-                        if Setting("MockingBlow") and Spell.MockingBlow:Known() and Spell.MockingBlow:CD() == 0 and not Unit:AuraByID(7922) and
-                            not Unit:AuraByID(355) and not Unit:AuraByID(20560) then
-                            if smartCast("MockingBlow", Unit) then return true end
-                        end
-                    end
-                end
-            end
-
-            for k, v in pairs(Enemy10Y) do
-                if v.Target 
-				and Setting("Use ShieldBlock") 
-				and IsEquippedItemType("Shields") 
-				and Player.HP <= Setting("Shieldblock HP") 
-				and UnitIsUnit(v.Target, "player") 
-				and (v.SwingMH > 0 or v.SwingMH <= 0.5) 
-					then
-                    smartCast("ShieldBlock", Player)
-                    break
-                end
-            end
-			
-            if AutoExecute() 
-			or AutoRevenge() 
-			or AutoBuff() 
-			or AutoOverpower() 
-				then return true 
-			end
-
-			-- Bloodrage --
-			if Setting("Bloodrage") 
-			and Spell.Bloodrage:IsReady() 
-			and Player.Power <= 50 
-			and Player.HP >= 50
-			and regularCast("Bloodrage", Player)
-				then return true
-			end
-
-			-- AutoKICK with Shield Bash if something in 5Yards casts something
-            if Setting("Pummel/ShildBash") 
-			and IsEquippedItemType("Shields") 
-				then
-				for _, Unit in ipairs(Enemy5Y) do
-					local castName = Unit:CastingInfo()
-					if castName ~= nil 
-					and (Unit:Interrupt() or interruptList[castName]) 
-						then
-						if smartCast("ShieldBash", Unit, true) 
-							then return true 
-						end
-					end
-				end
-			end
-
-			-- If Prot Spec with ShielSlam
-            if Spell.ShieldSlam:Known() 
-			and IsEquippedItemType("Shields") 
-				then
-                for k, Unit in ipairs(Enemy5Y) do
-                    if not Unit.Dead then if smartCast("ShieldSlam", Unit, true) then return true end end
-                end
-            end
-			
-            if Enemy5YC >= 1 then
-                for k, Unit in ipairs(Enemy5Y) do
-                    if Setting("SunderArmor") 
-					and Spell.SunderArmor:IsReady() 
-					and not SunderImmune[Unit.CreatureType] 
-						then
-                        if (Debuff.SunderArmor:Stacks(Unit) < Setting("Apply Stacks of Sunder Armor") 
-						or Debuff.SunderArmor:Refresh(Unit)) 
-						and Unit.TTD >= 4 
-							then 
-							if smartCast("SunderArmor", Unit) 
-								then return true 
-							end 
-						end
-                    end
-                end
-            end
-            
-			if Enemy8YC >= 2 
-			and Setting("Whirlwind") 
-			and smartCast("Whirlwind", Player) 
-				then return true 
-			end 
-
-            if Setting("BThirst") 
-			and Spell.Bloodthirst:Known()
-				then
-                for k, Unit in ipairs(Enemy5Y) do 
-					if smartCast("Bloodthirst", Unit, true) 
-						then return true 
-					end 
-				end
-            end
-            
-			-- bersOnTanking()
-			if Setting("Rage Dump?") and Player.Power >= Setting("Rage Dump") 
-				then
-					if dumpRage(Player.Power - Setting("Rage Dump")) 
-						then return true 
-					end
-            end
-        end
-	
-	
 	
 	end	
 end		
@@ -1545,62 +1370,192 @@ end)
 
 
 
+	-- -------------------Other Rotations -------- I Am Looking only on a Furry Rota ATM--------------------------------------------------	
 
 
 
 
 
+	-- ---------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART------
+    -- --TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------
+    -- ---------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART------
+    
+	-- elseif Setting("RotationType") == 2 
+		-- then
+        
+		-- if Target 
+		-- and not Target.Dead 
+		-- and Target.Distance <= 5 
+		-- and Target.Attackable 
+		-- and not IsCurrentSpell(Spell.Attack.SpellID) then
+            -- StartAttack()
+        -- end
+		
+        -- if Player.Combat then
+            -- -- Enemy5Y Threat Sorting
+            
+			-- for _, v in ipairs(Enemy30Y) do
+                -- v.Threat = v:UnitThreatSituation()
+                -- v.SelfThreat = select(5, v:UnitDetailedThreatSituation())
+                -- -- v.ThreatTa
+                -- -- local highestValue
+                -- for k, Friend in pairs(DMW.Friends.Units) do
+                    -- if Friend.Name ~= "LocalPlayer" then
+                        -- local FriendThreat = select(5, v:UnitDetailedThreatSituation(Friend)) or 0
+                        -- if v.highestValue == nil or v.highestValue < FriendThreat then v.highestValue = FriendThreat end
+                    -- end
+                -- end
+                -- if v.highestValue then
+                     -- v.threatDelta = v.SelfThreat - v.highestValue
+                -- else
+                    -- v.threatDelta = 0
+                -- end
+                -- -- if v.Target and UnitName(v.Target) == "Saaulgoodman" then
+                    -- -- v.ForceSort = true
+                    -- -- v:CustomTarget()
+                -- -- else
+                    -- -- v.ForceSort = false
+                -- -- end
+            -- end
+            
+			-- for _, v in ipairs(Enemy5Y) do end
+            -- -- if Enemy30YC >= 2 then
+                -- -- table.sort(Enemy30Y, function(x, y) return x.threatDelta < y.threatDelta end)
+                -- table.sort(Enemy30Y, function(x) if x.Classification ~= "Normal" then return true else return false end end)
+                -- table.sort(Enemy30Y, function(x) if x.ForceSort then return true else return false end end)
+                -- -- if Setting("AutoTreatTarget") then
+                    -- if Enemy30Y[1] then Enemy30Y[1]:CustomTarget() end
+                    -- -- for i = 1, #Enemy30Y do if Enemy30Y[i].threatDelta <= 500 then Enemy30Y[i]:CustomTarget() end end
+                -- -- end
+            -- -- end
 
 
 
+            -- if Setting("Taunt") 
+			-- or Setting("MockingBlow") 
+				-- then
+                -- for _, Unit in ipairs(Enemy5Y) do
+                    -- -- if not Unit:UnitDetailedThreatSituation(Player) then
+                    -- if Unit.Threat <= 1 
+					-- and Unit.highestValue 
+					-- and Unit.highestValue > 0 
+						-- then
+                        -- -- Taunt -- if there is a sort of taunt debuff do not taunt
+                        -- if Setting("Taunt") and Spell.Taunt:Known() and Spell.Taunt:CD() == 0 and not Unit:AuraByID(7922) and
+                            -- not Unit:AuraByID(20560) and not Unit:AuraByID(355) then
+                            -- if smartCast("Taunt", Unit) then return true end
+                        -- end
+                        -- -- Mockingblow -- if there is a sort of taunt debuff do not taunt
+                        -- if Setting("MockingBlow") and Spell.MockingBlow:Known() and Spell.MockingBlow:CD() == 0 and not Unit:AuraByID(7922) and
+                            -- not Unit:AuraByID(355) and not Unit:AuraByID(20560) then
+                            -- if smartCast("MockingBlow", Unit) then return true end
+                        -- end
+                    -- end
+                -- end
+            -- end
 
+            -- for k, v in pairs(Enemy10Y) do
+                -- if v.Target 
+				-- and Setting("Use ShieldBlock") 
+				-- and IsEquippedItemType("Shields") 
+				-- and Player.HP <= Setting("Shieldblock HP") 
+				-- and UnitIsUnit(v.Target, "player") 
+				-- and (v.SwingMH > 0 or v.SwingMH <= 0.5) 
+					-- then
+                    -- smartCast("ShieldBlock", Player)
+                    -- break
+                -- end
+            -- end
+			
+            -- if AutoExecute() 
+			-- or AutoRevenge() 
+			-- or AutoBuff() 
+			-- or AutoOverpower() 
+				-- then return true 
+			-- end
 
+			-- -- Bloodrage --
+			-- if Setting("Bloodrage") 
+			-- and Spell.Bloodrage:IsReady() 
+			-- and Player.Power <= 50 
+			-- and Player.HP >= 50
+			-- and regularCast("Bloodrage", Player)
+				-- then return true
+			-- end
 
+			-- -- AutoKICK with Shield Bash if something in 5Yards casts something
+            -- if Setting("Pummel/ShildBash") 
+			-- and IsEquippedItemType("Shields") 
+				-- then
+				-- for _, Unit in ipairs(Enemy5Y) do
+					-- local castName = Unit:CastingInfo()
+					-- if castName ~= nil 
+					-- and (Unit:Interrupt() or interruptList[castName]) 
+						-- then
+						-- if smartCast("ShieldBash", Unit, true) 
+							-- then return true 
+						-- end
+					-- end
+				-- end
+			-- end
 
+			-- -- If Prot Spec with ShielSlam
+            -- if Spell.ShieldSlam:Known() 
+			-- and IsEquippedItemType("Shields") 
+				-- then
+                -- for k, Unit in ipairs(Enemy5Y) do
+                    -- if not Unit.Dead then if smartCast("ShieldSlam", Unit, true) then return true end end
+                -- end
+            -- end
+			
+            -- if Enemy5YC >= 1 then
+                -- for k, Unit in ipairs(Enemy5Y) do
+                    -- if Setting("SunderArmor") 
+					-- and Spell.SunderArmor:IsReady() 
+					-- and not SunderImmune[Unit.CreatureType] 
+						-- then
+                        -- if (Debuff.SunderArmor:Stacks(Unit) < Setting("Apply Stacks of Sunder Armor") 
+						-- or Debuff.SunderArmor:Refresh(Unit)) 
+						-- and Unit.TTD >= 4 
+							-- then 
+							-- if smartCast("SunderArmor", Unit) 
+								-- then return true 
+							-- end 
+						-- end
+                    -- end
+                -- end
+            -- end
+            
+			-- if Enemy8YC >= 2 
+			-- and Setting("Whirlwind") 
+			-- and smartCast("Whirlwind", Player) 
+				-- then return true 
+			-- end 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            -- if Setting("BThirst") 
+			-- and Spell.Bloodthirst:Known()
+				-- then
+                -- for k, Unit in ipairs(Enemy5Y) do 
+					-- if smartCast("Bloodthirst", Unit, true) 
+						-- then return true 
+					-- end 
+				-- end
+            -- end
+            
+			-- -- bersOnTanking()
+			-- if Setting("Rage Dump?") and Player.Power >= Setting("Rage Dump") 
+				-- then
+					-- if dumpRage(Player.Power - Setting("Rage Dump")) 
+						-- then return true 
+					-- end
+            -- end
+        -- end
+	
+	
 
 
 	
-	-------------------Other Rotations -------- I Am Looking only on a Furry Rota ATM--------------------------------------------------	
+
 		
     
 	
