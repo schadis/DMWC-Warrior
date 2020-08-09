@@ -4,6 +4,12 @@
 * all the best to immortalhz (its the most of his code)
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 
+## 09.08.2020
+
+* ad BT in ex phase when over 2000Ap (incl. buffs)
+* changed rage dump (beginns to dump when the value of the setting is reached)
+* dumpes with HS or cleave over 30 rage and if there is rage left or over 65 rage it uses Hamstring
+
 ## 07.08.2020
 
 * added auto trinked use for Earthstrike and JomGabbar
@@ -26,7 +32,7 @@
 * if you dont have no aggro anymore it will swap back to the normal rotation)
 * added my buff sniper (it only logs you out when the slected buff is droped, pls only select one at a time)
 * if cooldows are activated in the Hud it will use flask if equiped 
-* for the last 60 seconds and the rest of your CDs about 30 Time to Die 
+* for the last 60 seconds and the rest of your CDs about 30s Time to Die 
 * pls dont tank a raid with this rotation play fury or 2h fury thx
 
 ## 20.04.2020
