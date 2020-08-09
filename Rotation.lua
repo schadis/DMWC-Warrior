@@ -6,6 +6,8 @@ local Player, Buff, Debuff, Spell, Stance, Target, Talent, Item, GCD, CDs, HUD, 
       Enemy30YC, Enemy8Y, Enemy8YC, rageLost, dumpEnabled, castTime, syncSS, combatLeftCheck, stanceChangedSkill,
       stanceChangedSkillTimer, stanceChangedSkillUnit, targetChange, whatIsQueued, oldTarget, rageLeftAfterStance, firstCheck,
       secondCheck, thirdCheck, SwingMH, SwingOH, MHSpeed
+local base, posBuff, negBuff = UnitAttackPower("player")
+local effectiveAP = base + posBuff + negBuff  
 local ItemUsage = GetTime()
 local SunderStacks = 0
 local SunderedMobStacks = {}
@@ -223,20 +225,24 @@ local function dumpRage(value)
 		then
         if Setting("RotationType") == 1 
 		and Enemy5YC >= 2 
-		and Player.Power >= 20 then
+		and Player.Power >= 30 
+		and Spell.Bloodthirst:CD() >= 3
+			then
             RunMacroText("/cast Cleave")
             value = value - 20
             DMW.Player.SwingDump = true
 			
-        elseif Player.Power >= 20 
-		and Setting("RotationType") == 1 
+        elseif Setting("RotationType") == 1
+		and Spell.Bloodthirst:CD() >= 3		
+		and Player.Power >= 30
 		and threatPercent >= 88	then
             RunMacroText("/cast Cleave")
             value = value - 20
             DMW.Player.SwingDump = true
 			
-		elseif Player.Power >= 13 
-		and threatPercent <= 88 then		
+		elseif Player.Power >= 30
+		and Spell.Bloodthirst:CD() >= 3		
+		and HUD.Dump_HS_OnOff == 1 then		
             RunMacroText("/cast Heroic Strike")
             value = value - 13
             -- print("queued dump hs")
@@ -262,10 +268,10 @@ local function dumpRage(value)
                 Spell.Bloodthirst:Cast(Target)
             elseif Setting("Whirlwind") and Spell.Whirlwind:IsReady() then
                 Spell.Whirlwind:Cast(Player)
-            elseif Setting("Hamstring Dump") then
+            elseif Player.Power >= 65 and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE") and Setting("Hamstring Dump") then
                 Spell.Hamstring:Cast(Target)
             end
-        elseif Setting("Hamstring Dump") then
+        elseif Player.Power >= 65 and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE") and Setting("Hamstring Dump") then
             for k, v in pairs(Enemy5Y) do Spell.Hamstring:Cast(v) end
         end
 
@@ -548,11 +554,29 @@ local function AutoExecute()
 		and Target.Facing 
 			then
             -- if Spell.Execute:IsReady() then
-            if Spell.Execute:IsReady() and GCD == 0 then smartCast("Execute", Target) end
+            if Spell.Execute:IsReady() 
+			and GCD == 0 
+			and effectiveAP <= 2000
+				then smartCast("Execute", Target)
+				
+			elseif Spell.Execute:IsReady() 
+			and Spell.Bloodthirst:IsReady() 
+			and GCD == 0 
+			and effectiveAP >= 2000
+				then smartCast("Bloodthirst", Target)
+				
+			elseif Spell.Execute:IsReady() 
+			and GCD == 0 
+			and effectiveAP >= 2000
+				then smartCast("Execute", Target) end
+				
             return true
         end
     end
 end
+
+
+
 
 -- Auto Overpower
 local function AutoOverpower()
@@ -687,7 +711,7 @@ local function CoolDowns()
     elseif Item.Earthstrike:Equipped() and Player.Target.TTD <= 40 then
  		if Item.Earthstrike:Use(Player) then return true end
     elseif Item.JomGabbar:Equipped() and Player.Target.TTD <= 40 then
-		if Item.JomGabbar:Use(Player) then return true end		
+		if Item.JomGabbar:Use(Player) then return true end
     elseif Spell.BloodFury:IsReady() and Player.HP > 70 and Player.Target.TTD <= 40 then
         if Spell.BloodFury:Cast(Player) then return true end
     elseif Spell.BerserkingTroll:IsReady() and Player.Target.TTD <= 40 then
@@ -1036,7 +1060,14 @@ function Warrior.Rotation()
 	
     if Setting("RotationType") == 1 --or (Target and Target.Player) 
 		then
-        
+		
+        if Setting("Lifesaver") 
+		and not IsEquippedItemType("Two-Hand")
+				then
+					UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")
+		end
+		
+		
 		-- AutoAttack
 		if Target 
 		and not Target.Dead 
@@ -1054,15 +1085,20 @@ function Warrior.Rotation()
 			if Setting("Lifesaver") 
 			and not UnitPlayerControlled("target")
 			and UnitName("targettarget") == UnitName("player")
+			and Target:IsBoss() 
 				then
 					lifesaver()
+			
 			elseif Setting("Lifesaver") 
 			and UnitName("targettarget") ~= UnitName("player")
-			and UnitInRaid("player") ~= nil
+				then
+					DMW.Settings.profile.Rotation.RotationType = 1
+								
+			elseif Setting("Lifesaver") 
+			and UnitName("targettarget") ~= UnitName("player")
 			and not IsEquippedItemType("Two-Hand")
 				then
-					UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")
-					DMW.Settings.profile.Rotation.RotationType = 1
+					UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")					
 			end
 			
 			
@@ -1085,7 +1121,7 @@ function Warrior.Rotation()
 			end
 			
 			-- Buffs Battleshout Casts Overpower or EXECUTE
-            if AutoBuff() or AutoOverpower() or AutoExecute() 
+            if AutoExecute() or AutoBuff() or AutoOverpower() 
 				then return true 
 			end
 			
@@ -1143,9 +1179,7 @@ function Warrior.Rotation()
 					end
                         
                     if Setting("BThirst") 
-					        -- if Player.Power < 30 and not Buff.Flurry:Exist(Player) then
-                            -- if AutoOverpower() then return true end
-                            -- end
+					and Player.Power >= 30
                     and smartCast("Bloodthirst", Target, true) 
 						then return true 
 					end
@@ -1174,9 +1208,9 @@ function Warrior.Rotation()
 				--Rage dump with HS or Cleave if there is still rage with harmstring if activated
                 if Setting("Rage Dump?") 
 				and Player.Power >= Setting("Rage Dump") 
-				and Spell.Bloodthirst:CD() >= 3		
 					then
-						if dumpRage(Player.Power - Setting("Rage Dump")) 
+						if dumpRage(Player.Power) 
+						--if dumpRage(Player.Power - Setting("Rage Dump")) 
 							then return true 
 						end
                 end
@@ -1220,21 +1254,27 @@ function Warrior.Rotation()
 			and Enemy5YC > 0 
 				then
 
+
 				-----life saver if aggro---------
-				
 				if Setting("Lifesaver") 
 				and not UnitPlayerControlled("target")
 				and UnitName("targettarget") == UnitName("player")
+				and Target:IsBoss() 
+				and (DMW.Settings.profile.Rotation.RotationType ~= 10 or not IsEquippedItemType("Shields"))
 					then
 						lifesaver()
 				elseif Setting("Lifesaver") 
 				and UnitName("targettarget") ~= UnitName("player")
-				and UnitInRaid("player") ~= nil
+					then
+						DMW.Settings.profile.Rotation.RotationType = 1
+									
+				elseif Setting("Lifesaver") 
+				and UnitName("targettarget") ~= UnitName("player")
 				and not IsEquippedItemType("Two-Hand")
 					then
-						UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")
-						DMW.Settings.profile.Rotation.RotationType = 1
+						UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")					
 				end
+
 
 				-- Bloodrage --
 				if Setting("Bloodrage") 
@@ -1330,16 +1370,6 @@ function Warrior.Rotation()
 			
 			end
 		
-		
-		
-		
-
-		
-		
-		
-		
-
-	
 	end	
 end		
 		
@@ -1370,15 +1400,11 @@ end)
 
 
 
-	-- -------------------Other Rotations -------- I Am Looking only on a Furry Rota ATM--------------------------------------------------	
 
 
-
-
-
-	-- ---------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART------
-    -- --TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------
-    -- ---------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART------
+	-- -----------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART------
+    -- -- TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------
+    -- -----------TANKING PART--------------------TANKING PART--------------------TANKING PART--------------------TANKING PART------
     
 	-- elseif Setting("RotationType") == 2 
 		-- then
@@ -1550,12 +1576,11 @@ end)
 					-- end
             -- end
         -- end
-	
-	
 
 
-	
 
+	
+	-------------------Other Rotations -------- I Am Looking only on a Furry Rota ATM--------------------------------------------------	
 		
     
 	
