@@ -627,7 +627,7 @@ local function CoolDowns()
 		and Spell.Recklessness:CD() == 0 
 		and Player.Target.TTD <= 40 
 		then
-			if Spell.Recklessness:Cast(Player) then return true end			
+			if smartCast("Recklessness", Player, true) then return true end		
 		
 		elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 and Player.Target.TTD <= 35 
 			then
@@ -677,7 +677,7 @@ local function CoolDowns()
 			and Spell.Recklessness:Known()
 			and Spell.Recklessness:CD() == 0 
 			then
-				if Spell.Recklessness:Cast(Player) then return true end			
+				if smartCast("Recklessness", Player, true) then return true end			
 			
 			elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 
 				then
