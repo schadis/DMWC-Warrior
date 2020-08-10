@@ -11,6 +11,7 @@ local effectiveAP = base + posBuff + negBuff
 local ItemUsage = GetTime()
 local SunderStacks = 0
 local SunderedMobStacks = {}
+local ReadyCooldownCountValue
 
 	  
 local stanceNumber = {[1] = "Battle", [2] = "Defensive", [3] = "Berserk"}	  
@@ -442,45 +443,28 @@ local function AutoExecute()
     end
     if HUD.Execute == 1 
 		then
-        if Target 
-		and Target.Executable 
-		and Target.Facing
-		and Spell.Execute:Known()
-		and GCD == 0
-				then
-				smartCast("Execute", Target) 
-			return true
-        else
-            if exeCount >= 1 then
-                for _, Unit in ipairs(Enemy5Y) do
-                    if Unit.Executable and Unit.Facing then
-                        TargetUnit(Unit.Pointer)
-                        break
-                    end
+        if Spell.Execute:Known() 
+		and GCD == 0 
+			then
+            for _, Unit in ipairs(Enemy5Y) do
+                if Unit.HP < 20 then
+                    smartCast("Execute", Unit) 
                 end
-                return true
             end
+			return true
         end
     elseif HUD.Execute == 2 
 		then
-        if Enemy5YC >= 1 then -- <= 3 then
-            if Target 
-			and Target.Executable
-			and Target.Health >= 600
-			and Spell.Execute:Known()
+        if Enemy5YC <= 3 then -- <= 3 then
+            if Spell.Execute:Known() 
 			and GCD == 0 
-				then smartCast("Execute", Target) 
-				return true
-            else
-                if exeCount >= 1 then
-                    for _, Unit in ipairs(Enemy5Y) do
-                        if Unit.Executable and Unit.Facing and Unit.Health >= 400 then
-                            TargetUnit(Unit.Pointer)
-                            break
-                        end
+			then
+                for _, Unit in ipairs(Enemy5Y) do
+                    if Unit.HP < 20 then
+                        smartCast("Execute", Unit) 
                     end
-                    return true
                 end
+                return true
             end
         end
     elseif HUD.Execute == 3 
@@ -577,13 +561,65 @@ end
 
 
 
--- Cooldowns and Racial
--- none == 1 
--- auto == 2
--- keypress == 3
+local function ReadyCooldown()
+			ReadyCooldownCountValue = 0
+			
+			if Item.DiamondFlask:Equipped() 
+			and Item.DiamondFlask:CD() == 0
+			then 
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
+			end
+			
+			if Spell.DeathWishe:Known()
+			and Spell.DeathWish:CD() == 0
+			then
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
+			end
+			
+			if Item.Earthstrike:Equipped()
+			and Item.Earthstrike:CD() == 0 	
+			then
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
+			end	
+			
+			if Item.JomGabbar:Equipped() 
+			and Item.JomGabbar:CD() == 0 	
+			then
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
+			end
+			
+			if Spell.BloodFury:Known() 
+			and Spell.BloodFury:CD() == 0 
+			then
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
+			end
+			
+			if Spell.BerserkingTroll:Known()
+			and Spell.BerserkingTroll:CD() == 0 
+			then
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
+			end
+			
+			if Setting("Reckl.")
+			and Spell.Recklessness:Known()
+			and Spell.Recklessness:CD() == 0 
+			then
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1	
+			end
+			
+			if Setting("Use Best Rage Potion") and ((GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0) or (GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0))
+				then
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
+			end
+			
+			if ReadyCooldownCountValue >= 0 
+			then return true
+			end	
 
 
-local function CoolDowns()
+end
+
+local function CoolDowns()		-- none == 1 -- auto == 2 -- keypress == 3
 	if Setting("CoolD.") == 2 
 		then
 		if Item.DiamondFlask:Equipped() 
@@ -593,6 +629,7 @@ local function CoolDowns()
 			if Item.DiamondFlask:Use(Player) then return true end
 			
 		elseif Spell.DeathWishe:Known()
+		and Player.Power >= 10
 		and Spell.DeathWish:CD() == 0 
 		and Player.Target.TTD <= 40 
 		then
@@ -627,8 +664,8 @@ local function CoolDowns()
 		and Spell.Recklessness:CD() == 0 
 		and Player.Target.TTD <= 40 
 		then
-			if smartCast("Recklessness", Player, true) then return true end		
-		
+			if smartCast("Recklessness", Player, true) then return true end
+			
 		elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 and Player.Target.TTD <= 35 
 			then
 			name = GetItemInfo(13442)
@@ -638,58 +675,63 @@ local function CoolDowns()
 			then
 			name = GetItemInfo(5633)
 			RunMacroText("/use " .. name)
-			return true 	
+			return true 
+			
+		else return false
+		
 		end
 		
 	elseif Setting("CoolD.") == 3
 			then
-			if Item.DiamondFlask:Equipped() 
-			and Item.DiamondFlask:CD() == 0
-			then 
-				if Item.DiamondFlask:Use(Player) then return true end
-				
-			elseif Spell.DeathWishe:Known()
-			and Spell.DeathWish:CD() == 0
-			then
-				if smartCast("DeathWish", Player, true) then return true end
-				
-			elseif Item.Earthstrike:Equipped()
-			and Item.Earthstrike:CD() == 0 	
-			then
-				if Item.Earthstrike:Use(Player) then return true end
-				
-			elseif Item.JomGabbar:Equipped() 
-			and Item.JomGabbar:CD() == 0 	
-			then
-				if Item.JomGabbar:Use(Player) then return true end
-				
-			elseif Spell.BloodFury:Known() 
-			and Spell.BloodFury:CD() == 0 
-			then
-				if Spell.BloodFury:Cast(Player) then return true end
-				
-			elseif Spell.BerserkingTroll:Known()
-			and Spell.BerserkingTroll:CD() == 0 
-			then
-				if Spell.BerserkingTroll:Cast(Player) then return true end
-			
-			elseif Setting("Reckl.")
-			and Spell.Recklessness:Known()
-			and Spell.Recklessness:CD() == 0 
-			then
-				if smartCast("Recklessness", Player, true) then return true end			
-			
-			elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 
+			repeat
+				if Item.DiamondFlask:Equipped() 
+				and Item.DiamondFlask:CD() == 0
+				then 
+					if Item.DiamondFlask:Use(Player) then end
+					
+				elseif Spell.DeathWishe:Known()
+				and Spell.DeathWish:CD() == 0
 				then
-				name = GetItemInfo(13442)
-				RunMacroText("/use " .. name)
-				return true
-			elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 
+					if smartCast("DeathWish", Player, true) then end
+					
+				elseif Item.Earthstrike:Equipped()
+				and Item.Earthstrike:CD() == 0 	
 				then
-				name = GetItemInfo(5633)
-				RunMacroText("/use " .. name)
-				return true 
-			end	
+					if Item.Earthstrike:Use(Player) then end
+					
+				elseif Item.JomGabbar:Equipped() 
+				and Item.JomGabbar:CD() == 0 	
+				then
+					if Item.JomGabbar:Use(Player) then end
+					
+				elseif Spell.BloodFury:Known() 
+				and Spell.BloodFury:CD() == 0 
+				then
+					if Spell.BloodFury:Cast(Player) then end
+					
+				elseif Spell.BerserkingTroll:Known()
+				and Spell.BerserkingTroll:CD() == 0 
+				then
+					if Spell.BerserkingTroll:Cast(Player) then  end
+				
+				elseif Setting("Reckl.")
+				and Spell.Recklessness:Known()
+				and Spell.Recklessness:CD() == 0 
+				then
+					if smartCast("Recklessness", Player, true) then end		
+				
+				elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 
+					then
+					name = GetItemInfo(13442)
+					RunMacroText("/use " .. name)
+				elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 
+					then
+					name = GetItemInfo(5633)
+					RunMacroText("/use " .. name)
+				end
+			ReadyCooldown()
+			until (ReadyCooldownCountValue == 0)
+			return true
 	end
 end
 
@@ -1112,51 +1154,58 @@ function Warrior.Rotation()
 			--Changed to Auto or Keypress
 			if Setting("CoolD.") == 2
 				and Target 
-				and Target:IsBoss() 
+				and Target:IsBoss()
+				and ReadyCooldown()
 				and Target.TTD >= 10 and  Target.TTD <= 65
 					then 
 					if CoolDowns() then return true end 
 			
 			elseif Setting("CoolD.") == 3
 				and Setting("Key for CDs") == 2 --LeftShift
-				and IsLeftShiftKeyDown()
 				and Target 
-				and Target:IsBoss() 
+				and Target:IsBoss()
+				and IsLeftShiftKeyDown()
+				and ReadyCooldown()
 					then 
 					if CoolDowns() then return true end
 			elseif Setting("CoolD.") == 3
 				and Setting("Key for CDs") == 3 --LeftControl
-				and IsLeftControlKeyDown()
 				and Target 
-				and Target:IsBoss() 
+				and Target:IsBoss()
+				and IsLeftControlKeyDown()
+				and ReadyCooldown()
 					then 
 					if CoolDowns() then return true end					
 			elseif Setting("CoolD.") == 3
 				and Setting("Key for CDs") == 4 --LeftAlt
-				and IsLeftAltKeyDown()
 				and Target 
-				and Target:IsBoss() 
+				and Target:IsBoss()
+				and IsLeftAltKeyDown()
+				and ReadyCooldown()
 					then 
 					if CoolDowns() then return true end					
 			elseif Setting("CoolD.") == 3
 				and Setting("Key for CDs") == 5 --RightShift
-				and IsRightShiftKeyDown()
 				and Target 
-				and Target:IsBoss() 
+				and Target:IsBoss()
+				and IsRightShiftKeyDown()
+				and ReadyCooldown()
 					then 
 					if CoolDowns() then return true end					
 			elseif Setting("CoolD.") == 3
 				and Setting("Key for CDs") == 6 --RightControl
-				and IsRightControlKeyDown()
 				and Target 
-				and Target:IsBoss() 
+				and Target:IsBoss()
+				and IsRightControlKeyDown()
+				and ReadyCooldown()
 					then 
 					if CoolDowns() then return true end					
 			elseif Setting("CoolD.") == 3
 				and Setting("Key for CDs") == 7 --RightAlt
-				and IsRightAltKeyDown()
 				and Target 
 				and Target:IsBoss() 
+				and IsRightAltKeyDown()
+				and ReadyCooldown()
 					then 
 					if CoolDowns() then return true end				
 			end
