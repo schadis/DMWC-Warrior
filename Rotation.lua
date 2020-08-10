@@ -765,7 +765,7 @@ local function SomeDebuffs()
 -- PiercingHowl when Units in Range without debuff
     if Setting("PiercingHowl") 
 	and Spell.PiercingHowl:Known()
-	and and Spell.PiercingHowl:IsReady() 
+	and Spell.PiercingHowl:IsReady() 
 	and Setting("PiercingHowl") > 0 
 	and Setting("PiercingHowl") <= Enemy10YC 
 		then
@@ -1141,6 +1141,7 @@ function Warrior.Rotation()
 					and Spell.Whirlwind:Known()
 					and Spell.Whirlwind:IsReady()
 					and Player.Power >= 25
+						then
 						if Spell.Bloodthirste:Known()
 							and Spell.Bloodthirst:CD() >= 3
 							then                 
