@@ -1,12 +1,21 @@
 # DMWC-Warrior
 
-* 2h Fury/Fury is working (tank is only usable for dugeons)
-* all the best to immortalhz (its the most of his code)
+* 2h Fury/Fury or MS is working(no PVP coding)
+* all the best to immortalhz
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
+
+## Changelog
+## 10.08.20
+
+* added MS with a checks if you have BT or MS
+* added MS also in execute phase when over 2000Ap (incl. buffs)
+* reformat an deletion of useless stuff
+* some spellchecks if these are known or on cd
+* NOT TESTED (no lua errors on load)
 
 ## 09.08.2020
 
-* ad BT in ex phase when over 2000Ap (incl. buffs)
+* added BT in execute phase when over 2000Ap (incl. buffs)
 * changed rage dump (beginns to dump when the value of the setting is reached)
 * dumpes with HS or cleave over 30 rage and if there is rage left or over 65 rage it uses Hamstring
 
