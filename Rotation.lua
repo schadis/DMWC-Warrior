@@ -281,19 +281,19 @@ local function dumpRage(value)
 			then
             if Setting("BT/MS")
 			and Spell.Bloodthirst:Known()
-			and Spell.Bloodthirst:IsReady()
+			and Spell.Bloodthirst:CD() == 0
 			and Player.Power >= 30
 			then
                 Spell.Bloodthirst:Cast(Target)
             elseif Setting("BT/MS")
 			and Spell.MortalStrike:Known()
-			and Spell.MortalStrike:IsReady()
+			and Spell.MortalStrike:CD() == 0
 			and Player.Power >= 30
 			then
                 Spell.MortalStrike:Cast(Target)			
 			elseif Setting("Whirlwind") 
 			and Spell.Whirlwind:Known()
-			and Spell.Whirlwind:IsReady()
+			and Spell.Whirlwind:CD() == 0
 			and Player.Power >= 25
 			then
                 Spell.Whirlwind:Cast(Player)
@@ -431,7 +431,7 @@ local function AutoExecute()
 	--Getting Executable Tagets in 5yards Range
     -- if Player.Power >= 10 then
     local exeCount = 0
-    if HUD.Execute == 1 or HUD.Execute == 2 
+    if HUD.Execute == 1 or HUD.Execute == 2 or HUD.Execute == 3
 		then
         for _, Unit in ipairs(Enemy5Y) do
             if Unit.HP <= 20 then
@@ -446,11 +446,10 @@ local function AutoExecute()
 		and Target.Executable 
 		and Target.Facing
 		and Spell.Execute:Known()
-		then
-            if Spell.Execute:IsReady() 
-				then smartCast("Execute", Target) 
-			end
-            return true
+		and GCD == 0
+				then
+				smartCast("Execute", Target) 
+			return true
         else
             if exeCount >= 1 then
                 for _, Unit in ipairs(Enemy5Y) do
@@ -467,14 +466,11 @@ local function AutoExecute()
         if Enemy5YC >= 1 then -- <= 3 then
             if Target 
 			and Target.Executable
-			and Target.Health >= 400
+			and Target.Health >= 600
 			and Spell.Execute:Known()
-				then
-					if Spell.Execute:IsReady() 
-					and GCD == 0 
-						then smartCast("Execute", Target) 
-					end
-                return true
+			and GCD == 0 
+				then smartCast("Execute", Target) 
+				return true
             else
                 if exeCount >= 1 then
                     for _, Unit in ipairs(Enemy5Y) do
@@ -490,39 +486,31 @@ local function AutoExecute()
     elseif HUD.Execute == 3 
 		then
         if Target 
-		and Target.HP <= 20 
-		and not Target.Dead 
-		and Target.Distance <= 2 
-		and Target.Attackable 
-		and Target.Facing
-		and Spell.Execute:Known()
-			then
-            -- if Spell.Execute:IsReady() then
-            if Spell.Execute:IsReady() 
+			and Target.Executable
+			and not Target.Dead 
+			and Target.Distance <= 2 
+			and Target.Attackable 
+			and Target.Facing
+			and Spell.Execute:Known()
 			and GCD == 0 
-			and effectiveAP <= 2000
-				then smartCast("Execute", Target)
-				
-			elseif Spell.Execute:IsReady()
-			and Spell.Bloodthirste:Known()
-			and Spell.Bloodthirst:IsReady() 
-			and effectiveAP >= 2000
-				then smartCast("Bloodthirst", Target)
-							
-			elseif Spell.Execute:IsReady()
-			and Spell.MortalStrike:Known()
-			and Spell.MortalStrike:IsReady() 
-			and effectiveAP >= 2000
-				then smartCast("MortalStrike", Target)
-			
-			elseif Spell.Execute:IsReady() 
-			and GCD == 0 
-			and effectiveAP >= 2000
-				then smartCast("Execute", Target) end
-				
-            return true
-        end
-    end
+				then
+					if Spell.Bloodthirste:Known()
+						and Spell.Bloodthirst:CD() == 0
+						and effectiveAP >= 2000
+							then smartCast("Bloodthirst", Target)
+							return true		
+					elseif Spell.MortalStrike:Known()
+						and Spell.MortalStrike:CD() == 0 
+						and effectiveAP >= 2000
+							then smartCast("MortalStrike", Target)
+							return true
+					else
+						smartCast("Execute", Target) 
+						return true
+					end
+					
+		end
+	end
 end
 
 
@@ -590,51 +578,122 @@ end
 
 
 -- Cooldowns and Racial
+-- none == 1 
+-- auto == 2
+-- keypress == 3
+
+
 local function CoolDowns()
-	if Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 and Player.Target.TTD <= 35 then
-		name = GetItemInfo(13442)
-		RunMacroText("/use " .. name)
-		return true
-	elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 and Player.Target.TTD <= 35 then
-		name = GetItemInfo(5633)
-		RunMacroText("/use " .. name)
-		return true 
-	elseif Item.DiamondFlask:Equipped() 
-	and Item.DiamondFlask:IsReady() 
-	then 
-		if Item.DiamondFlask:Use(Player) then return true end
+	if Setting("CoolD.") == 2 
+		then
+		if Item.DiamondFlask:Equipped() 
+		and Item.DiamondFlask:CD() == 0
+		and Target.TTD <= 65
+		then 
+			if Item.DiamondFlask:Use(Player) then return true end
+			
+		elseif Spell.DeathWishe:Known()
+		and Spell.DeathWish:CD() == 0 
+		and Player.Target.TTD <= 40 
+		then
+			if smartCast("DeathWish", Player, true) then return true end
+			
+		elseif Item.Earthstrike:Equipped()
+		and Item.Earthstrike:CD() == 0 	
+		and Player.Target.TTD <= 40 
+		then
+			if Item.Earthstrike:Use(Player) then return true end
+			
+		elseif Item.JomGabbar:Equipped() 
+		and Item.JomGabbar:CD() == 0 	
+		and Player.Target.TTD <= 40 
+		then
+			if Item.JomGabbar:Use(Player) then return true end
+			
+		elseif Spell.BloodFury:Known() 
+		and Spell.BloodFury:CD() == 0 
+		and Player.Target.TTD <= 40 
+		then
+			if Spell.BloodFury:Cast(Player) then return true end
+			
+		elseif Spell.BerserkingTroll:Known()
+		and Spell.BerserkingTroll:CD() == 0 
+		and Player.Target.TTD <= 40 
+		then
+			if Spell.BerserkingTroll:Cast(Player) then return true end
 		
-    elseif Spell.DeathWishe:Known()
-	and Spell.DeathWish:IsReady() 
-	and Player.Target.TTD <= 40 
-	then
-        if smartCast("DeathWish", Player, true) then return true end
+		elseif Setting("Reckl.")
+		and Spell.Recklessness:Known()
+		and Spell.Recklessness:CD() == 0 
+		and Player.Target.TTD <= 40 
+		then
+			if Spell.Recklessness:Cast(Player) then return true end			
 		
-    elseif Item.Earthstrike:Equipped()
-	and Item.Earthstrike:IsReady() 	
-	and Player.Target.TTD <= 40 
-	then
- 		if Item.Earthstrike:Use(Player) then return true end
+		elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 and Player.Target.TTD <= 35 
+			then
+			name = GetItemInfo(13442)
+			RunMacroText("/use " .. name)
+			return true
+		elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 and Player.Target.TTD <= 35 
+			then
+			name = GetItemInfo(5633)
+			RunMacroText("/use " .. name)
+			return true 	
+		end
 		
-    elseif Item.JomGabbar:Equipped() 
-	and Item.JomGabbar:IsReady() 	
-	and Player.Target.TTD <= 40 
-	then
-		if Item.JomGabbar:Use(Player) then return true end
-		
-    elseif Spell.BloodFury:Known() 
-	and Spell.BloodFury:IsReady() 
-	and Player.Target.TTD <= 40 
-	then
-        if Spell.BloodFury:Cast(Player) then return true end
-		
-    elseif Spell.BerserkingTroll:Known()
-	and Spell.BerserkingTroll:IsReady() 
-	and Player.Target.TTD <= 40 then
-        if Spell.BerserkingTroll:Cast(Player) then return true end
-		
-    end
+	elseif Setting("CoolD.") == 3
+			then
+			if Item.DiamondFlask:Equipped() 
+			and Item.DiamondFlask:CD() == 0
+			then 
+				if Item.DiamondFlask:Use(Player) then return true end
+				
+			elseif Spell.DeathWishe:Known()
+			and Spell.DeathWish:CD() == 0
+			then
+				if smartCast("DeathWish", Player, true) then return true end
+				
+			elseif Item.Earthstrike:Equipped()
+			and Item.Earthstrike:CD() == 0 	
+			then
+				if Item.Earthstrike:Use(Player) then return true end
+				
+			elseif Item.JomGabbar:Equipped() 
+			and Item.JomGabbar:CD() == 0 	
+			then
+				if Item.JomGabbar:Use(Player) then return true end
+				
+			elseif Spell.BloodFury:Known() 
+			and Spell.BloodFury:CD() == 0 
+			then
+				if Spell.BloodFury:Cast(Player) then return true end
+				
+			elseif Spell.BerserkingTroll:Known()
+			and Spell.BerserkingTroll:CD() == 0 
+			then
+				if Spell.BerserkingTroll:Cast(Player) then return true end
+			
+			elseif Setting("Reckl.")
+			and Spell.Recklessness:Known()
+			and Spell.Recklessness:CD() == 0 
+			then
+				if Spell.Recklessness:Cast(Player) then return true end			
+			
+			elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 
+				then
+				name = GetItemInfo(13442)
+				RunMacroText("/use " .. name)
+				return true
+			elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 
+				then
+				name = GetItemInfo(5633)
+				RunMacroText("/use " .. name)
+				return true 
+			end	
+	end
 end
+
+
 
 
 -- Check for Which spell the stance was Changed
@@ -746,7 +805,7 @@ local function SomeDebuffs()
     if Setting("ThunderClap") and Setting("ThunderClap") > 0 
 	and Setting("ThunderClap") <= Enemy5YC 
 	and Spell.ThunderClap:Known()
-	and Spell.ThunderClap:IsReady() 
+	and Spell.ThunderClap:CD() == 0 
 	then
         local clapCount = 0
         for k, Unit in ipairs(Enemy5Y) do 
@@ -765,7 +824,7 @@ local function SomeDebuffs()
 -- PiercingHowl when Units in Range without debuff
     if Setting("PiercingHowl") 
 	and Spell.PiercingHowl:Known()
-	and Spell.PiercingHowl:IsReady() 
+	and Spell.PiercingHowl:CD() == 0 
 	and Setting("PiercingHowl") > 0 
 	and Setting("PiercingHowl") <= Enemy10YC 
 		then
@@ -787,7 +846,7 @@ local function SomeDebuffs()
 -- DemoShout when Units in Range without debuff
     if Setting("DemoShout")
 	and Spell.DemoShout:Known()
-	and Spell.DemoShout:IsReady() 
+	and Spell.DemoShout:CD() == 0 
 	and Setting("DemoShout") > 0 
 	and Setting("DemoShout") <= Enemy10YC 
 		then
@@ -1039,25 +1098,67 @@ function Warrior.Rotation()
 			-- Bloodrage --
 			if Setting("Bloodrage")
 				and Spell.Bloodrage:Known()
-				and Spell.Bloodrage:IsReady() 
+				and Spell.Bloodrage:CD() == 0
 				and Player.Power <= 50 
 				and Player.HP >= 30
 				and regularCast("Bloodrage", Player)
 					then return true
 			end
 			
-			-- Buffs Battleshout Casts Overpower or EXECUTE
-            if AutoExecute() or AutoBuff() or AutoOverpower() 
-				then return true 
-			end
 			
 			-- When DeathWish_Racial in Hud is 1 it uses cooldowns
-            if HUD.DeathWish_Racial == 1 
+            --if HUD.DeathWish_Racial == 1 
+			
+			--Changed to Auto or Keypress
+			if Setting("CoolD.") == 2
 				and Target 
 				and Target:IsBoss() 
 				and Target.TTD >= 10 and  Target.TTD <= 65
 					then 
 					if CoolDowns() then return true end 
+			
+			elseif Setting("CoolD.") == 3
+				and Setting("Key for CDs") == 2 --LeftShift
+				and IsLeftShiftKeyDown()
+				and Target 
+				and Target:IsBoss() 
+					then 
+					if CoolDowns() then return true end
+			elseif Setting("CoolD.") == 3
+				and Setting("Key for CDs") == 3 --LeftControl
+				and IsLeftControlKeyDown()
+				and Target 
+				and Target:IsBoss() 
+					then 
+					if CoolDowns() then return true end					
+			elseif Setting("CoolD.") == 3
+				and Setting("Key for CDs") == 4 --LeftAlt
+				and IsLeftAltKeyDown()
+				and Target 
+				and Target:IsBoss() 
+					then 
+					if CoolDowns() then return true end					
+			elseif Setting("CoolD.") == 3
+				and Setting("Key for CDs") == 5 --RightShift
+				and IsRightShiftKeyDown()
+				and Target 
+				and Target:IsBoss() 
+					then 
+					if CoolDowns() then return true end					
+			elseif Setting("CoolD.") == 3
+				and Setting("Key for CDs") == 6 --RightControl
+				and IsRightControlKeyDown()
+				and Target 
+				and Target:IsBoss() 
+					then 
+					if CoolDowns() then return true end					
+			elseif Setting("CoolD.") == 3
+				and Setting("Key for CDs") == 7 --RightAlt
+				and IsRightAltKeyDown()
+				and Target 
+				and Target:IsBoss() 
+					then 
+					if CoolDowns() then return true end				
 			end
 			
 			-- Buffs Battleshout Casts Overpower or EXECUTE
@@ -1068,7 +1169,7 @@ function Warrior.Rotation()
 			-- AutoKICK with Pummel if something in 5Yards casts something
             	if Setting("Pummel/ShildBash") 
 					and Spell.Pummel:Known()
-					and Spell.Pummel:IsReady()
+					and Spell.Pummel:CD() == 0
 					then
 						for _, Unit in ipairs(Enemy5Y) do
 							local castName = Unit:CastingInfo()
@@ -1087,7 +1188,7 @@ function Warrior.Rotation()
                 if Enemy8YC >= 2 then
 					if Setting("Whirlwind")
 						and Spell.Whirlwind:Known()
-						and Spell.Whirlwind:IsReady()
+						and Spell.Whirlwind:CD() == 0
 						and Player.Power >= 25
 						and smartCast("Whirlwind", Player, true) 
 							then return true 
@@ -1095,14 +1196,14 @@ function Warrior.Rotation()
 
 					if Setting("BT/MS") 
 						and Spell.Bloodthirst:Known()
-						and Spell.Bloodthirst:IsReady()
+						and Spell.Bloodthirst:CD() == 0
 						and Spell.Whirlwind:CD() >= 2 
 						and Player.Power >= 30
 						and smartCast("Bloodthirst", Target, true) 
 							then return true 
 					elseif Setting("BT/MS") 
 						and Spell.MortalStrike:Known()
-						and Spell.MortalStrike:IsReady()
+						and Spell.MortalStrike:CD() == 0
 						and Spell.Whirlwind:CD() >= 2 
 						and Player.Power >= 30
 						and smartCast("MortalStrike", Target, true) 
@@ -1116,7 +1217,7 @@ function Warrior.Rotation()
 				
                     if Setting("SunderArmor") 
 						and Spell.SunderArmor:Known()
-						and Spell.SunderArmor:IsReady()
+						and Spell.SunderArmor:CD() == 0
 						and SunderStacks < Setting("Apply Stacks of Sunder Armor")
 						and smartCast("SunderArmor", Target, true)
 							then return true 
@@ -1124,13 +1225,13 @@ function Warrior.Rotation()
                         
                     if Setting("BT/MS")
 						and Spell.Bloodthirst:Known()
-						and Spell.Bloodthirst:IsReady()
+						and Spell.Bloodthirst:CD() == 0
 						and Player.Power >= 30
 						and smartCast("Bloodthirst", Target, true) 
 							then return true 					
 					elseif Setting("BT/MS") 
 						and Spell.MortalStrike:Known()
-						and Spell.MortalStrike:IsReady()
+						and Spell.MortalStrike:CD() == 0
 						and Spell.Whirlwind:CD() >= 2 
 						and Player.Power >= 30
 						and smartCast("MortalStrike", Target, true) 
@@ -1139,7 +1240,7 @@ function Warrior.Rotation()
                         
                     if Setting("Whirlwind")
 					and Spell.Whirlwind:Known()
-					and Spell.Whirlwind:IsReady()
+					and Spell.Whirlwind:CD() == 0
 					and Player.Power >= 25
 						then
 						if Spell.Bloodthirste:Known()
@@ -1244,7 +1345,7 @@ function Warrior.Rotation()
 				-- Bloodrage --
 				if Setting("Bloodrage")
 					and Spell.Bloodrage:Known()
-					and Spell.Bloodrage:IsReady() 
+					and Spell.Bloodrage:CD() == 0
 					and Player.Power <= 50 
 					and Player.HP >= 30
 					and regularCast("Bloodrage", Player)
@@ -1259,7 +1360,7 @@ function Warrior.Rotation()
 				--wall if low health
 				if Player.HP <= 60
 					and Spell.ShieldWall:Known()
-					and Spell.ShieldWall:IsReady()
+					and Spell.ShieldWall:CD() == 0
 					and IsEquippedItemType("Shields")
 					and smartCast("ShieldWall", Player, true)
 						then return true 
@@ -1273,7 +1374,7 @@ function Warrior.Rotation()
 					if Setting("Pummel/ShildBash") 
 						and IsEquippedItemType("Shields")
 						and Spell.ShieldBash:Known()
-						and Spell.ShieldBas:IsReady()
+						and Spell.ShieldBash:CD() == 0
 							then
 							local castName = Target:CastingInfo()
 							if castName ~= nil 
@@ -1286,14 +1387,14 @@ function Warrior.Rotation()
 
                     if Setting("BT/MS")
 						and Spell.Bloodthirst:Known()
-						and Spell.Bloodthirst:IsReady()
+						and Spell.Bloodthirst:CD() == 0
 						and Player.Power >= 30
 						and smartCast("Bloodthirst", Target, true) 
 							then return true 
 					
 					elseif Setting("BT/MS") 
 						and Spell.MortalStrike:Known()
-						and Spell.MortalStrike:IsReady()
+						and Spell.MortalStrike:CD() == 0
 						and Spell.Whirlwind:CD() >= 2 
 						and Player.Power >= 30
 						and smartCast("MortalStrike", Target, true) 
@@ -1325,7 +1426,7 @@ function Warrior.Rotation()
 					for k, v in pairs(Enemy10Y) do
 						if v.Target 
 						and Spell.ShieldBlock:Known()
-						and Spell.ShieldBlock:IsReady()
+						and Spell.ShieldBlock:CD() == 0
 						and IsEquippedItemType("Shields") 
 						and Player.HP <= 80 
 						and UnitIsUnit(v.Target, "player") 
