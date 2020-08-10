@@ -83,7 +83,7 @@ function Warrior.Settings()
     UI.AddHeader("DPS Shit")
         -- UI.AddToggle("Rend", nil, false)	not programmed
 		-- UI.AddToggle("SweepingStrikes", nil, false) not programmed
-        UI.AddToggle("BThirst", nil, true)
+        UI.AddToggle("BT/MS", nil, true)
         UI.AddToggle("Whirlwind", nil, true)
         UI.AddToggle("Overpower", nil, true)
 		UI.AddToggle("Hamstring < 35% Enemy HP", nil, true)
