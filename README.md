@@ -9,6 +9,7 @@
 
 * added MS with a checks if you have BT or MS
 * added MS also in execute phase when over 2000Ap (incl. buffs)
+* changed position of cooldowns function work in execute phase
 * reformat an deletion of useless stuff
 * some spellchecks if these are known or on cd
 * NOT TESTED (no lua errors on load)
