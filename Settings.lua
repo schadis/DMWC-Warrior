@@ -4,7 +4,7 @@ local Warrior = DMW.Rotations.WARRIOR
 local UI = DMW.UI
 
 function Warrior.Settings()
-    -- DMW.Helpers.Rotation.CastingCheck = false
+
     if DMW.Player.Talents.SweepingStrikes.Rank > 0 then
         UI.HUD.Options = {
             [1] = {
@@ -14,21 +14,21 @@ function Warrior.Settings()
                 }
             }
         }
-    elseif DMW.Player.Talents.DeathWish.Rank > 0 then
-        UI.HUD.Options = {
-            [1] = {
-                DeathWish_Racial = {
-                    [1] = {Text = "DeathWish&Racial |cFF00FF00On", Tooltip = ""},
-                    [2] = {Text = "DeathWish&Racial |cFFFFFF00Off", Tooltip = ""}
-                }
-            }
-        }
+    -- elseif DMW.Player.Talents.DeathWish.Rank > 0 then
+        -- UI.HUD.Options = {
+            -- [1] = {
+                -- DeathWish_Racial = {
+                    -- [1] = {Text = "DeathWish&Racial |cFF00FF00On", Tooltip = ""},
+                    -- [2] = {Text = "DeathWish&Racial |cFFFFFF00Off", Tooltip = ""}
+                -- }
+            -- }
+        -- }
     else
         UI.HUD.Options = {
             [1] = {
-                DeathWish_Racial = {
-                    [1] = {Text = "DeathWish&Racial |cFF00FF00On", Tooltip = ""},
-                    [2] = {Text = "DeathWish&Racial |cFFFFFF00Off", Tooltip = ""}
+                blank = {
+                    [1] = {Text = "", Tooltip = ""},
+                    [2] = {Text = "", Tooltip = ""}
                 }
             }
         }
@@ -80,14 +80,16 @@ function Warrior.Settings()
         --UI.AddToggle("Racial", nil, false)	not programmed
 		--UI.AddToggle("Bloodrage", nil, false)	not programmed
 		
-    UI.AddHeader("DPS Shit")
+    UI.AddHeader("DPS Shit/Spells")
         -- UI.AddToggle("Rend", nil, false)	not programmed
 		-- UI.AddToggle("SweepingStrikes", nil, false) not programmed
         UI.AddToggle("BT/MS", nil, true)
         UI.AddToggle("Whirlwind", nil, true)
         UI.AddToggle("Overpower", nil, true)
+
 		UI.AddToggle("Hamstring < 35% Enemy HP", nil, true)
 		UI.AddToggle("Hamstring PvP", nil, true)
+
 	UI.AddHeader("Rage Settings")
 		UI.AddToggle("Bloodrage", "Use Bloodrage when available", false)
 		UI.AddToggle("Berserker Rage", "Use Berserker Rage", false)
@@ -95,7 +97,20 @@ function Warrior.Settings()
         UI.AddRange("Rage Dump", "On witch Value do we have too much Rage", 30, 100, 1, 30)
         UI.AddToggle("Hamstring Dump", "Dumps Rage also with Hamstring, good with Windfurry", false)
 		-- UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 5, 30)
-        -- UI.AddToggle("Slam Dump", nil, false)	
+        -- UI.AddToggle("Slam Dump", nil, false)
+------------------------------------------------------------------------------------------------------------------------------
+    UI.AddTab("CDs & Consumables")
+		UI.AddHeader("Cooldowns")	
+		UI.AddToggle("Recklessness", "Use Recklessness in Auto/Keypress Mode", false)
+		UI.AddBlank()
+		UI.AddDropdown("CoolD.", "Use CDs automaticly or on Keypress", {"None","Auto","Keypress"},2)
+		UI.AddDropdown("Key for CDs", "Only in use of Keypress is set", {"None","LeftShift","LeftControl","LeftAlt","RightShift","RightControl","RightAlt"},1)
+
+		
+		UI.AddHeader("Consumables")
+		UI.AddToggle("Use Best HP Potion", "Check back for Potions and use best available one")
+		UI.AddRange("Use Potion at #% HP", nil, 10, 100, 1, 50, true)
+		UI.AddToggle("Use Best Rage Potion", "Check back for Potions and use best available one", false)		
 ------------------------------------------------------------------------------------------------------------------------------	
 	UI.AddTab("Tanky&Debuffs")
     UI.AddHeader("Tanky Stuff")
@@ -110,6 +125,7 @@ function Warrior.Settings()
     UI.AddHeader("Lifesaver for 2Hand Furry - if Aggro in Raid from boss")		
 		UI.AddToggle("Lifesaver", "Will equip a shield and 1h and cast shieldwall if Aggro in RAID", false)
 		UI.AddDropdown("Min Q. gear equiped with Lifesaver", "searches for the first item it can equip", {"white","green","blue","purple"}, "blue")
+	
 	UI.AddHeader("Debuffs")
         if DMW.Player.Spells.PiercingHowl:Known() 
 		then
@@ -121,19 +137,14 @@ function Warrior.Settings()
 	-- UI.AddHeader("Experiments")
         -- UI.AddToggle("abuse", nil, false)
         -- UI.AddRange("abuse range", "qwe", 0, 3, 0.01, 0.5)
-------------------------------------------------------------------------------------------------------------------------------
-    UI.AddTab("Consumables")
-	UI.AddHeader("Consumables")
-	UI.AddToggle("Use Best HP Potion", "Check back for Potions and use best available one")
-	UI.AddRange("Use Potion at #% HP", nil, 10, 100, 1, 50, true)
-	UI.AddToggle("Use Best Rage Potion", "Check back for Potions and use best available one", false)
+
 ------------------------------------------------------------------------------------------------------------------------------	
 	UI.AddTab("Buff Sniper")
-	UI.AddHeader("If World buff drops log off")
-	UI.AddHeader("Only select one")
-	UI.AddToggle("WCB", "If Warchiefsblessing is on you log off", false)
-	UI.AddToggle("Ony_Nef", "If Dragonslayer is on you log off", false)
-	UI.AddToggle("ZG", "If Spirit of Zandalar is on you log off", false)
+		UI.AddHeader("If World buff drops log off")
+		UI.AddHeader("Only select one")
+		UI.AddToggle("WCB", "If Warchiefsblessing is on you log off", false)
+		UI.AddToggle("Ony_Nef", "If Dragonslayer is on you log off", false)
+		UI.AddToggle("ZG", "If Spirit of Zandalar is on you log off", false)
 	
 	
 end
