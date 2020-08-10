@@ -6,8 +6,10 @@
 
 ## Todo: 
 
-* atm you need to hold down the button until all cds are used
-* need to make changes that one single press is enough
+* atm you trigger the Cds with a button press or auto
+* if this loop is started it will use cds untel there is no cd left
+* need to make it use the cds in optimal order and timing on keypress 
+* and use other spells in between them not all after each other
 
 ## Changelog
 ## 10.08.2020 
