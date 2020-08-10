@@ -4,8 +4,13 @@
 * all the best to immortalhz
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 
+## Todo: 
+
+* atm you need to hold down the button until all cds are used
+* need to make changes that one single press is enough
+
 ## Changelog
-## 10.08.2020
+## 10.08.2020 
 
 * added cooldown section into settings
 * added button pressed forcing of cds (needs testing)
