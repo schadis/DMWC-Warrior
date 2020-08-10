@@ -1,6 +1,6 @@
 # DMWC-Warrior
 
-* 2h Fury/Fury or MS is working(no PVP coding)
+* 2h Fury, Fury and MS is working(no PVP coding)
 * all the best to immortalhz
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 
