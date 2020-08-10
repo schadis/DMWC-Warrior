@@ -5,7 +5,7 @@
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 
 ## Changelog
-## 10.08.20
+## 10.08.2020
 
 * added MS with a checks if you have BT or MS
 * added MS also in execute phase when over 2000Ap (incl. buffs)
