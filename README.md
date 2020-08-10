@@ -7,8 +7,11 @@
 ## Changelog
 ## 10.08.2020
 
+* added cooldown section into settings
+* added button pressed forcing of cds (needs testing)
+* fixed execute 360 (thanks immy)
 * added MS with a checks if you have BT or MS
-* added MS also in execute phase when over 2000Ap (incl. buffs)
+* added MS also in execute phase when over 2000Ap (incl. buffs, only working with execute on target setting)
 * changed position of cooldowns function work in execute phase
 * reformat an deletion of useless stuff
 * some spellchecks if these are known or on cd
@@ -16,7 +19,7 @@
 
 ## 09.08.2020
 
-* added BT in execute phase when over 2000Ap (incl. buffs)
+* added BT in execute phase when over 2000Ap (incl. buffs, only working with execute on target setting)
 * changed rage dump (beginns to dump when the value of the setting is reached)
 * dumpes with HS or cleave over 30 rage and if there is rage left or over 65 rage it uses Hamstring
 
