@@ -24,8 +24,8 @@
 * fixed execute 360 (thanks immy)
 * added MS with a checks if you have BT or MS
 * added MS also in execute phase when over 2000Ap (incl. buffs, only working with execute on target setting)
-* changed position of cooldowns function work in execute phase
-* reformat an deletion of useless stuff
+* changed position of cooldowns function to work in execute phase
+* reformat and deletion of useless stuff
 * some spellchecks if these are known or on cd
 * NOT TESTED (no lua errors on load)
 
