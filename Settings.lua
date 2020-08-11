@@ -14,15 +14,6 @@ function Warrior.Settings()
                 }
             }
         }
-    -- elseif DMW.Player.Talents.DeathWish.Rank > 0 then
-        -- UI.HUD.Options = {
-            -- [1] = {
-                -- DeathWish_Racial = {
-                    -- [1] = {Text = "DeathWish&Racial |cFF00FF00On", Tooltip = ""},
-                    -- [2] = {Text = "DeathWish&Racial |cFFFFFF00Off", Tooltip = ""}
-                -- }
-            -- }
-        -- }
     else
         UI.HUD.Options = {
             [1] = {
