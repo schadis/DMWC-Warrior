@@ -737,7 +737,12 @@ local function CoolDowns()		-- none == 1 -- auto == 2 -- keypress == 3
 	elseif Setting("CoolD.") == 3
 			then
 			repeat
-				if Spell.DeathWish:Known()
+				if Item.DiamondFlask:Equipped() 
+				and Item.DiamondFlask:CD() == 0
+				then 
+					if Item.DiamondFlask:Use(Player) then end
+			
+				elseif Spell.DeathWish:Known()
 				and Spell.DeathWish:CD() == 0
 				then
 					if smartCast("DeathWish", Player, true) then end
