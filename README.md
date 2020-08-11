@@ -6,12 +6,17 @@
 
 ## Todo: 
 
-* atm you trigger the Cds with a button press or auto
-* if this loop is started by keypress it will use cds until there is no cd left
-* need to make it use the cds in optimal order and timing on keypress 
-* and use other spells in between them not all after each other
+* ??? Tell me more
 
 ## Changelog
+
+## 11.08.2020
+
+* reworkt CD trigger by button press (it will change the original cooldown HUD-UI toogle.....needs testing)
+* interrupt HUD-UI can now be used (please check the spells it shall use under settings)
+* in keypress mode diamond flask will be auto used or forced with the rest of the CDs by the button
+* added 4th option for execute which is a combination of all other more or less^^
+
 ## 10.08.2020 
 
 * added cooldown section into settings
