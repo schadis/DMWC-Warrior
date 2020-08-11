@@ -422,9 +422,10 @@ end
 
 -- Auto EXECUTE
 ----------- EXECUTE HUD SETTINGS-----------
--- Execute 360++", Tooltip = "
--- Execute If <= 3 units", Too
+-- Execute 360++,
+-- Execute If <= 3 units,
 -- Execute |cffffffffTarget",
+-- Execute |Mixed Execute,
 -- Execute |cFFFFFF00Disabled"
 ----------- EXECUTE HUD SETTINGS-----------
 
@@ -436,7 +437,6 @@ local function AutoExecute()
 		then
         for _, Unit in ipairs(Enemy5Y) do
             if Unit.HP <= 20 then
-                Unit.Executable = true
                 exeCount = exeCount + 1
             end
         end
@@ -447,7 +447,8 @@ local function AutoExecute()
 		and GCD == 0 
 			then
             for _, Unit in ipairs(Enemy5Y) do
-                if Unit.HP < 20 then
+                if Unit.HP <= 20
+				and Unit.Health >= 500 then
                     smartCast("Execute", Unit) 
                 end
             end
@@ -460,7 +461,8 @@ local function AutoExecute()
 			and GCD == 0 
 			then
                 for _, Unit in ipairs(Enemy5Y) do
-                    if Unit.HP < 20 then
+                    if Unit.HP <= 20 
+					and Unit.Health >= 500 then
                         smartCast("Execute", Unit) 
                     end
                 end
@@ -470,7 +472,7 @@ local function AutoExecute()
     elseif HUD.Execute == 3 
 		then
         if Target 
-			and Target.Executable
+			and Target.HP <= 20
 			and not Target.Dead 
 			and Target.Distance <= 2 
 			and Target.Attackable 
@@ -494,6 +496,54 @@ local function AutoExecute()
 					end
 					
 		end
+	elseif HUD.Execute == 4
+        then
+		if Enemy5YC <= 6 
+			and Enemy5YC >= 2
+			and exeCount >= 1
+			and Target.HP > 20
+			then 
+				if Spell.Execute:Known() 
+				and GCD == 0 
+				then
+					for _, Unit in ipairs(Enemy5Y) do
+						if Unit.HP < 20 
+						and Unit.Health >= 500 then
+							smartCast("Execute", Unit) 
+						end
+					end
+					return true
+				end
+		
+		
+		elseif Enemy5YC <=1
+			and Target 
+			and Target.HP <= 20
+			and not Target.Dead 
+			and Target.Distance <= 2 
+			and Target.Attackable 
+			and Target.Facing
+			and Spell.Execute:Known()
+			and GCD == 0 
+				then
+					if Spell.Bloodthirste:Known()
+						and Spell.Bloodthirst:CD() == 0
+						and effectiveAP >= 2000
+							then smartCast("Bloodthirst", Target)
+							return true		
+					elseif Spell.MortalStrike:Known()
+						and Spell.MortalStrike:CD() == 0 
+						and effectiveAP >= 2000
+							then smartCast("MortalStrike", Target)
+							return true
+					else
+						smartCast("Execute", Target) 
+						return true
+					end
+					
+		end
+
+	
 	end
 end
 
@@ -570,23 +620,23 @@ local function ReadyCooldown()
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
 			end
 			
-			if Spell.DeathWishe:Known()
+			if Spell.DeathWish:Known()
 			and Spell.DeathWish:CD() == 0
 			then
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
 			end
 			
-			if Item.Earthstrike:Equipped()
-			and Item.Earthstrike:CD() == 0 	
-			then
-				ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
-			end	
+			-- if Item.Earthstrike:Equipped()
+			-- and Item.Earthstrike:CD() == 0 	
+			-- then
+				-- ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
+			-- end	
 			
-			if Item.JomGabbar:Equipped() 
-			and Item.JomGabbar:CD() == 0 	
-			then
-				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
-			end
+			-- if Item.JomGabbar:Equipped() 
+			-- and Item.JomGabbar:CD() == 0 	
+			-- then
+				-- ReadyCooldownCountValue = ReadyCooldownCountValue + 1
+			-- end
 			
 			if Spell.BloodFury:Known() 
 			and Spell.BloodFury:CD() == 0 
@@ -612,8 +662,11 @@ local function ReadyCooldown()
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
 			end
 			
-			if ReadyCooldownCountValue >= 0 
+			if ReadyCooldownCountValue > 0 
 			then return true
+			
+			elseif ReadyCooldownCountValue == 0
+			then return false
 			end	
 
 
@@ -626,26 +679,26 @@ local function CoolDowns()		-- none == 1 -- auto == 2 -- keypress == 3
 		and Item.DiamondFlask:CD() == 0
 		and Target.TTD <= 65
 		then 
-			if Item.DiamondFlask:Use(Player) then return true end
+			if Item.DiamondFlask:Use(Player) then return false end
 			
-		elseif Spell.DeathWishe:Known()
+		elseif Spell.DeathWish:Known()
 		and Player.Power >= 10
 		and Spell.DeathWish:CD() == 0 
 		and Player.Target.TTD <= 40 
 		then
 			if smartCast("DeathWish", Player, true) then return true end
 			
-		elseif Item.Earthstrike:Equipped()
-		and Item.Earthstrike:CD() == 0 	
-		and Player.Target.TTD <= 40 
-		then
-			if Item.Earthstrike:Use(Player) then return true end
+		-- elseif Item.Earthstrike:Equipped()
+		-- and Item.Earthstrike:CD() == 0 	
+		-- and Player.Target.TTD <= 40 
+		-- then
+			-- if Item.Earthstrike:Use(Player) then return true end
 			
-		elseif Item.JomGabbar:Equipped() 
-		and Item.JomGabbar:CD() == 0 	
-		and Player.Target.TTD <= 40 
-		then
-			if Item.JomGabbar:Use(Player) then return true end
+		-- elseif Item.JomGabbar:Equipped() 
+		-- and Item.JomGabbar:CD() == 0 	
+		-- and Player.Target.TTD <= 40 
+		-- then
+			-- if Item.JomGabbar:Use(Player) then return true end
 			
 		elseif Spell.BloodFury:Known() 
 		and Spell.BloodFury:CD() == 0 
@@ -684,25 +737,20 @@ local function CoolDowns()		-- none == 1 -- auto == 2 -- keypress == 3
 	elseif Setting("CoolD.") == 3
 			then
 			repeat
-				if Item.DiamondFlask:Equipped() 
-				and Item.DiamondFlask:CD() == 0
-				then 
-					if Item.DiamondFlask:Use(Player) then end
-					
-				elseif Spell.DeathWishe:Known()
+				if Spell.DeathWish:Known()
 				and Spell.DeathWish:CD() == 0
 				then
 					if smartCast("DeathWish", Player, true) then end
 					
-				elseif Item.Earthstrike:Equipped()
-				and Item.Earthstrike:CD() == 0 	
-				then
-					if Item.Earthstrike:Use(Player) then end
+				-- elseif Item.Earthstrike:Equipped()
+				-- and Item.Earthstrike:CD() == 0 	
+				-- then
+					-- if Item.Earthstrike:Use(Player) then end
 					
-				elseif Item.JomGabbar:Equipped() 
-				and Item.JomGabbar:CD() == 0 	
-				then
-					if Item.JomGabbar:Use(Player) then end
+				-- elseif Item.JomGabbar:Equipped() 
+				-- and Item.JomGabbar:CD() == 0 	
+				-- then
+					-- if Item.JomGabbar:Use(Player) then end
 					
 				elseif Spell.BloodFury:Known() 
 				and Spell.BloodFury:CD() == 0 
@@ -908,6 +956,41 @@ local function SomeDebuffs()
 
 end
 
+local function CDKeyPressed()
+
+			if Setting("CoolD.") == 3
+				and Setting("Key for CDs") == 2 --LeftShift
+				and IsLeftShiftKeyDown()
+					then 
+					return true 
+			elseif Setting("CoolD.") == 3
+				and Setting("Key for CDs") == 3 --LeftControl
+				and IsLeftControlKeyDown()
+					then 
+					return true					
+			elseif Setting("CoolD.") == 3
+				and Setting("Key for CDs") == 4 --LeftAlt
+				and IsLeftAltKeyDown()
+					then 
+					return true				
+			elseif Setting("CoolD.") == 3
+				and Setting("Key for CDs") == 5 --RightShift
+				and IsRightShiftKeyDown()
+					then 
+					return true				
+			elseif Setting("CoolD.") == 3
+				and Setting("Key for CDs") == 6 --RightControl
+				and IsRightControlKeyDown()
+					then 
+					return true				
+			elseif Setting("CoolD.") == 3
+				and Setting("Key for CDs") == 7 --RightAlt
+				and IsRightAltKeyDown()
+					then 
+					return true			
+			end
+end
+
 local function Locals()
     Player = DMW.Player
     Buff = Player.Buffs
@@ -917,7 +1000,7 @@ local function Locals()
     Item = Player.Items
     Target = Player.Target or false
     HUD = DMW.Settings.profile.HUD
-    CDs = Player:CDs() and Target.TTD > 5 and Target.Distance < 5
+    CDs = Player:CDs()
     Enemy5Y, Enemy5YC = Player:GetEnemies(5)
     Enemy8Y, Enemy8YC = Player:GetEnemies(8)
     Enemy10Y, Enemy10YC = Player:GetEnemies(10)
@@ -942,7 +1025,25 @@ local function Locals()
 	and Buff.SweepStrikes:Exist(Player) 
 		then DMWHUDSWEEPING:Toggle(2) 
 	end
-
+	
+	
+	-- activate Cds on Keypress
+    if Setting("CoolD.") == 3
+	and CDKeyPressed()
+	and ReadyCooldown()
+	and HUD.CDs == 3
+		then DMWHUDCDS:Toggle(2)
+	elseif Setting("CoolD.") == 3
+	and not ReadyCooldown()
+	and HUD.CDs == 2 or HUD.CDs == 1
+		then DMWHUDCDS:Toggle(3)
+	end
+	
+	
+	
+	
+	
+	
 	if Setting("RotationType") == 1
 		then 
 		firstCheck = "Berserk"
@@ -1015,11 +1116,6 @@ local function Consumes()
 		end
 	end
 end
-
-
-
-
-
 
 
 
@@ -1161,53 +1257,23 @@ function Warrior.Rotation()
 					if CoolDowns() then return true end 
 			
 			elseif Setting("CoolD.") == 3
-				and Setting("Key for CDs") == 2 --LeftShift
-				and Target 
-				and Target:IsBoss()
-				and IsLeftShiftKeyDown()
-				and ReadyCooldown()
-					then 
-					if CoolDowns() then return true end
-			elseif Setting("CoolD.") == 3
-				and Setting("Key for CDs") == 3 --LeftControl
-				and Target 
-				and Target:IsBoss()
-				and IsLeftControlKeyDown()
-				and ReadyCooldown()
-					then 
-					if CoolDowns() then return true end					
-			elseif Setting("CoolD.") == 3
-				and Setting("Key for CDs") == 4 --LeftAlt
-				and Target 
-				and Target:IsBoss()
-				and IsLeftAltKeyDown()
-				and ReadyCooldown()
-					then 
-					if CoolDowns() then return true end					
-			elseif Setting("CoolD.") == 3
-				and Setting("Key for CDs") == 5 --RightShift
-				and Target 
-				and Target:IsBoss()
-				and IsRightShiftKeyDown()
-				and ReadyCooldown()
-					then 
-					if CoolDowns() then return true end					
-			elseif Setting("CoolD.") == 3
-				and Setting("Key for CDs") == 6 --RightControl
-				and Target 
-				and Target:IsBoss()
-				and IsRightControlKeyDown()
-				and ReadyCooldown()
-					then 
-					if CoolDowns() then return true end					
-			elseif Setting("CoolD.") == 3
-				and Setting("Key for CDs") == 7 --RightAlt
-				and Target 
-				and Target:IsBoss() 
-				and IsRightAltKeyDown()
-				and ReadyCooldown()
-					then 
-					if CoolDowns() then return true end				
+				then
+				if Item.DiamondFlask:Equipped()
+					and Item.DiamondFlask:CD() == 0
+					and Target 
+					and Target:IsBoss()
+					and Target.TTD <= 65
+						then 
+						if Item.DiamondFlask:Use(Player) then end
+				end	
+								
+				if CDs
+					and Target 
+					and Target:IsBoss()
+					and ReadyCooldown()
+						then 
+						if CoolDowns() then end
+				end
 			end
 			
 			-- Buffs Battleshout Casts Overpower or EXECUTE
