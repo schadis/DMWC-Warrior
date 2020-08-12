@@ -12,11 +12,11 @@
 
 ## 12.08.2020
 
-* added Hamstring dump above configured rage setting
-* added many settings for cooldown usage for auto and keypress moder
-* removed autouse of diamond flask in keypress mode (will no be used on button pressed)
+* added Hamstring dump above configured rage setting (was a fixed value before)
+* added many settings for cooldown usage for auto and keypress mode
+* removed auto use of diamond flask in keypress mode (will now be used on keypress)
 * in keypress mode: the times after keypress when each cooldown is triggerd can be configured under settings
-* after there are 0 Cds left the funktion and the display in the hud will auto swap to disabled
+* if are 0 Cds left the function and the display in the hud will auto swap to disabled
 
 ## 11.08.2020
 
