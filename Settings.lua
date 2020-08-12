@@ -98,37 +98,44 @@ function Warrior.Settings()
         -- UI.AddToggle("Slam Dump", nil, false)
 ------------------------------------------------------------------------------------------------------------------------------
     UI.AddTab("CDs & Consumables")
+
+		UI.AddHeader("Consumables")
+		UI.AddToggle("Use Best HP Potion", "Check back for Potions and use best available one")
+		UI.AddRange("Use Potion at #% HP", nil, 10, 100, 1)	
+	
+	
 		UI.AddHeader("Cooldowns")	
 		UI.AddToggle("Recklessness", "Use Recklessness in Auto/Keypress Mode", false)
 		UI.AddToggle("Use Best Rage Potion", "Check back for Potions and use best available one", false)
-		UI.AddDropdown("CoolD.", "Use CDs automaticly or on Keypress", {"None","Auto","Keypress"},2)
-		UI.AddDropdown("Key for CDs", "Only in use of Keypress is set", {"None","LeftShift","LeftControl","LeftAlt","RightShift","RightControl","RightAlt"},1)
-		
+		UI.AddDropdown("CoolD.Mode", "Use CDs automaticly or on Keypress", {"None","Auto","Keypress"},2)
+		UI.AddDropdown("Key for CDs", "Only in use with Keypress mode", {"None","LeftShift","LeftControl","LeftAlt","RightShift","RightControl","RightAlt"},1)
+
+    UI.AddTab("CDs Auto Mode")
 		UI.AddHeader("Settings for Auto use of CDs")
 		UI.AddHeader("Keep in mind that TTD is not accurate in EX-Phase!")	
 		UI.AddHeader("You have to set it higher!")		
-		UI.AddRange("TTD for DiamondFlask", "Time to die -> use DiamondFlask / duration=60s", 10, 80, 1, 65, 50)
-		UI.AddRange("TTD for DeathWish", "Time to die -> use DeathWish / duration=30s", 10, 60, 1, 42, 50)		
-		-- UI.AddRange("TTD for Earthstrike", "Time to die -> use Earthstrike / duration=20s", 10, 60, 1, 35, 50)
-		-- UI.AddRange("TTD for JomGabbar", "Time to die -> use JomGabbar / duration=20s", 10, 60, 1, 35, 50)
-		UI.AddRange("TTD for BloodFury", "Time to die -> use BloodFury / duration=25s", 10, 60, 1, 38, 50)
-		UI.AddRange("TTD for BerserkingTroll", "Time to die -> use BerserkingTroll / duration=10s", 10, 60, 1, 20, 50)
-		UI.AddRange("TTD for Recklessness", "Time to die -> use Recklessness / duration=15s", 10, 60, 1, 28, 50)
-		UI.AddRange("TTD for RagePotion", "Time to die -> use RagePotion / duration=20s", 10, 60, 1, 35, 50)
-		
+		UI.AddRange("TTD for DiamondFlask", "Time to die -> use DiamondFlask / duration=60s", 10, 80, 1, 65)
+		UI.AddRange("TTD for DeathWish", "Time to die -> use DeathWish / duration=30s", 10, 60, 1, 42)		
+		-- UI.AddRange("TTD for Earthstrike", "Time to die -> use Earthstrike / duration=20s", 10, 60, 1, 35)
+		-- UI.AddRange("TTD for JomGabbar", "Time to die -> use JomGabbar / duration=20s", 10, 60, 1, 35)
+		UI.AddRange("TTD for BloodFury", "Time to die -> use BloodFury / duration=25s", 10, 60, 1, 38)
+		UI.AddRange("TTD for BerserkingTroll", "Time to die -> use BerserkingTroll / duration=10s", 10, 60, 1, 20)
+		UI.AddRange("TTD for Recklessness", "Time to die -> use Recklessness / duration=15s", 10, 60, 1, 28)
+		UI.AddRange("TTD for RagePotion", "Time to die -> use RagePotion / duration=20s", 10, 60, 1, 35)
+ 
+	UI.AddTab("CDs keypress Mode")
+		UI.AddHeader("Settings Keypress mode and the use of CDs")
 		UI.AddHeader("Seconds after ButtonPress to use the Cooldowns")
-		UI.AddRange("Seconds after Keypress for DiamondFlask", "duration=60s", 0, 60, 1, 0, 50)
-		UI.AddRange("Seconds after Keypress for DeathWish", "durationt=30s", 0, 60, 1, 23, 50)		
-		-- UI.AddRange("Seconds after Keypress for Earthstrike", "duration=20s", 0, 60, 1, 33, 50)
-		-- UI.AddRange("Seconds after Keypress for JomGabbar", "duration=20s", 0, 60, 1, 33, 50)
-		UI.AddRange("Seconds after Keypress for BloodFury", "duration=25s", 0, 60, 1, 28, 50)
-		UI.AddRange("Seconds after Keypress for BerserkingTroll", "duration=10s", 0, 60, 1, 43, 50)
-		UI.AddRange("Seconds after Keypress for Recklessness", "duration=15s", 0, 60, 1, 35, 50)
-		UI.AddRange("Seconds after Keypress for RagePotion", "duration=20s", 0, 60, 1, 33, 50)		
-		
-		UI.AddHeader("Consumables")
-		UI.AddToggle("Use Best HP Potion", "Check back for Potions and use best available one")
-		UI.AddRange("Use Potion at #% HP", nil, 10, 100, 1, 50, true)
+		UI.AddRange("Seconds after Keypress for DiamondFlask", "duration=60s", 0, 60, 1, 0)
+		UI.AddRange("Seconds after Keypress for DeathWish", "durationt=30s", 0, 60, 1, 23)		
+		-- UI.AddRange("Seconds after Keypress for Earthstrike", "duration=20s", 0, 60, 1, 33)
+		-- UI.AddRange("Seconds after Keypress for JomGabbar", "duration=20s", 0, 60, 1, 33)
+		UI.AddRange("Seconds after Keypress for BloodFury", "duration=25s", 0, 60, 1, 28)
+		UI.AddRange("Seconds after Keypress for BerserkingTroll", "duration=10s", 0, 60, 1, 43)
+		UI.AddRange("Seconds after Keypress for Recklessness", "duration=15s", 0, 60, 1, 35)
+		UI.AddRange("Seconds after Keypress for RagePotion", "duration=20s", 0, 60, 1, 33)		
+
+
 		
 ------------------------------------------------------------------------------------------------------------------------------	
 	UI.AddTab("Tanky&Debuffs")
