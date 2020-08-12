@@ -14,6 +14,15 @@ function Warrior.Settings()
                 }
             }
         }
+    -- elseif DMW.Player.Talents.DeathWish.Rank > 0 then
+        -- UI.HUD.Options = {
+            -- [1] = {
+                -- DeathWish_Racial = {
+                    -- [1] = {Text = "DeathWish&Racial |cFF00FF00On", Tooltip = ""},
+                    -- [2] = {Text = "DeathWish&Racial |cFFFFFF00Off", Tooltip = ""}
+                -- }
+            -- }
+        -- }
     else
         UI.HUD.Options = {
             [1] = {
@@ -67,9 +76,6 @@ function Warrior.Settings()
         -- UI.AddToggle("Auto Disable SS", nil, false)
 		-- UI.AddToggle("AutoTreatTarget", nil, false) only in tank rota not supported atm
 		
-    --UI.AddHeader("Big Cooldowns")
-        --UI.AddToggle("Racial", nil, false)	not programmed
-		--UI.AddToggle("Bloodrage", nil, false)	not programmed
 		
     UI.AddHeader("DPS Shit/Spells")
         -- UI.AddToggle("Rend", nil, false)	not programmed
@@ -87,21 +93,43 @@ function Warrior.Settings()
         UI.AddToggle("Rage Dump?", "Shall we Dump the Rage that is too much", false)
         UI.AddRange("Rage Dump", "On witch Value do we have too much Rage", 30, 100, 1, 30)
         UI.AddToggle("Hamstring Dump", "Dumps Rage also with Hamstring, good with Windfurry", false)
-		-- UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 5, 30)
+		UI.AddRange("Hamstring dump above # rage", "At what amount of rage Hamstring will also be used as dump", 0, 100, 1, 40)
+		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 1, 30)
         -- UI.AddToggle("Slam Dump", nil, false)
 ------------------------------------------------------------------------------------------------------------------------------
     UI.AddTab("CDs & Consumables")
 		UI.AddHeader("Cooldowns")	
 		UI.AddToggle("Recklessness", "Use Recklessness in Auto/Keypress Mode", false)
-		UI.AddBlank()
+		UI.AddToggle("Use Best Rage Potion", "Check back for Potions and use best available one", false)
 		UI.AddDropdown("CoolD.", "Use CDs automaticly or on Keypress", {"None","Auto","Keypress"},2)
 		UI.AddDropdown("Key for CDs", "Only in use of Keypress is set", {"None","LeftShift","LeftControl","LeftAlt","RightShift","RightControl","RightAlt"},1)
-
+		
+		UI.AddHeader("Settings for Auto use of CDs")
+		UI.AddHeader("Keep in mind that TTD is not accurate in EX-Phase!")	
+		UI.AddHeader("You have to set it higher!")		
+		UI.AddRange("TTD for DiamondFlask", "Time to die -> use DiamondFlask / duration=60s", 10, 80, 1, 65, 50)
+		UI.AddRange("TTD for DeathWish", "Time to die -> use DeathWish / duration=30s", 10, 60, 1, 42, 50)		
+		-- UI.AddRange("TTD for Earthstrike", "Time to die -> use Earthstrike / duration=20s", 10, 60, 1, 35, 50)
+		-- UI.AddRange("TTD for JomGabbar", "Time to die -> use JomGabbar / duration=20s", 10, 60, 1, 35, 50)
+		UI.AddRange("TTD for BloodFury", "Time to die -> use BloodFury / duration=25s", 10, 60, 1, 38, 50)
+		UI.AddRange("TTD for BerserkingTroll", "Time to die -> use BerserkingTroll / duration=10s", 10, 60, 1, 20, 50)
+		UI.AddRange("TTD for Recklessness", "Time to die -> use Recklessness / duration=15s", 10, 60, 1, 28, 50)
+		UI.AddRange("TTD for RagePotion", "Time to die -> use RagePotion / duration=20s", 10, 60, 1, 35, 50)
+		
+		UI.AddHeader("Seconds after ButtonPress to use the Cooldowns")
+		UI.AddRange("Seconds after Keypress for DiamondFlask", "duration=60s", 0, 60, 1, 0, 50)
+		UI.AddRange("Seconds after Keypress for DeathWish", "durationt=30s", 0, 60, 1, 23, 50)		
+		-- UI.AddRange("Seconds after Keypress for Earthstrike", "duration=20s", 0, 60, 1, 33, 50)
+		-- UI.AddRange("Seconds after Keypress for JomGabbar", "duration=20s", 0, 60, 1, 33, 50)
+		UI.AddRange("Seconds after Keypress for BloodFury", "duration=25s", 0, 60, 1, 28, 50)
+		UI.AddRange("Seconds after Keypress for BerserkingTroll", "duration=10s", 0, 60, 1, 43, 50)
+		UI.AddRange("Seconds after Keypress for Recklessness", "duration=15s", 0, 60, 1, 35, 50)
+		UI.AddRange("Seconds after Keypress for RagePotion", "duration=20s", 0, 60, 1, 33, 50)		
 		
 		UI.AddHeader("Consumables")
 		UI.AddToggle("Use Best HP Potion", "Check back for Potions and use best available one")
 		UI.AddRange("Use Potion at #% HP", nil, 10, 100, 1, 50, true)
-		UI.AddToggle("Use Best Rage Potion", "Check back for Potions and use best available one", false)		
+		
 ------------------------------------------------------------------------------------------------------------------------------	
 	UI.AddTab("Tanky&Debuffs")
     UI.AddHeader("Tanky Stuff")
