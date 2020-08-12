@@ -456,7 +456,7 @@ local function AutoExecute()
 			and Spell.Execute:Known()
 			and GCD == 0 
 				then
-					if Spell.Bloodthirste:Known()
+					if Spell.Bloodthirst:Known()
 						and Spell.Bloodthirst:CD() == 0
 						and effectiveAP >= 2000
 							then smartCast("Bloodthirst", Target)
@@ -502,7 +502,7 @@ local function AutoExecute()
 			and Spell.Execute:Known()
 			and GCD == 0 
 				then
-					if Spell.Bloodthirste:Known()
+					if Spell.Bloodthirst:Known()
 						and Spell.Bloodthirst:CD() == 0
 						and effectiveAP >= 2000
 							then smartCast("Bloodthirst", Target)
@@ -538,7 +538,7 @@ local function AutoOverpower()
 			and Player.SwingMH >= 1
 			and Spell.Overpower:CD() < Player.OverpowerUnit[Unit.Pointer].time - 0.3 
 			then
-				if Spell.Bloodthirste:Known()
+				if Spell.Bloodthirst:Known()
 				and Spell.Bloodthirst:CD() >= 2 
 				then                 
 					if smartCast("Overpower", Unit, nil) 
@@ -1365,7 +1365,7 @@ function Warrior.Rotation()
 						and Spell.Whirlwind:CD() == 0
 						and Player.Power >= 25
 							then
-							if Spell.Bloodthirste:Known()
+							if Spell.Bloodthirst:Known()
 								and Spell.Bloodthirst:CD() >= 3
 								then                 
 									if smartCast("Whirlwind", Unit, nil) 
