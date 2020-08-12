@@ -14,6 +14,7 @@ function Warrior.Settings()
                 }
             }
         }
+
     else
         UI.HUD.Options = {
             [1] = {
@@ -36,7 +37,8 @@ function Warrior.Settings()
             [1] = {Text = "Execute 360++", Tooltip = ""},
             [2] = {Text = "Execute If <= 3 units", Tooltip = ""},
             [3] = {Text = "Execute |cffffffffTarget", Tooltip = ""},
-            [4] = {Text = "Execute |cFFFFFF00Disabled", Tooltip = ""}
+            [4] = {Text = "Execute |cffffffffMix", Tooltip = ""}
+            [5] = {Text = "Execute |cFFFFFF00Disabled", Tooltip = ""}
         }
     }
     -- UI.AddHeader("This Is A Header")
