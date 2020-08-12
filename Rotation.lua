@@ -8,7 +8,7 @@ local Player, Buff, Debuff, Spell, Stance, Target, Talent, Item, GCD, CDs, HUD, 
       secondCheck, thirdCheck, SwingMH, SwingOH, MHSpeed
 local base, posBuff, negBuff = UnitAttackPower("player")
 local effectiveAP = base + posBuff + negBuff  
-local ItemUsage = GetTime()
+local UseCDsTime = 0
 local SunderStacks = 0
 local SunderedMobStacks = {}
 local ReadyCooldownCountValue
@@ -298,18 +298,18 @@ local function dumpRage(value)
 			and Player.Power >= 25
 			then
                 Spell.Whirlwind:Cast(Player)
-            elseif Player.Power >= 65 
+			elseif Setting("Hamstring Dump") 
+			and Player.Power >= Setting("Hamstring dump above # rage") 
 			and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE") 
-			and Setting("Hamstring Dump") 
 			and Spell.Hamstring:Known()
 			and GCD == 0 
 			then
                 Spell.Hamstring:Cast(Target)
             end
 			
-        elseif Player.Power >= 65 
+        elseif Setting("Hamstring Dump") 
+		and Player.Power >= Setting("Hamstring dump above # rage") 
 		and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE") 
-		and Setting("Hamstring Dump") 
 		and Spell.Hamstring:Known()
 		and GCD == 0 
 		then
@@ -677,54 +677,54 @@ local function CoolDowns()		-- none == 1 -- auto == 2 -- keypress == 3
 		then
 		if Item.DiamondFlask:Equipped() 
 		and Item.DiamondFlask:CD() == 0
-		and Target.TTD <= 65
+		and Target.TTD <= Setting("TTD for DiamondFlask")
 		then 
 			if Item.DiamondFlask:Use(Player) then return false end
 			
 		elseif Spell.DeathWish:Known()
 		and Player.Power >= 10
 		and Spell.DeathWish:CD() == 0 
-		and Player.Target.TTD <= 40 
+		and Player.Target.TTD <= Setting("TTD for DeathWish")
 		then
 			if smartCast("DeathWish", Player, true) then return true end
 			
 		-- elseif Item.Earthstrike:Equipped()
 		-- and Item.Earthstrike:CD() == 0 	
-		-- and Player.Target.TTD <= 40 
+		-- and Player.Target.TTD <= Setting("TTD for Earthstrike") 
 		-- then
 			-- if Item.Earthstrike:Use(Player) then return true end
 			
 		-- elseif Item.JomGabbar:Equipped() 
 		-- and Item.JomGabbar:CD() == 0 	
-		-- and Player.Target.TTD <= 40 
+		-- and Player.Target.TTD <= Setting("TTD for JomGabbar") 
 		-- then
 			-- if Item.JomGabbar:Use(Player) then return true end
 			
 		elseif Spell.BloodFury:Known() 
 		and Spell.BloodFury:CD() == 0 
-		and Player.Target.TTD <= 40 
+		and Player.Target.TTD <= Setting("TTD for BloodFury")
 		then
 			if Spell.BloodFury:Cast(Player) then return true end
 			
 		elseif Spell.BerserkingTroll:Known()
 		and Spell.BerserkingTroll:CD() == 0 
-		and Player.Target.TTD <= 40 
+		and Player.Target.TTD <= Setting("TTD for BerserkingTroll") 
 		then
 			if Spell.BerserkingTroll:Cast(Player) then return true end
 		
 		elseif Setting("Reckl.")
 		and Spell.Recklessness:Known()
 		and Spell.Recklessness:CD() == 0 
-		and Player.Target.TTD <= 40 
+		and Player.Target.TTD <= Setting("TTD for Recklessness") 
 		then
 			if smartCast("Recklessness", Player, true) then return true end
 			
-		elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 and Player.Target.TTD <= 35 
+		elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 and Player.Target.TTD <= Setting("TTD for RagePotion") 
 			then
 			name = GetItemInfo(13442)
 			RunMacroText("/use " .. name)
 			return true
-		elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 and Player.Target.TTD <= 35 
+		elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 and Player.Target.TTD <= Setting("TTD for RagePotion") 
 			then
 			name = GetItemInfo(5633)
 			RunMacroText("/use " .. name)
@@ -736,55 +736,73 @@ local function CoolDowns()		-- none == 1 -- auto == 2 -- keypress == 3
 		
 	elseif Setting("CoolD.") == 3
 			then
-			repeat
 				if Item.DiamondFlask:Equipped() 
 				and Item.DiamondFlask:CD() == 0
+				and UseCDsTime ~= 0
+				and (UseCDsTime + Setting("Seconds after Keypress for DiamondFlask")) <= GetTime()
 				then 
-					if Item.DiamondFlask:Use(Player) then end
+					if Item.DiamondFlask:Use(Player) then return true end
 			
 				elseif Spell.DeathWish:Known()
 				and Spell.DeathWish:CD() == 0
+				and UseCDsTime ~= 0
+				and (UseCDsTime + Setting("Seconds after Keypress for DeathWish")) <= GetTime()
 				then
 					if smartCast("DeathWish", Player, true) then end
 					
 				-- elseif Item.Earthstrike:Equipped()
-				-- and Item.Earthstrike:CD() == 0 	
+				-- and Item.Earthstrike:CD() == 0
+				-- and UseCDsTime ~= 0
+				-- and (UseCDsTime + Setting("Seconds after Keypress for Earthstrike")) <= GetTime()			
 				-- then
 					-- if Item.Earthstrike:Use(Player) then end
 					
 				-- elseif Item.JomGabbar:Equipped() 
-				-- and Item.JomGabbar:CD() == 0 	
+				-- and Item.JomGabbar:CD() == 0
+				-- and UseCDsTime ~= 0
+				-- and (UseCDsTime + Setting("Seconds after Keypress for JomGabbar")) <= GetTime()			
 				-- then
 					-- if Item.JomGabbar:Use(Player) then end
 					
 				elseif Spell.BloodFury:Known() 
-				and Spell.BloodFury:CD() == 0 
+				and Spell.BloodFury:CD() == 0
+				and UseCDsTime ~= 0
+				and (UseCDsTime + Setting("Seconds after Keypress for BloodFury")) <= GetTime()			
 				then
 					if Spell.BloodFury:Cast(Player) then end
 					
 				elseif Spell.BerserkingTroll:Known()
-				and Spell.BerserkingTroll:CD() == 0 
+				and Spell.BerserkingTroll:CD() == 0
+				and UseCDsTime ~= 0
+				and (UseCDsTime + Setting("Seconds after Keypress for BerserkingTroll")) <= GetTime()			
 				then
 					if Spell.BerserkingTroll:Cast(Player) then  end
 				
 				elseif Setting("Reckl.")
 				and Spell.Recklessness:Known()
-				and Spell.Recklessness:CD() == 0 
+				and Spell.Recklessness:CD() == 0
+				and UseCDsTime ~= 0
+				and (UseCDsTime + Setting("Seconds after Keypress for Recklessness")) <= GetTime()				
 				then
 					if smartCast("Recklessness", Player, true) then end		
 				
-				elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 
+				elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0
+				and UseCDsTime ~= 0
+				and (UseCDsTime + Setting("Seconds after Keypress for RagePotion")) <= GetTime()
 					then
 					name = GetItemInfo(13442)
 					RunMacroText("/use " .. name)
-				elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 
+				elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0
+				and UseCDsTime ~= 0
+				and (UseCDsTime + Setting("Seconds after Keypress for RagePotion")) <= GetTime()				
 					then
 					name = GetItemInfo(5633)
 					RunMacroText("/use " .. name)
+				
+				
+				else return false
+				
 				end
-			ReadyCooldown()
-			until (ReadyCooldownCountValue == 0)
-			return true
 	end
 end
 
@@ -1038,6 +1056,7 @@ local function Locals()
 	and ReadyCooldown()
 	and HUD.CDs == 3
 		then DMWHUDCDS:Toggle(2)
+		UseCDsTime = GetTime()
 	elseif Setting("CoolD.") == 3
 	and not ReadyCooldown()
 	and HUD.CDs == 2 or HUD.CDs == 1
@@ -1257,51 +1276,58 @@ function Warrior.Rotation()
 				and Target 
 				and Target:IsBoss()
 				and ReadyCooldown()
-				and Target.TTD >= 10 and  Target.TTD <= 65
+				and Target.TTD >= 10 and  Target.TTD <= 80
 					then 
 					if CoolDowns() then return true end 
 			
 			elseif Setting("CoolD.") == 3
-				then
-				if Item.DiamondFlask:Equipped()
-					and Item.DiamondFlask:CD() == 0
-					and Target 
-					and Target:IsBoss()
-					and Target.TTD <= 65
-						then 
-						if Item.DiamondFlask:Use(Player) then end
-				end	
-								
-				if CDs
+					and CDs
 					and Target 
 					and Target:IsBoss()
 					and ReadyCooldown()
 						then 
 						if CoolDowns() then end
-				end
+					-- if Item.DiamondFlask:Equipped()
+					-- and Item.DiamondFlask:CD() == 0
+					-- and Target 
+					-- and Target:IsBoss()
+					-- and Target.TTD <= Setting("TTD for DiamondFlask")
+						-- then 
+						-- if Item.DiamondFlask:Use(Player) then end
+					-- end
 			end
+
+			--unqueue HS or Cleave when low rage
+			if Player.Power < 20
+				and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
+				and Player.SwingMH <= 0.3
+				and Player.SwingMH > 0
+					then				
+						cancelAAmod()
+			end
+			
+			-- AutoKICK with Pummel if something in 5Yards casts something
+            if Setting("Pummel/ShildBash") 
+				and Spell.Pummel:Known()
+				and Spell.Pummel:CD() == 0
+				then
+					for _, Unit in ipairs(Enemy5Y) do
+						local castName = Unit:CastingInfo()
+						if castName ~= nil 
+						and (Unit:Interrupt() or interruptList[castName]) 
+							then
+							if smartCast("Pummel", Unit, true) 
+								then return true end
+						end
+					end
+			end
+
 			
 			-- Buffs Battleshout Casts Overpower or EXECUTE
             if AutoExecute() or AutoBuff() or AutoOverpower() 
 				then return true 
 			end
 			
-			-- AutoKICK with Pummel if something in 5Yards casts something
-            	if Setting("Pummel/ShildBash") 
-					and Spell.Pummel:Known()
-					and Spell.Pummel:CD() == 0
-					then
-						for _, Unit in ipairs(Enemy5Y) do
-							local castName = Unit:CastingInfo()
-							if castName ~= nil 
-							and (Unit:Interrupt() or interruptList[castName]) 
-								then
-								if smartCast("Pummel", Unit, true) 
-									then return true end
-							end
-						end
-				end
-
 			if Target then
 			
 				-- more then/or 2 Targets in Range
@@ -1359,22 +1385,22 @@ function Warrior.Rotation()
 					end
                         
                     if Setting("Whirlwind")
-					and Spell.Whirlwind:Known()
-					and Spell.Whirlwind:CD() == 0
-					and Player.Power >= 25
-						then
-						if Spell.Bloodthirste:Known()
-							and Spell.Bloodthirst:CD() >= 3
-							then                 
-								if smartCast("Whirlwind", Unit, nil) 
-								then return true end
-							
-						elseif Spell.MortalStrike:Known()
-							and Spell.MortalStrike:CD() >= 3 
-							then                 
-								if smartCast("Whirlwind", Unit, nil) 
-								then return true end
-						end
+						and Spell.Whirlwind:Known()
+						and Spell.Whirlwind:CD() == 0
+						and Player.Power >= 25
+							then
+							if Spell.Bloodthirste:Known()
+								and Spell.Bloodthirst:CD() >= 3
+								then                 
+									if smartCast("Whirlwind", Unit, nil) 
+									then return true end
+								
+							elseif Spell.MortalStrike:Known()
+								and Spell.MortalStrike:CD() >= 3 
+								then                 
+									if smartCast("Whirlwind", Unit, nil) 
+									then return true end
+							end
                     end
 				
 					-- Hamstring --
@@ -1399,18 +1425,6 @@ function Warrior.Rotation()
 							then return true 
 							end
                 end
-				
-				--unqueue HS or Cleave when low rage
-				if Player.Power <= 20
-					and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
-					and Player.SwingMH <= 0.3
-					and Player.SwingMH > 0
-						then				
-						cancelAAmod()
-				end
-				
-
-				
 				
 			end	
         end
@@ -1490,6 +1504,17 @@ function Warrior.Rotation()
 				if Target 
 					then
 					
+					--unqueue HS or Cleave when low rage
+					if Player.Power < 20
+						and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
+						and Player.SwingMH <= 0.3
+						and Player.SwingMH > 0
+							then				
+							cancelAAmod()
+					end
+					
+					
+					
 					-- AutoKICK with Shield Bash if something in 5Yards casts something
 					if Setting("Pummel/ShildBash") 
 						and IsEquippedItemType("Shields")
@@ -1566,15 +1591,8 @@ function Warrior.Rotation()
 								then return true 
 							end
 					end
+
 					
-					--unqueue HS or Cleave when low rage
-					if Player.Power <= 20
-						and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
-						and Player.SwingMH <= 0.3
-						and Player.SwingMH > 0
-							then				
-							cancelAAmod()
-					end
 
 				end
 			end
