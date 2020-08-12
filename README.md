@@ -10,6 +10,14 @@
 
 ## Changelog
 
+## 12.08.2020
+
+* added Hamstring dump above configured rage setting
+* added many settings for cooldown usage for auto and keypress moder
+* removed autouse of diamond flask in keypress mode (will no be used on button pressed)
+* in keypress mode: the times after keypress when each cooldown is triggerd can be configured under settings
+* after there are 0 Cds left the funktion and the display in the hud will auto swap to disabled
+
 ## 11.08.2020
 
 * reworkt CD trigger by button press (it will change the original cooldown HUD-UI toogle.....needs testing)
