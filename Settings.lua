@@ -114,7 +114,7 @@ function Warrior.Settings()
 		UI.AddRange("TTD for Recklessness", "Time to die -> use Recklessness / duration=15s", 10, 60, 1, 28)
 		UI.AddRange("TTD for RagePotion", "Time to die -> use RagePotion / duration=20s", 10, 60, 1, 35)
  
-	UI.AddTab("CDs keypress Mode")
+	UI.AddTab("CDs Keypress Mode")
 		UI.AddHeader("Settings Keypress mode and the use of CDs")
 		UI.AddHeader("Seconds after ButtonPress to use the Cooldowns")
 		UI.AddRange("Seconds after Keypress for DiamondFlask", "duration=60s", 0, 60, 1, 0)
