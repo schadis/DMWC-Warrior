@@ -15,31 +15,7 @@ local ReadyCooldownCountValue
 
 	  
 local stanceNumber = {[1] = "Battle", [2] = "Defensive", [3] = "Berserk"}	  
--- if stanceChangedSkillTimer == nil then stanceChangedSkillTimer = DMW.Time end
 
-
--- some display things of procs
--- hooksecurefunc(DMW.Functions.AuraCache, "Event", function(...)
-    -- local timeStamp, event, hideCaster, sourceGUID, sourceName, sourceFlags, sourceRaidFlags, destGUID, destName, destFlags, destRaidFlags,
-          -- spellID, spellName, spellSchool, auraType = ...
-    -- -- if event == "SPELL_EXTRA_ATTACKS" then print("swing extra") end
-    -- -- 15601,"Hand of Justice"
-    -- if event == "SPELL_EXTRA_ATTACKS" and sourceGUID == DMW.Player.GUID then
-        -- -- RunMacro("aastop")
-        -- print("proc hoj")
-    -- end
--- end)
-
--- Debug Print Thing
--- local debugItem
--- local function Debug(item, value)
-    -- if Setting("Debug") then
-        -- if debugItem ~= arg then
-            -- print(arg)
-            -- debugItem = arg
-        -- end
-    -- end
--- end
 
 local stanceCheck = {
     Battle = {
@@ -673,7 +649,7 @@ local function ReadyCooldown()
 end
 
 local function CoolDowns()		-- none == 1 -- auto == 2 -- keypress == 3
-	if Setting("CoolD.") == 2 
+	if Setting("CoolD.Mode") == 2 
 		then
 		if Item.DiamondFlask:Equipped() 
 		and Item.DiamondFlask:CD() == 0
@@ -734,7 +710,7 @@ local function CoolDowns()		-- none == 1 -- auto == 2 -- keypress == 3
 		
 		end
 		
-	elseif Setting("CoolD.") == 3
+	elseif Setting("CoolD.Mode") == 3
 			then
 				if Item.DiamondFlask:Equipped() 
 				and Item.DiamondFlask:CD() == 0
@@ -981,32 +957,32 @@ end
 
 local function CDKeyPressed()
 
-			if Setting("CoolD.") == 3
+			if Setting("CoolD.Mode") == 3
 				and Setting("Key for CDs") == 2 --LeftShift
 				and IsLeftShiftKeyDown()
 					then 
 					return true 
-			elseif Setting("CoolD.") == 3
+			elseif Setting("CoolD.Mode") == 3
 				and Setting("Key for CDs") == 3 --LeftControl
 				and IsLeftControlKeyDown()
 					then 
 					return true					
-			elseif Setting("CoolD.") == 3
+			elseif Setting("CoolD.Mode") == 3
 				and Setting("Key for CDs") == 4 --LeftAlt
 				and IsLeftAltKeyDown()
 					then 
 					return true				
-			elseif Setting("CoolD.") == 3
+			elseif Setting("CoolD.Mode") == 3
 				and Setting("Key for CDs") == 5 --RightShift
 				and IsRightShiftKeyDown()
 					then 
 					return true				
-			elseif Setting("CoolD.") == 3
+			elseif Setting("CoolD.Mode") == 3
 				and Setting("Key for CDs") == 6 --RightControl
 				and IsRightControlKeyDown()
 					then 
 					return true				
-			elseif Setting("CoolD.") == 3
+			elseif Setting("CoolD.Mode") == 3
 				and Setting("Key for CDs") == 7 --RightAlt
 				and IsRightAltKeyDown()
 					then 
@@ -1051,13 +1027,13 @@ local function Locals()
 	
 	
 	-- activate Cds on Keypress
-    if Setting("CoolD.") == 3
+    if Setting("CoolD.Mode") == 3
 	and CDKeyPressed()
 	and ReadyCooldown()
 	and HUD.CDs == 3
 		then DMWHUDCDS:Toggle(2)
 		UseCDsTime = GetTime()
-	elseif Setting("CoolD.") == 3
+	elseif Setting("CoolD.Mode") == 3
 	and not ReadyCooldown()
 	and HUD.CDs == 2 or HUD.CDs == 1
 		then DMWHUDCDS:Toggle(3)
@@ -1272,7 +1248,7 @@ function Warrior.Rotation()
             --if HUD.DeathWish_Racial == 1 
 			
 			--Changed to Auto or Keypress
-			if Setting("CoolD.") == 2
+			if Setting("CoolD.Mode") == 2
 				and Target 
 				and Target:IsBoss()
 				and ReadyCooldown()
@@ -1280,7 +1256,7 @@ function Warrior.Rotation()
 					then 
 					if CoolDowns() then return true end 
 			
-			elseif Setting("CoolD.") == 3
+			elseif Setting("CoolD.Mode") == 3
 					and CDs
 					and Target 
 					and Target:IsBoss()
