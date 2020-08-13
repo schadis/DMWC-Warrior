@@ -100,9 +100,16 @@ function Warrior.Settings()
 		UI.AddHeader("Cooldowns")	
 		UI.AddToggle("Recklessness", "Use Recklessness in Auto/Keypress Mode", false)
 		UI.AddToggle("Use Best Rage Potion", "Check back for Potions and use best available one", false)
+
 		UI.AddDropdown("CoolD.Mode", "Use CDs automaticly or on Keypress", {"None","Auto","Keypress"},2)
 		UI.AddDropdown("Key for CDs", "Only in use with Keypress mode", {"None","LeftShift","LeftControl","LeftAlt","RightShift","RightControl","RightAlt"},1)
-
+		UI.AddToggle("Change CDs Timing K.Mode", "If DiamondF. not Equiped cause of whatever", false)
+		UI.AddHeader("Setting Change CDs Timing K.Mode will force all CDs in order,")
+		UI.AddHeader("and there will be no 30seconds delay after you press the Key")
+		--UI.AddBlank()
+		
+		
+		
     UI.AddTab("CDs Auto Mode")
 		UI.AddHeader("Settings for Auto use of CDs")
 		UI.AddHeader("Keep in mind that TTD is not accurate in EX-Phase!")	
