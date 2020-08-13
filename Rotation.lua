@@ -666,7 +666,8 @@ local SAKPBerserkingTroll = Setting("Seconds after Keypress for BerserkingTroll"
 local SAKPRecklessness = Setting("Seconds after Keypress for Recklessness")
 local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 
-	if not Item.DiamondFlask:Equipped() --not equiped
+	if Setting("Change CDs Timing K.Mode")
+		and not Item.DiamondFlask:Equipped() --not equiped
 		and GetItemCount(20130) >= 1	--but in inventory cause of CD or whatever
 		then
 			SAKPDeathWish = 0
