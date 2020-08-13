@@ -12,6 +12,7 @@
 
 ## 12.08.2020
 
+* If you hit the 60seconds(with diamond flask) left to die mark with your CD Keypress, standard setting work well!
 * added Hamstring dump above configured rage setting (was a fixed value before)
 * added many settings for cooldown usage for auto and keypress mode
 * removed auto use of diamond flask in keypress mode (will now be used on keypress)
