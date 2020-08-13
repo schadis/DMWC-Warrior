@@ -649,58 +649,87 @@ local function ReadyCooldown()
 end
 
 local function CoolDowns()		-- none == 1 -- auto == 2 -- keypress == 3
+local TTDDiamondFlask = Setting("TTD for DiamondFlask")
+local TTDDeathWish = Setting("TTD for DeathWish")
+-- local TTDEarthstrike = Setting("TTD for Earthstrike")
+-- local TTDJomGabbar = Setting("TTD for JomGabbar")
+local TTDBloodFury = Setting("TTD for BloodFury")
+local TTDBerserkingTroll = Setting("TTD for BerserkingTroll")
+local TTDRecklessness = Setting("TTD for Recklessness")
+local TTDRagePotion = Setting("TTD for RagePotion")
+local SAKPDiamondFlask = Setting("Seconds after Keypress for DiamondFlask")
+local SAKPDeathWish = Setting("Seconds after Keypress for DeathWish")
+-- local SAKPEarthstrike = Setting("Seconds after Keypress for Earthstrike")
+-- local SAKPJomGabbar = Setting("Seconds after Keypress for JomGabbar")
+local SAKPBloodFury = Setting("Seconds after Keypress for BloodFury")
+local SAKPBerserkingTroll = Setting("Seconds after Keypress for BerserkingTroll")
+local SAKPRecklessness = Setting("Seconds after Keypress for Recklessness")
+local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
+
+	if not Item.DiamondFlask:Equipped() --not equiped
+		and GetItemCount(20130) >= 1	--but in inventory cause of CD or whatever
+		then
+			SAKPDeathWish = 0
+			-- SAKPEarthstrike = 10
+			-- SAKPJomGabbar = 10
+			SAKPBloodFury = 5
+			SAKPBerserkingTroll = 20
+			SAKPRecklessness = 15
+			SAKPRagePotion = 10
+	end
+	
 	if Setting("CoolD.Mode") == 2 
 		then
 		if Item.DiamondFlask:Equipped() 
 		and Item.DiamondFlask:CD() == 0
-		and Target.TTD <= Setting("TTD for DiamondFlask")
+		and Target.TTD <= TTDDiamondFlask
 		then 
 			if Item.DiamondFlask:Use(Player) then return false end
 			
 		elseif Spell.DeathWish:Known()
 		and Player.Power >= 10
 		and Spell.DeathWish:CD() == 0 
-		and Player.Target.TTD <= Setting("TTD for DeathWish")
+		and Player.Target.TTD <= TTDDeathWish
 		then
 			if smartCast("DeathWish", Player, true) then return true end
 			
 		-- elseif Item.Earthstrike:Equipped()
 		-- and Item.Earthstrike:CD() == 0 	
-		-- and Player.Target.TTD <= Setting("TTD for Earthstrike") 
+		-- and Player.Target.TTD <= TTDEarthstrike
 		-- then
 			-- if Item.Earthstrike:Use(Player) then return true end
 			
 		-- elseif Item.JomGabbar:Equipped() 
 		-- and Item.JomGabbar:CD() == 0 	
-		-- and Player.Target.TTD <= Setting("TTD for JomGabbar") 
+		-- and Player.Target.TTD <= TTDJomGabbar
 		-- then
 			-- if Item.JomGabbar:Use(Player) then return true end
 			
 		elseif Spell.BloodFury:Known() 
 		and Spell.BloodFury:CD() == 0 
-		and Player.Target.TTD <= Setting("TTD for BloodFury")
+		and Player.Target.TTD <= TTDBloodFury
 		then
 			if Spell.BloodFury:Cast(Player) then return true end
 			
 		elseif Spell.BerserkingTroll:Known()
 		and Spell.BerserkingTroll:CD() == 0 
-		and Player.Target.TTD <= Setting("TTD for BerserkingTroll") 
+		and Player.Target.TTD <= TTDBerserkingTroll 
 		then
 			if Spell.BerserkingTroll:Cast(Player) then return true end
 		
 		elseif Setting("Reckl.")
 		and Spell.Recklessness:Known()
 		and Spell.Recklessness:CD() == 0 
-		and Player.Target.TTD <= Setting("TTD for Recklessness") 
+		and Player.Target.TTD <= TTDRecklessness
 		then
 			if smartCast("Recklessness", Player, true) then return true end
 			
-		elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 and Player.Target.TTD <= Setting("TTD for RagePotion") 
+		elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0 and Player.Target.TTD <= TTDRagePotion 
 			then
 			name = GetItemInfo(13442)
 			RunMacroText("/use " .. name)
 			return true
-		elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 and Player.Target.TTD <= Setting("TTD for RagePotion") 
+		elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0 and Player.Target.TTD <= TTDRagePotion 
 			then
 			name = GetItemInfo(5633)
 			RunMacroText("/use " .. name)
@@ -712,45 +741,46 @@ local function CoolDowns()		-- none == 1 -- auto == 2 -- keypress == 3
 		
 	elseif Setting("CoolD.Mode") == 3
 			then
+				
 				if Item.DiamondFlask:Equipped() 
 				and Item.DiamondFlask:CD() == 0
 				and UseCDsTime ~= 0
-				and (UseCDsTime + Setting("Seconds after Keypress for DiamondFlask")) <= GetTime()
+				and (UseCDsTime + SAKPDiamondFlask) <= GetTime()
 				then 
 					if Item.DiamondFlask:Use(Player) then return true end
 			
 				elseif Spell.DeathWish:Known()
 				and Spell.DeathWish:CD() == 0
 				and UseCDsTime ~= 0
-				and (UseCDsTime + Setting("Seconds after Keypress for DeathWish")) <= GetTime()
+				and (UseCDsTime + SAKPDeathWish) <= GetTime()
 				then
 					if smartCast("DeathWish", Player, true) then end
 					
 				-- elseif Item.Earthstrike:Equipped()
 				-- and Item.Earthstrike:CD() == 0
 				-- and UseCDsTime ~= 0
-				-- and (UseCDsTime + Setting("Seconds after Keypress for Earthstrike")) <= GetTime()			
+				-- and (UseCDsTime + SAKPEarthstrike) <= GetTime()			
 				-- then
 					-- if Item.Earthstrike:Use(Player) then end
 					
 				-- elseif Item.JomGabbar:Equipped() 
 				-- and Item.JomGabbar:CD() == 0
 				-- and UseCDsTime ~= 0
-				-- and (UseCDsTime + Setting("Seconds after Keypress for JomGabbar")) <= GetTime()			
+				-- and (UseCDsTime + SAKPJomGabbar) <= GetTime()			
 				-- then
 					-- if Item.JomGabbar:Use(Player) then end
 					
 				elseif Spell.BloodFury:Known() 
 				and Spell.BloodFury:CD() == 0
 				and UseCDsTime ~= 0
-				and (UseCDsTime + Setting("Seconds after Keypress for BloodFury")) <= GetTime()			
+				and (UseCDsTime + SAKPBloodFury) <= GetTime()			
 				then
 					if Spell.BloodFury:Cast(Player) then end
 					
 				elseif Spell.BerserkingTroll:Known()
 				and Spell.BerserkingTroll:CD() == 0
 				and UseCDsTime ~= 0
-				and (UseCDsTime + Setting("Seconds after Keypress for BerserkingTroll")) <= GetTime()			
+				and (UseCDsTime + SAKPBerserkingTroll) <= GetTime()			
 				then
 					if Spell.BerserkingTroll:Cast(Player) then  end
 				
@@ -758,19 +788,19 @@ local function CoolDowns()		-- none == 1 -- auto == 2 -- keypress == 3
 				and Spell.Recklessness:Known()
 				and Spell.Recklessness:CD() == 0
 				and UseCDsTime ~= 0
-				and (UseCDsTime + Setting("Seconds after Keypress for Recklessness")) <= GetTime()				
+				and (UseCDsTime + SAKPRecklessness) <= GetTime()				
 				then
 					if smartCast("Recklessness", Player, true) then end		
 				
 				elseif Setting("Use Best Rage Potion") and GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0
 				and UseCDsTime ~= 0
-				and (UseCDsTime + Setting("Seconds after Keypress for RagePotion")) <= GetTime()
+				and (UseCDsTime + SAKPRagePotion) <= GetTime()
 					then
 					name = GetItemInfo(13442)
 					RunMacroText("/use " .. name)
 				elseif Setting("Use Best Rage Potion") and GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0
 				and UseCDsTime ~= 0
-				and (UseCDsTime + Setting("Seconds after Keypress for RagePotion")) <= GetTime()				
+				and (UseCDsTime + SAKPRagePotion) <= GetTime()				
 					then
 					name = GetItemInfo(5633)
 					RunMacroText("/use " .. name)
