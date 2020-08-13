@@ -10,9 +10,19 @@
 
 ## Changelog
 
+## 13.08.2020
+
+* if you press your cooldown key it will fire each CD according to your settings.
+* if your dont have DiamondFlask please Change settings accordingly.(to something like this 0,0,5,20,15,10 seconds)
+
+* the setting "Change CDs Timing K.Mode" is only visible if you have a DiamondFlask equiped or in you inventory.
+* with DiamondFlask and "Change CDs Timing K.Mode" not checked push your button around when the last 60secs of the fight are starting.
+* with DiamondFlask cause of whatever in your inventory and "Change CDs Timing K.Mode" checked and you press your key 
+* it will fire CDs in order directly after you press the button. (~last 30secs of the fight)
+
 ## 12.08.2020
 
-* If you hit the 60seconds(with diamond flask) left to die mark with your CD Keypress, standard setting work well!
+* if you hit the 60seconds(with diamond flask) left to die mark with your CD Keypress, standard setting work well!
 * added Hamstring dump above configured rage setting (was a fixed value before)
 * added many settings for cooldown usage for auto and keypress mode
 * removed auto use of diamond flask in keypress mode (will now be used on keypress)
