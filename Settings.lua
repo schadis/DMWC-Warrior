@@ -103,9 +103,13 @@ function Warrior.Settings()
 
 		UI.AddDropdown("CoolD.Mode", "Use CDs automaticly or on Keypress", {"None","Auto","Keypress"},2)
 		UI.AddDropdown("Key for CDs", "Only in use with Keypress mode", {"None","LeftShift","LeftControl","LeftAlt","RightShift","RightControl","RightAlt"},1)
+		if GetItemCount(20130) >= 1 or Item.DiamondFlask:Equipped()
+		then
 		UI.AddToggle("Change CDs Timing K.Mode", "If DiamondF. not Equiped cause of whatever", false)
-		UI.AddHeader("Setting Change CDs Timing K.Mode will force all CDs in order,")
-		UI.AddHeader("and there will be no 30seconds delay after you press the Key")
+		UI.AddHeader("Change CDs Timing K.Mode will force")
+		UI.AddHeader("all CDs in order and there will be no")
+		UI.AddHeader("30seconds delay after you press the key")
+		end
 		--UI.AddBlank()
 		
 		
