@@ -50,7 +50,7 @@ function Warrior.Settings()
 	
     UI.AddHeader("Usual Options")
 	    -- UI.AddToggle("Debug", nil, false)
-		UI.AddDropdown("RotationType", nil, {"2HFury/Fury"}, 1)
+		UI.AddDropdown("RotationType", nil, {"2HFury/Fury","Arms"}, 1)
 		UI.AddBlank()
 		UI.AddToggle("BattleStance NoCombat", "Switches to Battle Stance if we are not InCombat" , false)
         UI.AddToggle("Charge&Intercept", nil, false)
@@ -73,10 +73,11 @@ function Warrior.Settings()
     UI.AddHeader("DPS Shit/Spells")
         -- UI.AddToggle("Rend", nil, false)	not programmed
 		-- UI.AddToggle("SweepingStrikes", nil, false) not programmed
-        UI.AddToggle("BT/MS", nil, true)
+        UI.AddToggle("Bloodthirst", nil, true)
         UI.AddToggle("Whirlwind", nil, true)
         UI.AddToggle("Overpower", nil, true)
-
+		UI.AddToggle("MortalStrike", nil, false)
+		
 		UI.AddToggle("Hamstring < 35% Enemy HP", nil, true)
 		UI.AddToggle("Hamstring PvP", nil, true)
 
@@ -94,14 +95,14 @@ function Warrior.Settings()
 
 		UI.AddHeader("Consumables")
 		UI.AddToggle("Use Best HP Potion", "Check back for Potions and use best available one")
-		UI.AddRange("Use Potion at #% HP", nil, 10, 100, 1)	
+		UI.AddRange("Use Potion at #% HP", nil, 1, 100, 1, 8)	
 	
 	
 		UI.AddHeader("Cooldowns")	
 		UI.AddToggle("Recklessness", "Use Recklessness in Auto/Keypress Mode", false)
 		UI.AddToggle("Use Best Rage Potion", "Check back for Potions and use best available one", false)
 
-		UI.AddDropdown("CoolD.Mode", "Use CDs automaticly or on Keypress", {"None","Auto","Keypress"},2)
+		UI.AddDropdown("CoolD Mode", "Use CDs automaticly or on Keypress", {"None","Auto","Keypress"},2)
 		UI.AddDropdown("Key for CDs", "Only in use with Keypress mode", {"None","LeftShift","LeftControl","LeftAlt","RightShift","RightControl","RightAlt"},1)
 		if GetItemCount(20130) >= 1 or Item.DiamondFlask:Equipped()
 		then
