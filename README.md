@@ -10,6 +10,10 @@
 
 ## Changelog
 
+## 16.08.2020
+
+* fixed
+
 ## 13.08.2020
 
 * if you press your cooldown key it will fire each CD according to your settings.
