@@ -10,9 +10,10 @@
 
 ## Changelog
 
-## 16.08.2020
+## 18.08.2020
 
-* fixed
+* fixed rage dump
+* fixed cd usage
 
 ## 13.08.2020
 
