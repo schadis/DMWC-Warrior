@@ -164,7 +164,9 @@ end
 local function cancelAAmod()
     if IsCurrentSpell(Spell.Cleave.SpellID) 
 	or IsCurrentSpell(Spell.HeroicStrike.SpellID) 
-		then SpellStopCasting() end
+		then SpellStopCasting() 
+		if Setting("Print")then print("CancleHS") end
+		end
 end
 
 -- Calculation of Units Armor
@@ -182,67 +184,67 @@ end
 -- local function dumpStart() return Player.Power >= Setting("Rage Dump") or dumpEnabled end
 
 local function dumpRage(value)
-
+	-- print(whatIsQueued)
 	-- Dumps Rage in first place with HS or Cleave -- if there is still rage it dumps it with the next part
     if whatIsQueued == "NA" 
 		then
         if Setting("RotationType") == 1 
-		and Enemy5YC >= 2 
-		and Player.Power >= 30 
+		and (Enemy5YC >= 2 or HUD.Dump_HS_OnOff == 2) 
+		and value >= 20
 		then 
-			if Setting("Bloodthirst")
-			and Spell.Bloodthirst:Known()
+			if Spell.Bloodthirst:Known()
 			and Spell.Bloodthirst:CD() >= 3
 				then
 				RunMacroText("/cast Cleave")
 				value = value - 20
 				DMW.Player.SwingDump = true
-			elseif Setting("MortalStrike")
-			and	Spell.MortalStrike:Known()
+				if Setting("Print")then print("dump Cleave") end 
+			elseif Spell.MortalStrike:Known()
 			and Spell.MortalStrike:CD() >= 3
 				then
 				RunMacroText("/cast Cleave")
 				value = value - 20
 				DMW.Player.SwingDump = true
+				if Setting("Print")then print("dump Cleave") end 
 			end
 			
-        elseif Setting("RotationType") == 1
-		and Player.Power >= 30
-		and threatPercent >= 88	
-		then
-			if Setting("Bloodthirst")
-			and Spell.Bloodthirst:Known()
-			and Spell.Bloodthirst:CD() >= 3
-				then
-				RunMacroText("/cast Cleave")
-				value = value - 20
-				DMW.Player.SwingDump = true
-			elseif Setting("MortalStrike")
-			and Spell.MortalStrike:Known()
-			and Spell.MortalStrike:CD() >= 3
-				then
-				RunMacroText("/cast Cleave")
-				value = value - 20
-				DMW.Player.SwingDump = true
-			end
+        -- elseif Setting("RotationType") == 1
+		-- and Player.Power >= 20
+		-- and threatPercent >= 88	
+		-- then
+			-- if Spell.Bloodthirst:Known()
+			-- and Spell.Bloodthirst:CD() >= 3
+				-- then
+				-- RunMacroText("/cast Cleave")
+				-- value = value - 20
+				-- DMW.Player.SwingDump = true
+				-- if Setting("Print")then print("dump Cleave") end 
+			-- elseif Spell.MortalStrike:Known()
+			-- and Spell.MortalStrike:CD() >= 3
+				-- then
+				-- RunMacroText("/cast Cleave")
+				-- value = value - 20
+				-- DMW.Player.SwingDump = true
+				-- if Setting("Print")then print("dump Cleave") end 
+			-- end
 			
-		elseif Player.Power >= 30
+		elseif value >= 13
 		and HUD.Dump_HS_OnOff == 1 
 		then		
-			if Setting("Bloodthirst")
-			and Spell.Bloodthirst:Known()
+			if  Spell.Bloodthirst:Known()
 			and Spell.Bloodthirst:CD() >= 3
 				then
 				RunMacroText("/cast Heroic Strike")
 				value = value - 13
 				DMW.Player.SwingDump = true
-			elseif Setting("MortalStrike")
-			and Spell.MortalStrike:Known()
+				if Setting("Print")then print("dump Heroic Strike") end 
+			elseif Spell.MortalStrike:Known()
 			and Spell.MortalStrike:CD() >= 3
 				then
 				RunMacroText("/cast Heroic Strike")
 				value = value - 13
 				DMW.Player.SwingDump = true
+				if Setting("Print")then print("dump Heroic Strike") end 
 			end
 
         end
@@ -262,31 +264,37 @@ local function dumpRage(value)
         if Setting("RotationType") == 1 or Setting("RotationType") == 2
 		and Target 
 			then
-            if Setting("Bloodthirst")
+            if value >= 30
 			and Spell.Bloodthirst:Known()
 			and Spell.Bloodthirst:CD() == 0
-			and Player.Power >= 30
 			then
-                Spell.Bloodthirst:Cast(Target)
-            elseif Setting("MortalStrike")
+                if Spell.Bloodthirst:Cast(Target) then
+				if Setting("Print") then print("dump BT") end 
+				end
+            elseif value >= 30
 			and Spell.MortalStrike:Known()
 			and Spell.MortalStrike:CD() == 0
-			and Player.Power >= 30
 			then
-                Spell.MortalStrike:Cast(Target)			
+                if Spell.MortalStrike:Cast(Target) then	
+				if Setting("Print") then print("dump MS") end
+				end
 			elseif Setting("Whirlwind") 
+			and value >= 25
 			and Spell.Whirlwind:Known()
 			and Spell.Whirlwind:CD() == 0
-			and Player.Power >= 25
 			then
-                Spell.Whirlwind:Cast(Player)
+                if Spell.Whirlwind:Cast(Player) then
+				if Setting("Print") then print("dump Whirlwind") end 
+				end 
 			elseif Setting("Hamstring Dump") 
 			and Player.Power >= Setting("Hamstring dump above # rage") 
 			and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE") 
 			and Spell.Hamstring:Known()
 			and GCD == 0 
 			then
-                Spell.Hamstring:Cast(Target)
+                if Spell.Hamstring:Cast(Target) then
+				if Setting("Print") then print("dump Harmstring") end 
+				end
             end
 			
         elseif Setting("Hamstring Dump") 
@@ -297,6 +305,7 @@ local function dumpRage(value)
 		then
             for k, v in pairs(Enemy5Y) 
 			do Spell.Hamstring:Cast(v) 
+			if Setting("Print") then print("dump Harmstring") end 
 			end
         end
 
@@ -330,7 +339,7 @@ local function stanceDanceCast(spell, dest, stance)
         end
     else
 	-- if not stance dance dump the rage thats too much
-        -- dumpRage(rageLost)
+       dumpRage(rageLost)
     end
     return true
 end
@@ -359,7 +368,9 @@ end
 -- Regular Spellcast
 local function regularCast(spell, Unit, pool)
     if pool and Spell[spell]:Cost() > Player.Power then return true end
-    if Spell[spell]:Cast(Unit) then return true end
+    if Spell[spell]:Cast(Unit) then 
+	if Setting("Print")then print(spell) end 
+	return true end
 end
 
 
@@ -372,24 +383,38 @@ local function smartCast(spell, Unit, pool)
 			then
             if stanceCheck[firstCheck][spell] then 
                 if Stance == firstCheck then
-					if Spell[spell]:Cast(Unit) then return true end
+					if Spell[spell]:Cast(Unit) then 
+					if Setting("Print")then print(spell) end 
+					return true end
                 else
-                    if stanceDanceCast(spell, Unit, firstCheck) then return true end
+                    if stanceDanceCast(spell, Unit, firstCheck) then 
+					if Setting("Print")then print(spell) end 
+					return true end
                 end
             elseif stanceCheck[secondCheck][spell] then
                 if Stance == secondCheck then
-                    if Spell[spell]:Cast(Unit) then return true end
+                    if Spell[spell]:Cast(Unit) then 
+					if Setting("Print")then print(spell) end 
+					return true end
                 else
-                    if stanceDanceCast(spell, Unit, secondCheck) then return true end
+                    if stanceDanceCast(spell, Unit, secondCheck) then
+					if Setting("Print")then print(spell) end 
+					return true end
                 end
             elseif stanceCheck[thirdCheck][spell] then
                 if Stance == thirdCheck then
-                    if Spell[spell]:Cast(Unit) then return true end
+                    if Spell[spell]:Cast(Unit) then 
+					if Setting("Print")then print(spell) end 
+					return true end
                 else
-                    if stanceDanceCast(spell, Unit, thirdCheck) then return true end
+                    if stanceDanceCast(spell, Unit, thirdCheck) then 
+					if Setting("Print")then print(spell) end 
+					return true end
                 end
             else
-                if Spell[spell]:Cast(Unit) then return true end
+                if Spell[spell]:Cast(Unit) then 
+				if Setting("Print")then print(spell) end 
+				return true end
             end
 		
 
@@ -606,49 +631,49 @@ local function ReadyCooldown()
 			ReadyCooldownCountValue = 0
 			
 			if Item.DiamondFlask:Equipped() 
-			and Item.DiamondFlask:CD() == 0
+			and Item.DiamondFlask:CD() <= 1.6
 			then 
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
 			end
 			
 			if Spell.DeathWish:Known()
-			and Spell.DeathWish:CD() == 0
+			and Spell.DeathWish:CD() <= 1.6
 			then
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
 			end
 			
 			-- if Item.Earthstrike:Equipped()
-			-- and Item.Earthstrike:CD() == 0 	
+			-- and Item.Earthstrike:CD() <= 1.6 	
 			-- then
 				-- ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
 			-- end	
 			
 			-- if Item.JomGabbar:Equipped() 
-			-- and Item.JomGabbar:CD() == 0 	
+			-- and Item.JomGabbar:CD() <= 1.6	
 			-- then
 				-- ReadyCooldownCountValue = ReadyCooldownCountValue + 1
 			-- end
 			
 			if Spell.BloodFury:Known() 
-			and Spell.BloodFury:CD() == 0 
+			and Spell.BloodFury:CD() <= 1.6
 			then
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
 			end
 			
 			if Spell.BerserkingTroll:Known()
-			and Spell.BerserkingTroll:CD() == 0 
+			and Spell.BerserkingTroll:CD() <= 1.6
 			then
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
 			end
 			
-			if Setting("Reckl.")
+			if Setting("Recklessness")
 			and Spell.Recklessness:Known()
-			and Spell.Recklessness:CD() == 0 
+			and Spell.Recklessness:CD() <= 1.6
 			then
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1	
 			end
 			
-			if Setting("Use Best Rage Potion") and ((GetItemCount(13442) >= 1 and GetItemCooldown(13442) == 0) or (GetItemCount(5633) >= 1 and GetItemCooldown(5633) == 0))
+			if Setting("Use Best Rage Potion") and ((GetItemCount(13442) >= 1 and GetItemCooldown(13442) <= 1.6) or (GetItemCount(5633) >= 1 and GetItemCooldown(5633) <= 1.6))
 				then
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
 			end
@@ -695,7 +720,9 @@ local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 	end
 	
 	if Setting("CoolD Mode") == 2 
-		then
+		then 
+		if Setting("Print")then print("CD now") end 
+		
 		if Item.DiamondFlask:Equipped() 
 		and Item.DiamondFlask:CD() == 0
 		and Target.TTD <= TTDDiamondFlask
@@ -733,7 +760,7 @@ local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 		then
 			if Spell.BerserkingTroll:Cast(Player) then return true end
 		
-		elseif Setting("Reckl.")
+		elseif Setting("Recklessness")
 		and Spell.Recklessness:Known()
 		and Spell.Recklessness:CD() == 0 
 		and Player.Target.TTD <= TTDRecklessness
@@ -757,6 +784,7 @@ local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 		
 	elseif Setting("CoolD Mode") == 3
 			then
+				if Setting("Print")then print("CD now") end 
 				
 				if Item.DiamondFlask:Equipped() 
 				and Item.DiamondFlask:CD() == 0
@@ -800,7 +828,7 @@ local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 				then
 					if Spell.BerserkingTroll:Cast(Player) then  end
 				
-				elseif Setting("Reckl.")
+				elseif Setting("Recklessness")
 				and Spell.Recklessness:Known()
 				and Spell.Recklessness:CD() == 0
 				and UseCDsTime ~= 0
@@ -1168,9 +1196,8 @@ end
 function Warrior.Rotation()
     Locals()
 	Consumes()
-
 	
-	 -- print(Spell.Bloodthirst:Known())
+
 
 -- got Battlestance out of Combat
     if Setting("BattleStance NoCombat") and Player.CombatLeft then
@@ -1311,7 +1338,7 @@ function Warrior.Rotation()
 			elseif Setting("CoolD Mode") == 3
 					and CDs
 					and Target 
-					and Target:IsBoss()
+					--and Target:IsBoss()
 					and ReadyCooldown()
 						then 
 						if CoolDowns() then end
@@ -1362,10 +1389,11 @@ function Warrior.Rotation()
 
 
 
-				if Target
-					then			
+			if Target
+			then			
 
-					if Enemy8YC >= 2 then				
+					if Enemy8YC >= 2 then
+						
 						if Setting("Whirlwind")
 							and Spell.Whirlwind:Known()	and Spell.Whirlwind:CD() == 0 and Player.Power >= 25 
 							then 
@@ -1386,7 +1414,7 @@ function Warrior.Rotation()
 						end
 					
 					else				
-					
+						
 						if Setting("SunderArmor") and Spell.SunderArmor:Known() and Spell.SunderArmor:CD() == 0 and SunderStacks < Setting("Apply Stacks of Sunder Armor")
 						then 
 							if smartCast("SunderArmor", Target)
@@ -1420,27 +1448,26 @@ function Warrior.Rotation()
 									end		
 							end
 						end
-					end
+			
 				
-			-- Hamstring --
-					
-			if (Setting("Hamstring < 30% Enemy HP") or Setting("Hamstring PvP"))
-				and Spell.Hamstring:Known() and GCD == 0  and Player.Combat  and Target and (Target.HP <= 35 or Setting("Hamstring PvP")) and Target.Distance <= 5  and not Debuff.Hamstring:Exist(Target)  and smartCast("Hamstring", Target, true) 
-				then return true
-			end
-				
-			--AbuseHS()
-			--Rage dump with HS or Cleave if there is still rage with harmstring if activated
-			--if dumpRage(Player.Power - Setting("Rage Dump"))
-				
-			if Setting("Rage Dump?") 
-				and Player.Power >= Setting("Rage Dump") 
-					then
-					if dumpRage(Player.Power - Setting("Rage Dump"))
-						then return true 
+						-- Hamstring --
+								
+						if (Setting("Hamstring < 30% Enemy HP") or Setting("Hamstring PvP"))
+							and Spell.Hamstring:Known() and GCD == 0  and Player.Combat  and Target and (Target.HP <= 35 or Setting("Hamstring PvP")) and Target.Distance <= 5  and not Debuff.Hamstring:Exist(Target)  and smartCast("Hamstring", Target, true) 
+							then return true
 						end
-			end
-					
+				
+						--AbuseHS()
+						--Rage dump with HS or Cleave if there is still rage with harmstring if activated
+						--if dumpRage(Player.Power - Setting("Rage Dump"))
+							
+						if Setting("Rage Dump?") 
+							and Player.Power >= Setting("Rage Dump") 
+								then
+								if dumpRage(Player.Power - Setting("Rage Dump"))
+								then return true end
+						end
+			end		
 					
 					
 			

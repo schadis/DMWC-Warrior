@@ -32,15 +32,30 @@ function Warrior.Settings()
             [3] = {Text = "|cFFFFFF00No_Moving", Tooltip = ""}
         }
     }
-    UI.HUD.Options[3] = {
+	UI.HUD.Options[3] = {
+                Dump_HS_OnOff = {
+                    [1] = {Text = "Dump_HS_OnOff |cFF00FF00On", Tooltip = ""},
+                    [2] = {Text = "Dump_HS_OnOff |cFFFFFF00Off", Tooltip = ""}
+		}      
+	}
+
+    UI.HUD.Options[4] = {
         Execute = {
             [1] = {Text = "Execute 360++", Tooltip = ""},
             [2] = {Text = "Execute If <= 3 units", Tooltip = ""},
             [3] = {Text = "Execute |cffffffffTarget", Tooltip = ""},
             [4] = {Text = "Execute |cffffffffMix", Tooltip = ""},
             [5] = {Text = "Execute |cFFFFFF00Disabled", Tooltip = ""}
-        }
-    }
+	    }
+    }	
+	
+
+
+			
+			
+			
+			
+
     -- UI.AddHeader("This Is A Header")
     -- UI.AddDropdown("This Is A Dropdown", nil, {"Yay", "Nay"}, 1)
     -- UI.AddToggle("This Is A Toggle", "This is a tooltip", true)
@@ -90,6 +105,7 @@ function Warrior.Settings()
 		UI.AddRange("Hamstring dump above # rage", "At what amount of rage Hamstring will also be used as dump", 0, 100, 1, 40)
 		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 1, 30)
         -- UI.AddToggle("Slam Dump", nil, false)
+		UI.AddToggle("Print","prints", false)
 ------------------------------------------------------------------------------------------------------------------------------
     UI.AddTab("CDs & Consumables")
 
