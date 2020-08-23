@@ -10,6 +10,11 @@
 
 ## Changelog
 
+## 23.08.2020
+
+* small fix to execute variant 4 (thx immy)
+* added BadgeoftheSwarmguard and uncommented all other trinkets (will work with my DMWC fork or after merge)
+
 ## 18.08.2020
 
 * fixed rage dump
