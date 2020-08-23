@@ -636,17 +636,23 @@ local function ReadyCooldown()
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
 			end
 			
-			-- if Item.Earthstrike:Equipped()
-			-- and Item.Earthstrike:CD() <= 1.6 	
-			-- then
-				-- ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
-			-- end	
+			if Item.Earthstrike:Equipped()
+			and Item.Earthstrike:CD() <= 1.6 	
+			then
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
+			end	
 			
-			-- if Item.JomGabbar:Equipped() 
-			-- and Item.JomGabbar:CD() <= 1.6	
-			-- then
-				-- ReadyCooldownCountValue = ReadyCooldownCountValue + 1
-			-- end
+			if Item.JomGabbar:Equipped() 
+			and Item.JomGabbar:CD() <= 1.6	
+			then
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
+			end
+			
+			if Item.BadgeoftheSwarmguard:Equipped() 
+			and Item.BadgeoftheSwarmguard:CD() <= 1.6	
+			then
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
+			end
 			
 			if Spell.BloodFury:Known() 
 			and Spell.BloodFury:CD() <= 1.6
@@ -685,16 +691,18 @@ end
 local function CoolDowns()		-- none == 1 -- auto == 2 -- keypress == 3
 local TTDDiamondFlask = Setting("TTD for DiamondFlask")
 local TTDDeathWish = Setting("TTD for DeathWish")
--- local TTDEarthstrike = Setting("TTD for Earthstrike")
--- local TTDJomGabbar = Setting("TTD for JomGabbar")
+local TTDEarthstrike = Setting("TTD for Earthstrike")
+local TTDJomGabbar = Setting("TTD for JomGabbar")
+local TTDBadgeoftheSwarmguard = Setting("TTD for BadgeoftheSwarmguard")
 local TTDBloodFury = Setting("TTD for BloodFury")
 local TTDBerserkingTroll = Setting("TTD for BerserkingTroll")
 local TTDRecklessness = Setting("TTD for Recklessness")
 local TTDRagePotion = Setting("TTD for RagePotion")
 local SAKPDiamondFlask = Setting("Seconds after Keypress for DiamondFlask")
 local SAKPDeathWish = Setting("Seconds after Keypress for DeathWish")
--- local SAKPEarthstrike = Setting("Seconds after Keypress for Earthstrike")
--- local SAKPJomGabbar = Setting("Seconds after Keypress for JomGabbar")
+local SAKPEarthstrike = Setting("Seconds after Keypress for Earthstrike")
+local SAKPJomGabbar = Setting("Seconds after Keypress for JomGabbar")
+local SAKPBadgeoftheSwarmguard = Setting("Seconds after Keypress for BadgeoftheSwarmguard")
 local SAKPBloodFury = Setting("Seconds after Keypress for BloodFury")
 local SAKPBerserkingTroll = Setting("Seconds after Keypress for BerserkingTroll")
 local SAKPRecklessness = Setting("Seconds after Keypress for Recklessness")
@@ -704,8 +712,9 @@ local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 		and GetItemCount(20130) >= 1	--but in inventory cause of CD or whatever
 		then
 			SAKPDeathWish = 0
-			-- SAKPEarthstrike = 10
-			-- SAKPJomGabbar = 10
+			SAKPEarthstrike = 10
+			SAKPJomGabbar = 10
+			SAKPBadgeoftheSwarmguard = 2
 			SAKPBloodFury = 5
 			SAKPBerserkingTroll = 20
 			SAKPRecklessness = 15
@@ -740,6 +749,12 @@ local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 		and Player.Target.TTD <= TTDJomGabbar
 		then
 			if Item.JomGabbar:Use(Player) then return true end
+			
+		elseif Item.BadgeoftheSwarmguard:Equipped()
+		and	Item.BadgeoftheSwarmguard:CD() == 0 
+		and Player.Target.TTD <= TTDBadgeoftheSwarmguard
+		then
+			if Item.BadgeoftheSwarmguard:Use(Player) then end
 			
 		elseif Spell.BloodFury:Known() 
 		and Spell.BloodFury:CD() == 0 
@@ -804,6 +819,13 @@ local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 				and Item.JomGabbar:CD() == 0
 				and UseCDsTime ~= 0
 				and (UseCDsTime + SAKPJomGabbar) <= GetTime()			
+				then
+					if Item.JomGabbar:Use(Player) then end
+				
+				elseif Item.BadgeoftheSwarmguard:Equipped() 
+				and Item.BadgeoftheSwarmguard:CD() == 0
+				and UseCDsTime ~= 0
+				and (UseCDsTime + SAKPBadgeoftheSwarmguard) <= GetTime()			
 				then
 					if Item.JomGabbar:Use(Player) then end
 					
