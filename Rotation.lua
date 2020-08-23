@@ -339,7 +339,7 @@ local function stanceDanceCast(spell, dest, stance)
         end
     else
 	-- if not stance dance dump the rage thats too much
-       dumpRage(rageLost)
+       dumpRage(Player.Power - Setting("Rage Dump"))
     end
     return true
 end
@@ -441,7 +441,7 @@ local function AutoExecute()
 	--Getting Executable Tagets in 5yards Range
     -- if Player.Power >= 10 then
     local exeCount = 0
-    if HUD.Execute == 1 or HUD.Execute == 2 or HUD.Execute == 3
+    if HUD.Execute == 1 or HUD.Execute == 2 or HUD.Execute == 3 or HUD.Execute == 4
 		then
         for _, Unit in ipairs(Enemy5Y) do
             if Unit.HP <= 20 then
@@ -488,14 +488,12 @@ local function AutoExecute()
 			and Spell.Execute:Known()
 			and GCD == 0 
 				then
-					if Setting("Bloodthirst")
-						and Spell.Bloodthirst:Known()
+					if Spell.Bloodthirst:Known()
 						and Spell.Bloodthirst:CD() == 0
 						and effectiveAP >= 2000
 							then smartCast("Bloodthirst", Target)
 							return true		
-					elseif Setting("MortalStrike")
-						and Spell.MortalStrike:Known()
+					elseif Spell.MortalStrike:Known()
 						and Spell.MortalStrike:CD() == 0 
 						and effectiveAP >= 2000
 							then smartCast("MortalStrike", Target)
@@ -536,14 +534,12 @@ local function AutoExecute()
 			and Spell.Execute:Known()
 			and GCD == 0 
 				then
-					if Setting("Bloodthirst")
-						and Spell.Bloodthirst:Known()
+					if Spell.Bloodthirst:Known()
 						and Spell.Bloodthirst:CD() == 0
 						and effectiveAP >= 2000
 							then smartCast("Bloodthirst", Target)
 							return true		
-					elseif Setting("MortalStrike")
-						and Spell.MortalStrike:Known()
+					elseif  Spell.MortalStrike:Known()
 						and Spell.MortalStrike:CD() == 0 
 						and effectiveAP >= 2000
 							then smartCast("MortalStrike", Target)
@@ -575,14 +571,12 @@ local function AutoOverpower()
 			and Player.SwingMH >= 1
 			and Spell.Overpower:CD() < Player.OverpowerUnit[Unit.Pointer].time - 0.3 
 			then
-				if Setting("Bloodthirst")  
-				and Spell.Bloodthirst:Known()
+				if Spell.Bloodthirst:Known()
 				and Spell.Bloodthirst:CD() >= 2 
 				then                 
 					if smartCast("Overpower", Unit, nil) 
 					then return true end
-				elseif Setting("MortalStrike")
-				and Spell.MortalStrike:Known()
+				elseif Spell.MortalStrike:Known()
 				and Spell.MortalStrike:CD() >= 2 
 				then                 
 					if smartCast("Overpower", Unit, nil) 
@@ -706,8 +700,7 @@ local SAKPBerserkingTroll = Setting("Seconds after Keypress for BerserkingTroll"
 local SAKPRecklessness = Setting("Seconds after Keypress for Recklessness")
 local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 
-	if Setting("Change CDs Timing K.Mode")
-		and not Item.DiamondFlask:Equipped() --not equiped
+	if not Item.DiamondFlask:Equipped() --not equiped
 		and GetItemCount(20130) >= 1	--but in inventory cause of CD or whatever
 		then
 			SAKPDeathWish = 0
@@ -721,7 +714,7 @@ local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 	
 	if Setting("CoolD Mode") == 2 
 		then 
-		if Setting("Print")then print("CD now") end 
+		if Setting("Print")then print("CDs now") end 
 		
 		if Item.DiamondFlask:Equipped() 
 		and Item.DiamondFlask:CD() == 0
@@ -736,17 +729,17 @@ local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 		then
 			if smartCast("DeathWish", Player, true) then return true end
 			
-		-- elseif Item.Earthstrike:Equipped()
-		-- and Item.Earthstrike:CD() == 0 	
-		-- and Player.Target.TTD <= TTDEarthstrike
-		-- then
-			-- if Item.Earthstrike:Use(Player) then return true end
+		elseif Item.Earthstrike:Equipped()
+		and Item.Earthstrike:CD() == 0 	
+		and Player.Target.TTD <= TTDEarthstrike
+		then
+			if Item.Earthstrike:Use(Player) then return true end
 			
-		-- elseif Item.JomGabbar:Equipped() 
-		-- and Item.JomGabbar:CD() == 0 	
-		-- and Player.Target.TTD <= TTDJomGabbar
-		-- then
-			-- if Item.JomGabbar:Use(Player) then return true end
+		elseif Item.JomGabbar:Equipped() 
+		and Item.JomGabbar:CD() == 0 	
+		and Player.Target.TTD <= TTDJomGabbar
+		then
+			if Item.JomGabbar:Use(Player) then return true end
 			
 		elseif Spell.BloodFury:Known() 
 		and Spell.BloodFury:CD() == 0 
@@ -800,19 +793,19 @@ local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 				then
 					if smartCast("DeathWish", Player, true) then end
 					
-				-- elseif Item.Earthstrike:Equipped()
-				-- and Item.Earthstrike:CD() == 0
-				-- and UseCDsTime ~= 0
-				-- and (UseCDsTime + SAKPEarthstrike) <= GetTime()			
-				-- then
-					-- if Item.Earthstrike:Use(Player) then end
+				elseif Item.Earthstrike:Equipped()
+				and Item.Earthstrike:CD() == 0
+				and UseCDsTime ~= 0
+				and (UseCDsTime + SAKPEarthstrike) <= GetTime()			
+				then
+					if Item.Earthstrike:Use(Player) then end
 					
-				-- elseif Item.JomGabbar:Equipped() 
-				-- and Item.JomGabbar:CD() == 0
-				-- and UseCDsTime ~= 0
-				-- and (UseCDsTime + SAKPJomGabbar) <= GetTime()			
-				-- then
-					-- if Item.JomGabbar:Use(Player) then end
+				elseif Item.JomGabbar:Equipped() 
+				and Item.JomGabbar:CD() == 0
+				and UseCDsTime ~= 0
+				and (UseCDsTime + SAKPJomGabbar) <= GetTime()			
+				then
+					if Item.JomGabbar:Use(Player) then end
 					
 				elseif Spell.BloodFury:Known() 
 				and Spell.BloodFury:CD() == 0
@@ -1090,7 +1083,7 @@ local function Locals()
     dumpEnabled = false
     syncSS = false
     whatIsQueued = checkOnHit()
-    -- print(whatIsQueued)
+    -- print(Talent.TacticalMastery.Rank)
 	
 	-- Sets sweeping strikes to of after use
     if Setting("Auto Disable SS") 
