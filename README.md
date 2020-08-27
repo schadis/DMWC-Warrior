@@ -14,7 +14,7 @@
 
 * added FurryProt Rotation (FurryProt untested)
 * added shild swap mechanic in FurryProt rota for kicks
-* added engineering items (sapper charge, nades, dynamite)  !!!(will work with my DMWC fork or after merge)!!!
+* added engineering items (sapper charge, nades, dynamite)      !!! will work with my DMWC fork or after merge!!!
 * pls be aware that intercept or thunderclap will swap you out of defstance 
 * it will not swap back until revenge procs and Conditions of ragelost setting is met
 
