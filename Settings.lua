@@ -48,24 +48,15 @@ function Warrior.Settings()
             [5] = {Text = "Execute |cFFFFFF00Disabled", Tooltip = ""}
 	    }
     }	
-	
-
-
-			
-			
-			
-			
 
     -- UI.AddHeader("This Is A Header")
     -- UI.AddDropdown("This Is A Dropdown", nil, {"Yay", "Nay"}, 1)
     -- UI.AddToggle("This Is A Toggle", "This is a tooltip", true)
     -- UI.AddRange("This Is A Range", "One more tooltip", 0, 100, 1, 70)
 	
-	
-	
     UI.AddHeader("Usual Options")
 	    -- UI.AddToggle("Debug", nil, false)
-		UI.AddDropdown("RotationType", nil, {"2HFury/Fury","Arms"}, 1)
+		UI.AddDropdown("RotationType", nil, {"2HFury/Fury","FurryProt"}, 1)
 		UI.AddBlank()
 		UI.AddToggle("BattleStance NoCombat", "Switches to Battle Stance if we are not InCombat" , false)
         UI.AddToggle("Charge&Intercept", nil, false)
@@ -77,10 +68,10 @@ function Warrior.Settings()
 
 		
     UI.AddHeader("Auto Stuff")
-        UI.AddToggle("AutoFaceMelee", "Makes you Face the Target all the Time", false)
+        UI.AddToggle("AutoFace", "Makes you Face the Target all the Time", false)
         UI.AddToggle("AutoTarget", "Targets the next Target automaticly", false)
         UI.AddToggle("BattleShout", nil, true)
-        UI.AddToggle("Pummel/ShildBash", nil, false)
+        UI.AddToggle("Pummel/ShildBash", "Has to be checked for FurryProt swap option", false)
         -- UI.AddToggle("Auto Disable SS", nil, false)
 		-- UI.AddToggle("AutoTreatTarget", nil, false) only in tank rota not supported atm
 		
@@ -89,10 +80,9 @@ function Warrior.Settings()
         -- UI.AddToggle("Rend", nil, false)	not programmed
 		-- UI.AddToggle("SweepingStrikes", nil, false) not programmed
         UI.AddToggle("Bloodthirst", nil, true)
-        UI.AddToggle("Whirlwind", nil, true)
-        UI.AddToggle("Overpower", nil, true)
+        UI.AddToggle("Whirlwind","Not used in FurryProt", true)
+        UI.AddToggle("Overpower","Not used in FurryProt", true)
 		UI.AddToggle("MortalStrike", nil, false)
-		
 		UI.AddToggle("Hamstring < 35% Enemy HP", nil, true)
 		UI.AddToggle("Hamstring PvP", nil, true)
 
@@ -101,32 +91,31 @@ function Warrior.Settings()
 		UI.AddToggle("Berserker Rage", "Use Berserker Rage", false)
         UI.AddToggle("Rage Dump?", "Shall we Dump the Rage that is too much", false)
         UI.AddRange("Rage Dump", "On witch Value do we have too much Rage", 30, 100, 1, 30)
-        UI.AddToggle("Hamstring Dump", "Dumps Rage also with Hamstring, good with Windfurry", false)
+        UI.AddToggle("Hamstring Dump", "Dumps Rage also with Hamstring, good with Windfurry, not used in FurryProt", false)
 		UI.AddRange("Hamstring dump above # rage", "At what amount of rage Hamstring will also be used as dump", 0, 100, 1, 40)
 		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 1, 30)
         -- UI.AddToggle("Slam Dump", nil, false)
-		UI.AddToggle("Print","prints", false)
+
 ------------------------------------------------------------------------------------------------------------------------------
     UI.AddTab("CDs & Consumables")
+		UI.AddHeader("Cooldowns")	
+		UI.AddToggle("Recklessness", "Use Recklessness in Auto/Keypress Mode", false)
+		UI.AddToggle("Use Best Rage Potion", "Check back for Potions and use best available one", false)
+		UI.AddDropdown("CoolD Mode", "Use CDs automaticly or on Keypress", {"None","Auto","Keypress"},2)
+		UI.AddDropdown("Key for CDs", "Only in use with Keypress mode", {"None","LeftShift","LeftControl","LeftAlt","RightShift","RightControl","RightAlt"},1)
+
 
 		UI.AddHeader("Consumables")
 		UI.AddToggle("Use Best HP Potion", "Check back for Potions and use best available one")
 		UI.AddRange("Use Potion at #% HP", nil, 1, 100, 1, 8)	
+		
+		UI.AddHeader("Engineering Stuff")
+		UI.AddToggle("Use Sapper Charge", "uses Sapper according to Setting", false)
+		UI.AddRange("Enemys 10Y", "Enemys in 10 Yards Sapper Range", 0, 15, 1, 8)
+		UI.AddDropdown("Use Trowables", "Select the item to use", {"None","All","DenseDynamite","EZThroDynamitII","ThoriumGrenade","IronGrenade"},1)
+		UI.AddRange("Enemys 5Y around Target", "Enemys in 5 around Target", 0, 15, 1, 8)	
 	
-	
-		UI.AddHeader("Cooldowns")	
-		UI.AddToggle("Recklessness", "Use Recklessness in Auto/Keypress Mode", false)
-		UI.AddToggle("Use Best Rage Potion", "Check back for Potions and use best available one", false)
 
-		UI.AddDropdown("CoolD Mode", "Use CDs automaticly or on Keypress", {"None","Auto","Keypress"},2)
-		UI.AddDropdown("Key for CDs", "Only in use with Keypress mode", {"None","LeftShift","LeftControl","LeftAlt","RightShift","RightControl","RightAlt"},1)
-		if GetItemCount(20130) >= 1 or Item.DiamondFlask:Equipped()
-		then
-		UI.AddToggle("Change CDs Timing K.Mode", "If DiamondF. not Equiped cause of whatever", false)
-		UI.AddHeader("Change CDs Timing K.Mode will force")
-		UI.AddHeader("all CDs in order and there will be no")
-		UI.AddHeader("30seconds delay after you press the key")
-		end
 		--UI.AddBlank()
 		
 		
@@ -161,26 +150,35 @@ function Warrior.Settings()
 
 		
 ------------------------------------------------------------------------------------------------------------------------------	
-	UI.AddTab("Tanky&Debuffs")
+	UI.AddTab("Tanky")
     UI.AddHeader("Tanky Stuff")
-        UI.AddToggle("SunderArmor", "Applies SunderArmor debuff to Targets", true)
+        UI.AddToggle("SunderArmor", "Applies SunderArmor Spam on GCD if FurryProt", true)
 		UI.AddDropdown("Apply Stacks of Sunder Armor", "Apply # Stacks of Sunder Armor", {"1","2","3","4","5"}, "5")
-		UI.AddToggle("Revenge", nil, false)
+		UI.AddToggle("Revenge", "Auto use Revenge", false)
         UI.AddToggle("Use ShieldBlock", nil, true)
-        UI.AddRange("Shieldblock HP", nil, 30, 100, 10, 50)
-        UI.AddToggle("MockingBlow", nil, false)
-        UI.AddToggle("Taunt", nil, false)
+        UI.AddRange("Shieldblock HP", nil, 30, 100, 10, 50, true)
+	
+	UI.AddHeader("Only for FurryProt")
+		UI.AddToggle("Swap to shild for kick","Swaps back to 1h after Pummel/ShildBash has to be activ", false)
+		UI.AddDropdown("ItemType for Offhand", "Searches for the first item it can equip with selected Type", {"One-Handed Axes","One-Handed Maces","One-Handed Swords","Daggers"}, 1)
+		UI.AddBlank()
+		UI.AddDropdown("Min Q. gear for Kick Gear","Searches for the first item it can equip with selected Quality", {"white","green","blue","purple"}, 3)
+       
+
+	    -- UI.AddToggle("MockingBlow", nil, false)
+        -- UI.AddToggle("Taunt", nil, false)
 		
     UI.AddHeader("Lifesaver for 2Hand Furry - if Aggro in Raid from boss")		
 		UI.AddToggle("Lifesaver", "Will equip a shield and 1h and cast shieldwall if Aggro in RAID", false)
-		UI.AddDropdown("Min Q. gear equiped with Lifesaver", "searches for the first item it can equip", {"white","green","blue","purple"}, "blue")
-	
+		UI.AddDropdown("Min Q. gear equiped with Lifesaver", "searches for the first item it can equip", {"white","green","blue","purple"}, "3")
+
+	UI.AddTab("Debuffs")	
 	UI.AddHeader("Debuffs")
         if DMW.Player.Spells.PiercingHowl:Known() 
 		then
 			UI.AddRange("PiercingHowl", "Units near w/o debuff", 0, 10, 1, 0)
         end
-		UI.AddRange("ThunderClap", "Units near w/o debuff", 0, 10, 1, 0)
+		UI.AddRange("ThunderClap", "Units near w/o debuff, take care will swap you in BattleStance", 0, 10, 1, 0)
         UI.AddRange("DemoShout", "Units near w/o debuff", 0, 10, 1, 0)
     
 	-- UI.AddHeader("Experiments")
@@ -194,6 +192,10 @@ function Warrior.Settings()
 		UI.AddToggle("WCB", "If Warchiefsblessing is on you log off", false)
 		UI.AddToggle("Ony_Nef", "If Dragonslayer is on you log off", false)
 		UI.AddToggle("ZG", "If Spirit of Zandalar is on you log off", false)
+	
+------------------------------------------------------------------------------------------------------------------------------	
+	UI.AddTab("Print Spells")
+		UI.AddToggle("Print","prints", false)
 	
 	
 end
