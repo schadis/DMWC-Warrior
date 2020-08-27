@@ -1,6 +1,6 @@
 # DMWC-Warrior
 
-* 2h Fury, Fury and MS is working(no PVP coding)
+* 2h Fury same as Furry and FuryProt(FurryProt untested and there is no PVP coding)
 * all the best to immortalhz
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 
@@ -9,6 +9,12 @@
 * ??? Tell me more
 
 ## Changelog
+
+## 27.08.2020
+
+* added FurryProt Rotation 
+* added shild swap mechanic in FurryProt rota for kicks
+* added engineering items (sapper charge, nades, dynamite)  !!!(will work with my DMWC fork or after merge)!!!
 
 ## 23.08.2020
 
