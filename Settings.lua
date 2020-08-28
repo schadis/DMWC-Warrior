@@ -107,7 +107,9 @@ function Warrior.Settings()
 
 		UI.AddHeader("Consumables")
 		UI.AddToggle("Use Best HP Potion", "Check back for Potions and use best available one")
-		UI.AddRange("Use Potion at #% HP", nil, 1, 100, 1, 8)	
+		UI.AddRange("Use Potion at #% HP", nil, 1, 100, 1, 8)
+		UI.AddToggle("Healthstone", nil, true)
+		UI.AddRange("Use Healthstone at #% HP", nil, 10, 100, 1, 50, true)		
 		
 		UI.AddHeader("Engineering Stuff")
 		UI.AddToggle("Use Sapper Charge", "uses Sapper according to Setting", false)

@@ -1380,6 +1380,21 @@ local function Consumes()
 		end
 	end
 
+--Use "Healthstone" 
+	if Setting("Healthstone")
+	and Player.Combat
+	and (DMW.Time - ItemUsage) > 1.5 
+    and HP < Setting("Use Healthstone at #% HP") 
+    and (Item.MajorHealthstone:Use(Player) 
+    or Item.GreaterHealthstone:Use(Player) 
+    or Item.Healthstone:Use(Player) 
+    or Item.LesserHealthstone:Use(Player) 
+    or Item.MinorHealthstone:Use(Player)) 
+	then
+        ItemUsage = DMW.Time 
+		return true
+    end
+
 	-- Use Best HP Pot
 	if Setting("Use Best HP Potion") then
 		if DMW.Player.HP <= Setting("Use Potion at #% HP") and Player.Combat and (DMW.Time - ItemUsage) > 1.5 then
