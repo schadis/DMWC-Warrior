@@ -12,6 +12,7 @@ local UseCDsTime = 0
 local SunderStacks = 0
 local SunderedMobStacks = {}
 local ReadyCooldownCountValue
+local ItemUsage = GetTime()
 
 	  
 local stanceNumber = {[1] = "Battle", [2] = "Defensive", [3] = "Berserk"}	  
@@ -188,7 +189,7 @@ local function dumpRage(value)
 	-- Dumps Rage in first place with HS or Cleave -- if there is still rage it dumps it with the next part
     if whatIsQueued == "NA" 
 		then
-        if Setting("RotationType") == 1 or Setting("RotationType") == 2
+        if (Setting("RotationType") == 1 or Setting("RotationType") == 2)
 		and (Enemy5YC >= 2 or HUD.Dump_HS_OnOff == 2) 
 		and value >= 20
 		then 
@@ -267,7 +268,7 @@ local function dumpRage(value)
 	-- if there is still rage left dump it with BT OR WW or Harmstring 
 
     if value > 0 then
-        if Setting("RotationType") == 1 or Setting("RotationType") == 2
+        if (Setting("RotationType") == 1 or Setting("RotationType") == 2)
 		and Target 
 			then
             if value >= 30
@@ -285,7 +286,7 @@ local function dumpRage(value)
 				if Setting("Print") then print("dump MS") end
 				end
 			elseif Setting("Whirlwind") 
-			and Setting("RotationType") == 1 or Setting("RotationType") == 10
+			and (Setting("RotationType") == 1 or Setting("RotationType") == 10)
 			and value >= 25
 			and Spell.Whirlwind:Known()
 			and Spell.Whirlwind:CD() == 0
@@ -303,7 +304,7 @@ local function dumpRage(value)
 				if Setting("Print") then print("dump SunderArmor") end 
 				end
 			elseif Setting("Hamstring Dump") 
-			and Setting("RotationType") == 1 or Setting("RotationType") == 10
+			and (Setting("RotationType") == 1 or Setting("RotationType") == 10)
 			and Player.Power >= Setting("Hamstring dump above # rage") 
 			and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE") 
 			and Spell.Hamstring:Known()
@@ -315,7 +316,7 @@ local function dumpRage(value)
             end
 			
         elseif Setting("Hamstring Dump")
-		and Setting("RotationType") == 1 or Setting("RotationType") == 10
+		and (Setting("RotationType") == 1 or Setting("RotationType") == 10)
 		and Player.Power >= Setting("Hamstring dump above # rage") 
 		and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE") 
 		and Spell.Hamstring:Known()
@@ -459,7 +460,7 @@ local function AutoExecute()
 	--Getting Executable Tagets in 5yards Range
     -- if Player.Power >= 10 then
     local exeCount = 0
-    if HUD.Execute == 1 or HUD.Execute == 2 or HUD.Execute == 3 or HUD.Execute == 4
+    if (HUD.Execute == 1 or HUD.Execute == 2 or HUD.Execute == 3 or HUD.Execute == 4)
 		then
         for _, Unit in ipairs(Enemy5Y) do
             if Unit.HP <= 20 then
@@ -648,7 +649,7 @@ local function ReadyCooldown()
 			end
 			
 			if Spell.DeathWish:Known()
-			and Setting("RotationType") ==1
+			and Setting("RotationType") == 1
 			and Spell.DeathWish:CD() <= 1.6
 			then
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1 
@@ -934,7 +935,7 @@ local ItemTypeOffhand
 		then ItemTypeOffhand = "Daggers"
 	end
 	
-	if Setting("RotationType") == 1 or Setting("RotationType") == 10 then
+	if (Setting("RotationType") == 1 or Setting("RotationType") == 10) then
 		for bag = 0,4 do
 			for slot = 1,GetContainerNumSlots(bag) do
 				local item = GetContainerItemID(bag,slot)
@@ -1023,26 +1024,69 @@ local function AutoTargetAndFacing()
 
 -- Auto targets Enemy in Range
     if Setting("AutoTarget") 
-	and (not Target or not Target.ValidEnemy or Target.Dead or not ObjectIsFacing("Player", Target.Pointer, 60) 
-	or IsSpellInRange("Hamstring", "target") == 0) 
+	and (not Target or not Target.ValidEnemy or Target.Dead or not ObjectIsFacing("Player", Target.Pointer, 60)	or IsSpellInRange("Hamstring", "target") == 0)
 		then 
-			if Player:AutoTarget(5, true) 
+		for _, Unit in ipairs(Enemy5Y) do	
+			if GetRaidTargetIndex(Unit.Pointer) == 8 
+			and IsSpellInRange("Hamstring", Unit.Pointer) == 1
+				then 
+				TargetUnit(Unit.Pointer)
+				return true
+			elseif GetRaidTargetIndex(Unit.Pointer) == 7
+			and IsSpellInRange("Hamstring", Unit.Pointer) == 1
+				then 
+				TargetUnit(Unit.Pointer)
+				return true
+			elseif GetRaidTargetIndex(Unit.Pointer) == 6
+			and IsSpellInRange("Hamstring", Unit.Pointer) == 1
+				then 
+				TargetUnit(Unit.Pointer)
+				return true			
+			elseif GetRaidTargetIndex(Unit.Pointer) == 5
+			and IsSpellInRange("Hamstring", Unit.Pointer) == 1
+				then 
+				TargetUnit(Unit.Pointer)
+				return true	
+			elseif GetRaidTargetIndex(Unit.Pointer) == 4
+			and IsSpellInRange("Hamstring", Unit.Pointer) == 1
+				then 
+				TargetUnit(Unit.Pointer)
+				return true	
+			elseif GetRaidTargetIndex(Unit.Pointer) == 3
+			and IsSpellInRange("Hamstring", Unit.Pointer) == 1
+				then 
+				TargetUnit(Unit.Pointer)
+				return true					
+			elseif GetRaidTargetIndex(Unit.Pointer) == 2
+			and IsSpellInRange("Hamstring", Unit.Pointer) == 1
+				then 
+				TargetUnit(Unit.Pointer)
+				return true					
+			elseif GetRaidTargetIndex(Unit.Pointer) == 1
+			and IsSpellInRange("Hamstring", Unit.Pointer) == 1
+				then 
+				TargetUnit(Unit.Pointer)
+				return true	
+			elseif Player:AutoTarget(5, true) 
 				then return true 
-			end 
+			
+			end
+		end
 	end
+
 	
 -- Auto Face the Target
-    if Setting("AutoFace") then
-        if Player.Combat 
-		and Target 
-		and Target.ValidEnemy
-		and Target.Distance <= 41 
-		and not ObjectIsFacing("Player", Target.Pointer, 60) then
-            FaceDirection(Target.Pointer, true)
-			return true 
-        end
+    if Setting("AutoFace")
+    and Player.Combat 
+	and Target 
+	and Target.ValidEnemy
+	and Target.Distance <= 41 
+	and not ObjectIsFacing("Player", Target.Pointer, 60) then
+        FaceDirection(Target.Pointer, true)
+		return true 
     end
 end
+
 
 
 local function SomeDebuffs()
@@ -1164,7 +1208,7 @@ local function Locals()
     Spell = Player.Spells
     Talent = Player.Talents
     Item = Player.Items
-    Target = Player.Target or false
+    Target = (Player.Target or false)
     HUD = DMW.Settings.profile.HUD
     CDs = Player:CDs()
 	Target5Y, Target5YC = EnemiesAroundTarget()
@@ -1202,8 +1246,8 @@ local function Locals()
 		then DMWHUDCDS:Toggle(2)
 		UseCDsTime = GetTime()
 	elseif Setting("CoolD Mode") == 3
-	and not ReadyCooldown() or not Player.Combat
-	and HUD.CDs == 2 or HUD.CDs == 1
+	and (not ReadyCooldown() or not Player.Combat)
+	and (HUD.CDs == 2 or HUD.CDs == 1)
 		then DMWHUDCDS:Toggle(3)
 	end
 	
@@ -1256,12 +1300,15 @@ local function Consumes()
 
 -- Sapper Charge
 	if Setting("Use Sapper Charge")
-	and Enemy10YC >= Setting("Enemys in 10Y")
 	and Player.Combat
+	and (DMW.Time - ItemUsage) > 1.5 
+	and Enemy10YC ~= nil
+	and Enemy10YC >= Setting("Enemys in 10Y")
 	and GetItemCount(Item.GoblinSapperCharge.ItemID) >= 1
 	and Item.GoblinSapperCharge:CD() == 0 
 		then 
 		Item.GoblinSapperCharge:Use(Player)
+		ItemUsage = DMW.Time
 		return true
 	end
 
@@ -1269,6 +1316,8 @@ local function Consumes()
 	if Setting("Use Trowables") >= 1
 	and Target
 	and Player.Combat
+	and (DMW.Time - ItemUsage) > 1.5 
+	and Target5YC ~= nil
 	and Target5YC >= Setting("Enemys 5Y around Target")
 	and Target.Facing
 	then
@@ -1278,6 +1327,7 @@ local function Consumes()
 			and Item.DenseDynamite:CD() == 0 
 			then 
 				Item.DenseDynamite:UseGround(Target)
+				ItemUsage = DMW.Time
 				return true
 			elseif GetItemCount(Item.ThoriumGrenade.ItemID) >= 1
 			and Item.ThoriumGrenade:CD() == 0 
@@ -1288,11 +1338,13 @@ local function Consumes()
 			and Item.EZThroDynamitII:CD() == 0 
 			then 
 				Item.EZThroDynamitII:UseGround(Target)
+				ItemUsage = DMW.Time
 				return true				
 			elseif GetItemCount(Item.IronGrenade.ItemID) >= 1
 			and Item.IronGrenade:CD() == 0 
 			then 
 				Item.IronGrenade:UseGround(Target)
+				ItemUsage = DMW.Time
 				return true	
 			end
 			
@@ -1301,24 +1353,28 @@ local function Consumes()
 			and Item.DenseDynamite:CD() == 0 
 			then 
 				Item.DenseDynamite:UseGround(Target)
+				ItemUsage = DMW.Time
 				return true
 		elseif Setting("Use Trowables") == 4
 			and GetItemCount(Item.EZThroDynamitII.ItemID) >= 1
 			and Item.EZThroDynamitII:CD() == 0 
 			then 
 				Item.EZThroDynamitII:UseGround(Target)
+				ItemUsage = DMW.Time
 				return true		
 		elseif Setting("Use Trowables") == 5
 			and GetItemCount(Item.ThoriumGrenade.ItemID) >= 1
 			and Item.ThoriumGrenade:CD() == 0 
 			then 
 				Item.ThoriumGrenade:UseGround(Target)
+				ItemUsage = DMW.Time
 				return true		
 		elseif Setting("Use Trowables") == 6
 			and GetItemCount(Item.IronGrenade.ItemID) >= 1
 			and Item.IronGrenade:CD() == 0 
 			then 
 				Item.IronGrenade:UseGround(Target)
+				ItemUsage = DMW.Time
 				return true			
 		
 		end
@@ -1326,30 +1382,36 @@ local function Consumes()
 
 	-- Use Best HP Pot
 	if Setting("Use Best HP Potion") then
-		if DMW.Player.HP <= Setting("Use Potion at #% HP") and Player.Combat then
+		if DMW.Player.HP <= Setting("Use Potion at #% HP") and Player.Combat and (DMW.Time - ItemUsage) > 1.5 then
 			if GetItemCount(13446) >= 1 and GetItemCooldown(13446) == 0 then
 				name = GetItemInfo(13446)
 				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
 				return true 
 			elseif GetItemCount(3928) >= 1 and GetItemCooldown(3928) == 0 then
 				name = GetItemInfo(3928)
 				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
 				return true
 			elseif GetItemCount(1710) >= 1 and GetItemCooldown(1710) == 0 then
 				name = GetItemInfo(1710)
 				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
 				return true
 			elseif GetItemCount(929) >= 1 and GetItemCooldown(929) == 0 then
 				name = GetItemInfo(929)
 				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
 				return true
 			elseif GetItemCount(858) >= 1 and GetItemCooldown(858) == 0 then
 				name = GetItemInfo(858)
 				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
 				return true
 			elseif GetItemCount(118) >= 1 and GetItemCooldown(118) == 0 then
 				name = GetItemInfo(118)
 				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
 				return true
 			end
 		end
@@ -1360,7 +1422,10 @@ end
 
 function Warrior.Rotation()
     Locals()
-	Consumes()
+	
+	if Consumes() then
+		return true
+	end
 
 -- got Battlestance out of Combat
     if Setting("BattleStance NoCombat") and Player.CombatLeft then
@@ -1443,7 +1508,8 @@ function Warrior.Rotation()
 				StartAttack()
         end
 		
-        if Player.Combat 
+        if Player.Combat
+		and Enemy5YC ~= nil
 		and Enemy5YC > 0 
 			then
 
@@ -1538,7 +1604,7 @@ function Warrior.Rotation()
 
 			
 			-- Buffs Battleshout Casts Overpower or EXECUTE
-            if AutoExecute() or AutoBuff() or AutoOverpower() 
+            if (AutoExecute() or AutoBuff() or AutoOverpower()) 
 				then return true 
 			end
 
@@ -1654,7 +1720,8 @@ function Warrior.Rotation()
 					StartAttack()
 			end
 
-			if Player.Combat 
+			if Player.Combat
+			and Enemy5YC ~= nil
 			and Enemy5YC > 0 
 				then
 
@@ -1694,7 +1761,7 @@ function Warrior.Rotation()
 				end
 				
 				-- Buffs Battleshout
-				if AutoBuff() or AutoRevenge()
+				if (AutoBuff() or AutoRevenge())
 					then return true 
 				end
 
@@ -1835,7 +1902,8 @@ function Warrior.Rotation()
 				UseContainerItemByItemtype("Offhand")
 		end
 		
-        if Player.Combat 
+        if Player.Combat
+		and Enemy5YC ~= nil
 		and Enemy5YC > 0 
 			then
 
@@ -1881,7 +1949,8 @@ function Warrior.Rotation()
 			end
 			
 			-- AutoKICK with ShildBash if something in 5Yards casts something
-			if Setting("Pummel/ShildBash") 
+			if Setting("Pummel/ShildBash")
+				and Target 
 				and IsEquippedItemType("Shields")
 				and Spell.ShieldBash:Known()
 				and Spell.ShieldBash:CD() == 0
@@ -1894,6 +1963,7 @@ function Warrior.Rotation()
 							then return true end
 					end
 			elseif Setting("Swap to shild for kick")
+				and Target 
 				and not IsEquippedItemType("Shields")
 				and Spell.ShieldBash:Known()
 				and Spell.ShieldBash:CD() == 0
@@ -1910,7 +1980,7 @@ function Warrior.Rotation()
 
 			
 			-- Buffs Battleshout Casts Overpower or EXECUTE
-            if AutoExecute() or AutoRevenge()
+            if (AutoExecute() or AutoRevenge())
 				then return true 
 			end
 
