@@ -729,18 +729,18 @@ local SAKPBerserkingTroll = Setting("Seconds after Keypress for BerserkingTroll"
 local SAKPRecklessness = Setting("Seconds after Keypress for Recklessness")
 local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 
-	if not Item.DiamondFlask:Equipped() --not equiped
-		and GetItemCount(20130) >= 1	--but in inventory cause of CD or whatever
-		then
-			SAKPDeathWish = 0
-			SAKPEarthstrike = 10
-			SAKPJomGabbar = 10
-			SAKPBadgeoftheSwarmguard = 2
-			SAKPBloodFury = 5
-			SAKPBerserkingTroll = 20
-			SAKPRecklessness = 15
-			SAKPRagePotion = 10
-	end
+	-- if not Item.DiamondFlask:Equipped() --not equiped
+		-- and GetItemCount(20130) >= 1	--but in inventory cause of CD or whatever
+		-- then
+			-- SAKPDeathWish = 0
+			-- SAKPEarthstrike = 10
+			-- SAKPJomGabbar = 10
+			-- SAKPBadgeoftheSwarmguard = 2
+			-- SAKPBloodFury = 5
+			-- SAKPBerserkingTroll = 20
+			-- SAKPRecklessness = 15
+			-- SAKPRagePotion = 10
+	-- end
 	
 	if Setting("CoolD Mode") == 2 
 		then 
