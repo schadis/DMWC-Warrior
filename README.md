@@ -6,6 +6,7 @@
 
 ## Todo: 
 
+* cooldown checkboxes that a furryprot can select witch cds shall be used
 * ??? Tell me more
 
 ## Changelog
@@ -13,6 +14,8 @@
 ## 28.08.2020
 
 * small fixes to new code
+* removed auto reduce cd times when there is no DiamondFlask equipped
+* press your cd Key according to settings
 
 ## 27.08.2020
 
