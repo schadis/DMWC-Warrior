@@ -10,6 +10,10 @@
 
 ## Changelog
 
+## 28.08.2020
+
+* small fixes to new code
+
 ## 27.08.2020
 
 * added FurryProt Rotation (FurryProt untested)
