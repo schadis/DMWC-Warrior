@@ -718,13 +718,13 @@ local function ReadyCooldown()
 			end	
 			
 			if Item.JomGabbar:Equipped() 
-			and Item.JomGabbar:CD() <= == 0	
+			and Item.JomGabbar:CD() == 0	
 			then
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
 			end
 			
 			if Item.BadgeoftheSwarmguard:Equipped() 
-			and Item.BadgeoftheSwarmguard:CD() <= == 0	
+			and Item.BadgeoftheSwarmguard:CD() == 0	
 			then
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
 			end
@@ -737,7 +737,7 @@ local function ReadyCooldown()
 			end
 			
 			if Spell.BerserkingTroll:Known()
-			and Spell.BerserkingTroll:CD() <= == 0
+			and Spell.BerserkingTroll:CD() == 0
 			then
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
 			end
