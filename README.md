@@ -11,6 +11,13 @@
 
 ## Changelog
 
+## 30.08.2020
+
+* changed fix spellcost to functions to get values from talents and spellbook
+* fix for utility section (was breaking the rotation)
+* added hamstring Only HString MHSwing >= GCD
+* added toogle for HS during EX Phase (when we have rage above execute cost)
+
 ## 28.08.2020
 
 * small fixes to new code
@@ -22,7 +29,7 @@
 * added FurryProt Rotation (FurryProt untested)
 * added shild swap mechanic in FurryProt rota for kicks
 * added engineering items (sapper charge, nades, dynamite)      !!! will work with my DMWC fork or after merge!!!
-* pls be aware that intercept or thunderclap will swap you out of defstance 
+* pls be aware that intercept or thunderclap or Execute will swap you out of defstance 
 * it will not swap back until revenge procs and Conditions of ragelost setting is met
 
 ## 23.08.2020

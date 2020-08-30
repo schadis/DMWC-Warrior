@@ -93,7 +93,11 @@ function Warrior.Settings()
         UI.AddRange("Rage Dump", "On witch Value do we have too much Rage", 30, 100, 1, 30)
         UI.AddToggle("Hamstring Dump", "Dumps Rage also with Hamstring, good with Windfurry, not used in FurryProt", false)
 		UI.AddRange("Hamstring dump above # rage", "At what amount of rage Hamstring will also be used as dump", 0, 100, 1, 40)
+		UI.AddToggle("Only HString MHSwing >= GCD", "Uses Hamstring only when MH hits in a GCD", false)
 		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 1, 30)
+		UI.AddToggle("Queue HS/ExecutePhase", "Will queue HS in Execute Phase when there is more rage than Excost", false)
+		
+		
         -- UI.AddToggle("Slam Dump", nil, false)
 
 ------------------------------------------------------------------------------------------------------------------------------
