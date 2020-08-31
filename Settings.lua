@@ -92,13 +92,16 @@ function Warrior.Settings()
         UI.AddToggle("Rage Dump?", "Shall we Dump the Rage that is too much", false)
         UI.AddRange("Rage Dump", "On witch Value do we have too much Rage", 30, 100, 1, 30)
         UI.AddToggle("Hamstring Dump", "Dumps Rage also with Hamstring, good with Windfurry, not used in FurryProt", false)
-		UI.AddRange("Hamstring dump above # rage", "At what amount of rage Hamstring will also be used as dump", 0, 100, 1, 40)
+		UI.AddRange("Hamstring dump above # rage", "At what amount of rage Hamstring will also be used as dump", 0, 100, 1, 50)
 		UI.AddToggle("Only HString MHSwing >= GCD", "Uses Hamstring only when MH hits in a GCD", false)
-		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 1, 30)
+		UI.AddBlank()
+		UI.AddToggle("Slam Dump", "For 2H Slam Spec", false)
+		UI.AddRange("Slam dump above # rage", "At what amount of rage Slam will also be used as dump", 0, 100, 1, 50)
 		UI.AddToggle("Queue HS/ExecutePhase", "Will queue HS in Execute Phase when there is more rage than Excost", false)
-		
-		
-        -- UI.AddToggle("Slam Dump", nil, false)
+		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 1, 30)
+
+
+
 
 ------------------------------------------------------------------------------------------------------------------------------
     UI.AddTab("CDs & Consumables")
@@ -200,6 +203,12 @@ function Warrior.Settings()
 		UI.AddToggle("ZG", "If Spirit of Zandalar is on you log off", false)
 	
 ------------------------------------------------------------------------------------------------------------------------------	
+	--Debug/Print
+	UI.AddTab("Debug/Print")
+	UI.AddToggle("Debug","enables Debug, pls activate rotation once", false)
+	UI.AddToggle("Log","enables Log, pls activate rotation once", false)
+	
+
 	UI.AddTab("Print Spells")
 		UI.AddToggle("Print","prints", false)
 	

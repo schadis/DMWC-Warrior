@@ -5,7 +5,7 @@ local Setting = DMW.Helpers.Rotation.Setting
 local Player, Buff, Debuff, Spell, Stance, Target, Talent, Item, GCD, CDs, HUD, Enemy5Y, Enemy5YC, Enemy10Y, Enemy10YC, Enemy30Y,
       Enemy30YC, Enemy8Y, Enemy8YC, rageLost, dumpEnabled, castTime, syncSS, combatLeftCheck, stanceChangedSkill,
       stanceChangedSkillTimer, stanceChangedSkillUnit, targetChange, whatIsQueued, oldTarget, rageLeftAfterStance, firstCheck,
-      secondCheck, thirdCheck, SwingMH, SwingOH, MHSpeed
+      secondCheck, thirdCheck, SwingMH, SwingOH, MHSpeed, PosX, PosY, PosZ
 local base, posBuff, negBuff = UnitAttackPower("player")
 local effectiveAP = base + posBuff + negBuff  
 local UseCDsTime = 0
@@ -32,6 +32,7 @@ local stanceCheck = {
         ["ThunderClap"] = true,
         ["Charge"] = true,
         ["Execute"] = true,
+		["Slam"] = true,
         ["SunderArmor"] = true,
         ["ShieldBash"] = true
     },
@@ -46,6 +47,7 @@ local stanceCheck = {
         ["ShieldBash"] = true,
         ["ShieldWall"] = true,
         ["ShieldSlam"] = true,
+		["Slam"] = true,
         ["SunderArmor"] = true,
         ["Taunt"] = true
     },
@@ -57,6 +59,7 @@ local stanceCheck = {
         ["Hamstring"] = true,
         ["Intercept"] = true,
         ["Pummel"] = true,
+		["Slam"] = true,
         ["SunderArmor"] = true,
         ["Recklessness"] = true,
         ["Whirlwind"] = true,
@@ -160,6 +163,19 @@ local worldbufffound = false
 	end	
 end
 
+--Slam Function
+local function CanSlam()
+    local latency = (select(4, GetNetStats()) / 1000) or 0
+    local slamSpeed = (1.5 - (0.1 * Talent.ImprovedSlam.Rank))
+
+	if not Player.Moving
+	and (select(1, UnitAttackSpeed("player")) - Player.SwingMH) <= 0.15
+	and select(1, UnitAttackSpeed("player")) >= (slamSpeed + latency)
+	and IsSpellInRange("Hamstring", "target") == 1
+		then
+		return true
+	end
+end
 
 -- cancel Yellow hit when the mod is called
 local function cancelAAmod()
@@ -181,13 +197,24 @@ local function GetUnitArmor(unit, dmg, calc)
     -- 60+	DR% = Armour / (Armour + 400 + 85*(attacker level + 4.5*(attacker level-59)))
 end
 
--- Not used
--- local function dumpStart() return Player.Power >= Setting("Rage Dump") or dumpEnabled end
-
+-- Dumps Rage in first place with HS or Cleave -- if there is still rage it dumps it with the next part
+-- if Slam Spec it will dump with slam in first place if rage left it will use the rest
 local function dumpRage(value)
-	-- print(whatIsQueued)
-	-- Dumps Rage in first place with HS or Cleave -- if there is still rage it dumps it with the next part
-    if whatIsQueued == "NA" 
+
+    if Setting("Slam Dump")
+	and Player.Power >= Setting("Slam dump above # rage")
+	and value >= Spell.Slam:Cost()
+	and Spell.Slam:Known()
+	and Spell.Slam:CD() == 0
+	and CanSlam()
+		then
+			if Spell.Slam:Cast(Target) then
+				value =  value - Spell.Slam:Cost()
+				if Setting("Print") then print("dump Slam") end 
+			end
+	end
+
+	if whatIsQueued == "NA" 
 		then
         if (Setting("RotationType") == 1 or Setting("RotationType") == 2)
 		and (Enemy5YC >= 2 or HUD.Dump_HS_OnOff == 2) 
@@ -1090,22 +1117,11 @@ local function lifesaver()
 
 end
 
--- Slam Function
--- local function CanSlam()
-    -- local atkSpeed = UnitAttackSpeed("player")
-    -- local latency = (select(4, GetNetStats()) / 1000) or 0
-    -- local slamPoints = 0
-    -- local slamSpeed = 1.5 - (0.1 * slamPoints)
-    -- local tick = (slamSpeed + latency) / atkSpeed
-    --print(mai)
-    -- return mainSwing <= slamSpeed + latency and mainSwing > 0.9
--- end
-
 local function AutoTargetAndFacing()
 
 -- Auto targets Enemy in Range
     if Setting("AutoTarget") 
-	and (not Target or not Target.ValidEnemy or Target.Dead or not ObjectIsFacing("Player", Target.Pointer, 60)	or IsSpellInRange("Hamstring", "target") == 0)
+	and (not Target or not Target.ValidEnemy or Target.Dead or not ObjectIsFacing("Player", Target.Pointer, 160) or IsSpellInRange("Hamstring", "target") == 0)
 		then 
 		for _, Unit in ipairs(Enemy5Y) do	
 			if GetRaidTargetIndex(Unit.Pointer) == 8 
@@ -1161,8 +1177,8 @@ local function AutoTargetAndFacing()
     and Player.Combat 
 	and Target 
 	and Target.ValidEnemy
-	and Target.Distance <= 41 
-	and not ObjectIsFacing("Player", Target.Pointer, 60) then
+	and IsSpellInRange("Hamstring", "target") == 1
+	and not ObjectIsFacing("Player", Target.Pointer, 160) then
         FaceDirection(Target.Pointer, true)
 		return true 
     end
@@ -1521,6 +1537,27 @@ end
 
 function Warrior.Rotation()
     Locals()
+	
+	--Debug and Log Info	
+	if Setting("Debug")
+	and not DMW.UI.Debug.Frame:IsShown() 
+		then
+        DMW.UI.Debug.Frame:Show()
+    elseif not Setting("Debug")
+	and DMW.UI.Debug.Frame:IsShown()
+		then
+		DMW.UI.Debug.Frame:Hide()	            
+	end
+	
+	if Setting("Log")
+	and not DMW.UI.Log.Frame:IsShown() 
+		then
+        DMW.UI.Log.Frame:Show()
+    elseif not Setting("Log")
+	and DMW.UI.Log.Frame:IsShown()
+		then
+		DMW.UI.Log.Frame:Hide()	            
+	end	
 	
 	if Consumes() then
 		return true

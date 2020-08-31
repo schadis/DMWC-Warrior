@@ -11,6 +11,11 @@
 
 ## Changelog
 
+## 31.08.2020
+
+* added slam into dump function 
+* added settings for slam
+
 ## 30.08.2020
 
 * changed fix spellcost to functions to get values from talents and spellbook
