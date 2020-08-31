@@ -505,6 +505,11 @@ local function AutoExecute()
             for _, Unit in ipairs(Enemy5Y) do
                 if Unit.HP <= 20
 				and Unit.Health >= 500 then
+					if whatIsQueued ~= "NA"
+					and Player.Power < Spell.Execute:Cost()
+						then 
+						cancelAAmod()
+					end
 					if Setting("Queue HS/ExecutePhase")
 					and whatIsQueued == "NA"
 					and Player.Power >= (Spell.Execute:Cost() + Spell.HeroicStrike:Cost())
@@ -525,6 +530,11 @@ local function AutoExecute()
                 for _, Unit in ipairs(Enemy5Y) do
                     if Unit.HP <= 20 
 					and Unit.Health >= 500 then
+						if whatIsQueued ~= "NA"
+						and Player.Power < Spell.Execute:Cost()
+							then 
+							cancelAAmod()
+						end
 						if Setting("Queue HS/ExecutePhase")
 						and whatIsQueued == "NA"
 						and Player.Power >= (Spell.Execute:Cost() + Spell.HeroicStrike:Cost())
@@ -559,6 +569,11 @@ local function AutoExecute()
 							then smartCast("MortalStrike", Target)
 							return true
 					else
+						if whatIsQueued ~= "NA"
+						and Player.Power < Spell.Execute:Cost()
+							then 
+							cancelAAmod()
+						end
 						if Setting("Queue HS/ExecutePhase")
 						and whatIsQueued == "NA"
 						and Player.Power >= (Spell.Execute:Cost() + Spell.HeroicStrike:Cost())
@@ -582,6 +597,11 @@ local function AutoExecute()
 					for _, Unit in ipairs(Enemy5Y) do
 						if Unit.HP < 20 
 						and Unit.Health >= 500 then
+							if whatIsQueued ~= "NA"
+							and Player.Power < Spell.Execute:Cost()
+								then 
+								cancelAAmod()
+							end
 							if Setting("Queue HS/ExecutePhase")
 							and whatIsQueued == "NA"
 							and Player.Power >= (Spell.Execute:Cost() + Spell.HeroicStrike:Cost())
@@ -616,6 +636,11 @@ local function AutoExecute()
 							then smartCast("MortalStrike", Target)
 							return true
 					else
+						if whatIsQueued ~= "NA"
+						and Player.Power < Spell.Execute:Cost()
+							then 
+							cancelAAmod()
+						end
 						if Setting("Queue HS/ExecutePhase")
 						and whatIsQueued == "NA"
 						and Player.Power >= (Spell.Execute:Cost() + Spell.HeroicStrike:Cost())
