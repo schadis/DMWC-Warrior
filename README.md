@@ -11,6 +11,15 @@
 
 ## Changelog
 
+## 02.09.2020
+
+* added trinket and seperated cooldown toggles (cds, racials...)
+* repositioned slam in the code (from dump to main rotation)
+* added toogle to use slam over BT when AP is lower than 1500
+* added checks that the rage dump spells dont delay BT caused by global
+* added a section to the dump function for slam rotation
+* reformated the rotation
+
 ## 31.08.2020
 
 * added slam into dump function 
