@@ -2300,10 +2300,23 @@ function Warrior.Rotation()
 				and Spell.SunderArmor:Known() 
 				and Spell.SunderArmor:CD() == 0 
 				and Player.Power >= Spell.SunderArmor:Cost()
-				then 
-					if smartCast("SunderArmor", Target)
-					then return true end
-				end
+				then
+					if Spell.Bloodthirst:Known()
+					and Spell.Bloodthirst:CD() >= 1.5
+						then
+						if Spell.SunderArmor:Cast(Player) 
+							then return true
+						end
+					elseif Spell.MortalStrike:Known()
+					and Spell.MortalStrike:CD() >= 1.5
+						then
+						if Spell.SunderArmor:Cast(Player) 
+							then return true
+						end
+					end 
+				end 
+
+			
 				
 				if AutoBuff()
 					then return true 
