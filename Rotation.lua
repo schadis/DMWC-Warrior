@@ -373,14 +373,14 @@ local function dumpRage(value)
 				if Spell.Bloodthirst:Known()
 				and Spell.Bloodthirst:CD() >= 1.5
 					then
-					if Spell.SunderArmor:Cast(Player) 
+					if Spell.SunderArmor:Cast(Target) 
 						then
 						value = value - Spell.SunderArmor:Cost()
 					end
 				elseif Spell.MortalStrike:Known()
 				and Spell.MortalStrike:CD() >= 1.5
 					then
-					if Spell.SunderArmor:Cast(Player) 
+					if Spell.SunderArmor:Cast(Target) 
 						then
 						value = value - Spell.SunderArmor:Cost()
 					end
@@ -2304,13 +2304,13 @@ function Warrior.Rotation()
 					if Spell.Bloodthirst:Known()
 					and Spell.Bloodthirst:CD() >= 1.5
 						then
-						if Spell.SunderArmor:Cast(Player) 
+						if Spell.SunderArmor:Cast(Target) 
 							then return true
 						end
 					elseif Spell.MortalStrike:Known()
 					and Spell.MortalStrike:CD() >= 1.5
 						then
-						if Spell.SunderArmor:Cast(Player) 
+						if Spell.SunderArmor:Cast(Target) 
 							then return true
 						end
 					end 
