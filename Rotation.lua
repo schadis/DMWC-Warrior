@@ -606,6 +606,7 @@ local function AutoExecute()
     if HUD.Execute == 1 
 		then
         if Spell.Execute:Known() 
+		and exeCount >= 1
 		and GCD == 0 
 			then
             for _, Unit in ipairs(Enemy5Y) do
@@ -622,12 +623,16 @@ local function AutoExecute()
 					then
 						RunMacroText("/cast Heroic Strike")
 					end
-					smartCast("Execute", Unit) 
+					
+					if smartCast("Execute", Unit, nil) 
+						then return true 
+					end
+					
                 end
             end
-			return true
         end
-    elseif HUD.Execute == 2 
+    elseif HUD.Execute == 2
+	and exeCount >= 1	
 		then
         if Enemy5YC <= 3 then -- <= 3 then
             if Spell.Execute:Known() 
@@ -647,82 +652,91 @@ local function AutoExecute()
 						then
 							RunMacroText("/cast Heroic Strike")
 						end
-                        smartCast("Execute", Unit) 
+						
+						if smartCast("Execute", Unit, nil) 
+							then return true 
+						end
                     end
                 end
-                return true
             end
         end
     elseif HUD.Execute == 3 
 		then
         if Target 
-			and Target.HP <= 20
-			and not Target.Dead 
-			and Target.Distance <= 2 
-			and Target.Attackable 
-			and Target.Facing
-			and Spell.Execute:Known()
-			and GCD == 0 
-				then
-					if Spell.Bloodthirst:Known()
-						and Spell.Bloodthirst:CD() == 0
-						and effectiveAP >= 2000
-							then smartCast("Bloodthirst", Target)
-							return true		
-					elseif Spell.MortalStrike:Known()
-						and Spell.MortalStrike:CD() == 0 
-						and effectiveAP >= 2000
-							then smartCast("MortalStrike", Target)
-							return true
-					else
-						if whatIsQueued ~= "NA"
-						and Player.Power < Spell.Execute:Cost()
-							then 
-							cancelAAmod()
-						end
-						if Setting("Queue HS/ExecutePhase")
-						and whatIsQueued == "NA"
-						and Player.Power >= (Spell.Execute:Cost() + Spell.HeroicStrike:Cost())
-						then
-							RunMacroText("/cast Heroic Strike")
-						end
-						smartCast("Execute", Target) 
-						return true
-					end
-					
+		and Target.HP <= 20
+		and not Target.Dead 
+		and Target.Distance <= 2 
+		and Target.Attackable 
+		and Target.Facing
+		and Spell.Execute:Known()
+		and GCD == 0 
+			then
+			if Spell.Bloodthirst:Known()
+			and Spell.Bloodthirst:CD() == 0
+			and effectiveAP >= 2000
+				then 
+				if smartCast("Bloodthirst", Target)
+					then return true 
+				end		
+				return true		
+			elseif Spell.MortalStrike:Known()
+			and Spell.MortalStrike:CD() == 0 
+			and effectiveAP >= 2000
+				then 
+				if smartCast("MortalStrike", Target)
+					then return true
+				end 
+			else
+				if whatIsQueued ~= "NA"
+				and Player.Power < Spell.Execute:Cost()
+					then 
+					cancelAAmod()
+				end
+				if Setting("Queue HS/ExecutePhase")
+				and whatIsQueued == "NA"
+				and Player.Power >= (Spell.Execute:Cost() + Spell.HeroicStrike:Cost())
+					then
+					RunMacroText("/cast Heroic Strike")
+				end
+			end
+			
+			if smartCast("Execute", Unit, nil) 
+				then return true 
+			end		
 		end
 	elseif HUD.Execute == 4
         then
 		if Enemy5YC <= 6 
-			and Enemy5YC >= 2
-			and exeCount >= 1
-			then 
-				if Spell.Execute:Known() 
-				and GCD == 0 
-				then
-					for _, Unit in ipairs(Enemy5Y) do
-						if Unit.HP < 20 
-						and Unit.Health >= 500 then
-							if whatIsQueued ~= "NA"
-							and Player.Power < Spell.Execute:Cost()
-								then 
-								cancelAAmod()
-							end
-							if Setting("Queue HS/ExecutePhase")
-							and whatIsQueued == "NA"
-							and Player.Power >= (Spell.Execute:Cost() + Spell.HeroicStrike:Cost())
+		and Enemy5YC >= 2
+		and exeCount >= 1
+		then 
+			if Spell.Execute:Known() 
+			and GCD == 0 
+			then
+				for _, Unit in ipairs(Enemy5Y) do
+					if Unit.HP < 20 
+					and Unit.Health >= 500 then
+						if whatIsQueued ~= "NA"
+						and Player.Power < Spell.Execute:Cost()
+							then 
+							cancelAAmod()
+						end
+						if Setting("Queue HS/ExecutePhase")
+						and whatIsQueued == "NA"
+						and Player.Power >= (Spell.Execute:Cost() + Spell.HeroicStrike:Cost())
 							then
-								RunMacroText("/cast Heroic Strike")
-							end
-							smartCast("Execute", Unit) 
+							RunMacroText("/cast Heroic Strike")
+						end
+						
+						if smartCast("Execute", Unit, nil) 
+							then return true 
 						end
 					end
-					return true
 				end
+			end
 		
 		
-		elseif Enemy5YC <=1
-			and Target 
+		elseif Target 
 			and Target.HP <= 20
 			and not Target.Dead 
 			and Target.Distance <= 2 
@@ -734,13 +748,17 @@ local function AutoExecute()
 					if Spell.Bloodthirst:Known()
 						and Spell.Bloodthirst:CD() == 0
 						and effectiveAP >= 2000
-							then smartCast("Bloodthirst", Target)
-							return true		
+							then 
+							if smartCast("Bloodthirst", Target)
+								then return true 
+							end			
 					elseif  Spell.MortalStrike:Known()
 						and Spell.MortalStrike:CD() == 0 
 						and effectiveAP >= 2000
-							then smartCast("MortalStrike", Target)
-							return true
+							then 
+							if smartCast("MortalStrike", Target)
+								then return true
+							end 
 					else
 						if whatIsQueued ~= "NA"
 						and Player.Power < Spell.Execute:Cost()
@@ -753,8 +771,11 @@ local function AutoExecute()
 						then
 							RunMacroText("/cast Heroic Strike")
 						end
-						smartCast("Execute", Target) 
-						return true
+						
+					if smartCast("Execute", Unit, nil) 
+						then return true 
+					end
+					
 					end
 		end
 	end
