@@ -11,6 +11,10 @@
 
 ## Changelog
 
+## 08.09.2020
+
+* fixed execute endless loop for some variants of the settings
+
 ## 02.09.2020
 
 * added trinket and seperated cooldown toggles (cds, racials...)
