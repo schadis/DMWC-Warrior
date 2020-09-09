@@ -1,15 +1,41 @@
 # DMWC-Warrior
 
 * 2h Fury same as Furry and FuryProt (there is no PVP coding)
-* all the best to immortalhz
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
+* install details addon for rage calc of incoming dmg
+* There is a DMWC fork in my repo pls use it until merge to main git
+
+## This is a Experimental/Test Version feedback in Discord is welcome
+
+## Supported Trinkets and Consums
+
+* DiamondFlask
+* Earthstrike
+* JomGabbar 
+* BadgeoftheSwarmguard
+* BadgeoftheSwarmguard
+* MightyRagePotion
+* GreatRagePotion
+* SapperCharges
+* Nates and Dynamite (not all and this part need work)
 
 ## Todo: 
 
-* cooldown checkboxes that a furryprot can select witch cds shall be used
-* ??? Tell me more
+* make rage calculation more accurate
 
 ## Changelog
+
+## 09.09.2020
+
+* fixed execute functions
+* remover MS over execute cause it was bullshit(only BT is better when AP >=2000)
+* finished rage calculation function (install details Addon if you whant to have incoming dmg inclunded)
+* added calculation of armor and armor mitigation value
+* added the possibility to print target armor in chat (information for you)
+* added calculation for minimum ragegain Mainhand and Offhand (incl.% dmg Worldbuffs)
+* changed dump function from cd of mainspell dependend to ragecalc
+* removed dump with HS from Hud and added a toogle instead
+* moved some of the functions to a other position in the code (that everything can be called)
 
 ## 02.09.2020
 
