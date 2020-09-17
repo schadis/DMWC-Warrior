@@ -21,9 +21,6 @@ local function round(num, numDecimalPlaces)
   local mult = 10^(numDecimalPlaces or 0)
   return math.floor(num * mult + 0.5) / mult
 end
-
-
-
 	  
 local stanceNumber = {[1] = "Battle", [2] = "Defensive", [3] = "Berserk"}	  
 local stanceCheck = {
@@ -449,7 +446,13 @@ local function GetArmorOfTarget(...)
 		end
 		
 		armorMitigation = (BtCalcDmg - DamageBT) / BtCalcDmg
+		
 		TargetArmor = ((85 * UnitLevel("player") * armorMitigation + 400 * armorMitigation)/ (1 - armorMitigation))
+		
+		-- if TargetArmor < 0
+			-- then TargetArmor = 0
+		-- end
+		
 		if Setting("Print Target Armor") then print(round(TargetArmor, 2)) end
 end
 
@@ -1644,13 +1647,15 @@ local function Consumes()
 	and Player.Combat
 	and (DMW.Time - ItemUsage) > 1.5 
 	and Enemy10YC ~= nil
-	and Enemy10YC >= Setting("Enemys in 10Y")
+	and Enemy10YC >= Setting("Enemys 10Y")
 	and GetItemCount(Item.GoblinSapperCharge.ItemID) >= 1
 	and Item.GoblinSapperCharge:CD() == 0 
 		then 
-		Item.GoblinSapperCharge:Use(Player)
-		ItemUsage = DMW.Time
-		return true
+		if Item.GoblinSapperCharge:Use(Player)
+			then 
+			ItemUsage = DMW.Time
+			return true
+		end
 	end
 
 -- Granates and dynamite
@@ -1667,56 +1672,73 @@ local function Consumes()
 			if GetItemCount(Item.DenseDynamite.ItemID) >= 1
 			and Item.DenseDynamite:CD() == 0 
 			then 
-				Item.DenseDynamite:UseGround(Target)
-				ItemUsage = DMW.Time
-				return true
+				if Item.DenseDynamite:UseGround(Target)
+					then
+					ItemUsage = DMW.Time
+					return true
+				end
 			elseif GetItemCount(Item.ThoriumGrenade.ItemID) >= 1
 			and Item.ThoriumGrenade:CD() == 0 
 			then 
-				Item.ThoriumGrenade:UseGround(Target)
-				return true
+				if Item.ThoriumGrenade:UseGround(Target)
+					then
+					ItemUsage = DMW.Time
+					return true
+				end
 			elseif GetItemCount(Item.EZThroDynamitII.ItemID) >= 1
 			and Item.EZThroDynamitII:CD() == 0 
 			then 
-				Item.EZThroDynamitII:UseGround(Target)
-				ItemUsage = DMW.Time
-				return true				
+				if Item.EZThroDynamitII:UseGround(Target)
+					then
+					ItemUsage = DMW.Time
+					return true
+				end			
 			elseif GetItemCount(Item.IronGrenade.ItemID) >= 1
 			and Item.IronGrenade:CD() == 0 
 			then 
-				Item.IronGrenade:UseGround(Target)
-				ItemUsage = DMW.Time
-				return true	
+				if Item.IronGrenade:UseGround(Target)
+					then
+					ItemUsage = DMW.Time
+					return true
+				end		
 			end
 			
 		elseif Setting("Use Trowables") == 3
 			and GetItemCount(Item.DenseDynamite.ItemID) >= 1
 			and Item.DenseDynamite:CD() == 0 
 			then 
-				Item.DenseDynamite:UseGround(Target)
-				ItemUsage = DMW.Time
-				return true
+				if Item.DenseDynamite:UseGround(Target)
+					then 
+					ItemUsage = DMW.Time
+					return true
+				end
 		elseif Setting("Use Trowables") == 4
 			and GetItemCount(Item.EZThroDynamitII.ItemID) >= 1
 			and Item.EZThroDynamitII:CD() == 0 
 			then 
-				Item.EZThroDynamitII:UseGround(Target)
-				ItemUsage = DMW.Time
-				return true		
+				if Item.EZThroDynamitII:UseGround(Target)
+					then 
+					ItemUsage = DMW.Time
+					return true
+				end	
 		elseif Setting("Use Trowables") == 5
 			and GetItemCount(Item.ThoriumGrenade.ItemID) >= 1
 			and Item.ThoriumGrenade:CD() == 0 
 			then 
-				Item.ThoriumGrenade:UseGround(Target)
-				ItemUsage = DMW.Time
-				return true		
+				if Item.ThoriumGrenade:UseGround(Target)
+					then 
+					ItemUsage = DMW.Time
+					return true
+				end		
 		elseif Setting("Use Trowables") == 6
 			and GetItemCount(Item.IronGrenade.ItemID) >= 1
 			and Item.IronGrenade:CD() == 0 
 			then 
-				Item.IronGrenade:UseGround(Target)
-				ItemUsage = DMW.Time
-				return true			
+				if Item.IronGrenade:UseGround(Target)
+					then 
+					ItemUsage = DMW.Time
+					return true
+				end			
 		
 		end
 	end

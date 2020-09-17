@@ -201,7 +201,8 @@ function Warrior.Settings()
 		UI.AddToggle("WCB", "If Warchiefsblessing is on you log off", false)
 		UI.AddToggle("Ony_Nef", "If Dragonslayer is on you log off", false)
 		UI.AddToggle("ZG", "If Spirit of Zandalar is on you log off", false)
-	
+
+
 ------------------------------------------------------------------------------------------------------------------------------	
 
 	--Debug/Print
