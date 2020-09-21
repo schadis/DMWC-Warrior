@@ -10,7 +10,7 @@ function Warrior.Settings()
             [1] = {
                 Sweeping = {
                     [1] = {Text = "Sweeping Strikes |cFF00FF00On", Tooltip = ""},
-                    [2] = {Text = "Sweeping Strikes |cFFFFFF00Off", Tooltip = ""}
+                    [2] = {Text = "Sweeping Strikes |cffff0000Off", Tooltip = ""}
                 }
             }
         }
@@ -29,23 +29,17 @@ function Warrior.Settings()
         Charge = {
             [1] = {Text = "Charge |cFF00FF00And_InterCept", Tooltip = ""},
             [2] = {Text = "Only |cFFFFFF00InterCept", Tooltip = ""},
-            [3] = {Text = "|cFFFFFF00No_Moving", Tooltip = ""}
+            [3] = {Text = "|cffff0000No_Moving", Tooltip = ""}
         }
     }
-	UI.HUD.Options[3] = {
-                Dump_HS_OnOff = {
-                    [1] = {Text = "Dump_HS_OnOff |cFF00FF00On", Tooltip = ""},
-                    [2] = {Text = "Dump_HS_OnOff |cFFFFFF00Off", Tooltip = ""}
-		}      
-	}
 
-    UI.HUD.Options[4] = {
+    UI.HUD.Options[3] = {
         Execute = {
-            [1] = {Text = "Execute 360++", Tooltip = ""},
-            [2] = {Text = "Execute If <= 3 units", Tooltip = ""},
-            [3] = {Text = "Execute |cffffffffTarget", Tooltip = ""},
-            [4] = {Text = "Execute |cffffffffMix", Tooltip = ""},
-            [5] = {Text = "Execute |cFFFFFF00Disabled", Tooltip = ""}
+            [1] = {Text = "Execute 360++ |cFF00FF00", Tooltip = ""},
+            [2] = {Text = "Execute If <= 3 units |cFF00FF00", Tooltip = ""},
+            [3] = {Text = "Execute |cFF00FF00Target", Tooltip = ""},
+            [4] = {Text = "Execute |cFF00FF00Mix", Tooltip = ""},
+            [5] = {Text = "Execute |cffff0000Disabled", Tooltip = ""}
 	    }
     }	
 
@@ -83,9 +77,15 @@ function Warrior.Settings()
         UI.AddToggle("Whirlwind","Not used in FurryProt", true)
         UI.AddToggle("Overpower","Not used in FurryProt", true)
 		UI.AddToggle("MortalStrike", nil, false)
+		UI.AddToggle("Heroic Strike", "Will use Heroic Strike for Rage dump, else it will Cleave", true)
+		UI.AddToggle("Cleave", "Will use Cleave for Rage dump when there are more targets", true)
+		UI.AddToggle("Execute", "Main toogle for Execute", true)
 		UI.AddToggle("Hamstring < 35% Enemy HP", nil, true)
 		UI.AddToggle("Hamstring PvP", nil, true)
+		
+------------------------------------------------------------------------------------------------------------------------------
 
+    UI.AddTab("Rage Settings")
 	UI.AddHeader("Rage Settings")
 		UI.AddToggle("Bloodrage", "Use Bloodrage when available", false)
 		UI.AddToggle("Berserker Rage", "Use Berserker Rage", false)
@@ -101,11 +101,10 @@ function Warrior.Settings()
 		UI.AddBlank()
 		UI.AddToggle("Queue HS/ExecutePhase", "Will queue HS in Execute Phase when there is more rage than Excost", false)
 		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 1, 30)
-
-
-
-
+		UI.AddToggle("Calculate Rage", "Will use ragecalc", true)
+		
 ------------------------------------------------------------------------------------------------------------------------------
+
     UI.AddTab("CDs & Consumables")
 		UI.AddHeader("Cooldowns")	
 		UI.AddToggle("Recklessness", "Use Recklessness in Auto/Keypress Mode", false)
@@ -129,11 +128,8 @@ function Warrior.Settings()
 		UI.AddRange("Enemys 10Y", "Enemys in 10 Yards Sapper Range", 0, 15, 1, 8)
 		UI.AddDropdown("Use Trowables", "Select the item to use", {"None","All","DenseDynamite","EZThroDynamitII","ThoriumGrenade","IronGrenade"},1)
 		UI.AddRange("Enemys 5Y around Target", "Enemys in 5 around Target", 0, 15, 1, 8)	
-	
 
 		--UI.AddBlank()
-		
-		
 		
     UI.AddTab("CDs Auto Mode")
 		UI.AddHeader("Settings for Auto use of CDs")
@@ -162,9 +158,8 @@ function Warrior.Settings()
 		UI.AddRange("Seconds after Keypress for Recklessness", "duration=15s", 0, 60, 1, 35)
 		UI.AddRange("Seconds after Keypress for RagePotion", "duration=20s", 0, 60, 1, 33)		
 
-
-		
 ------------------------------------------------------------------------------------------------------------------------------	
+
 	UI.AddTab("Tanky")
     UI.AddHeader("Tanky Stuff")
         UI.AddToggle("SunderArmor", "Applies SunderArmor Spam on GCD if FurryProt", true)
@@ -186,7 +181,8 @@ function Warrior.Settings()
     UI.AddHeader("Lifesaver for 2Hand Furry - if Aggro in Raid from boss")		
 		UI.AddToggle("Lifesaver", "Will equip a shield and 1h and cast shieldwall if Aggro in RAID", false)
 		UI.AddDropdown("Min Q. gear equiped with Lifesaver", "searches for the first item it can equip", {"white","green","blue","purple"}, "3")
-
+		UI.AddToggle("Equip 2H after aggroloose", "Will equip a shield and 1h and cast shieldwall if Aggro in RAID", false)
+		
 	UI.AddTab("Debuffs")	
 	UI.AddHeader("Debuffs")
         if DMW.Player.Spells.PiercingHowl:Known() 
@@ -201,17 +197,22 @@ function Warrior.Settings()
         -- UI.AddRange("abuse range", "qwe", 0, 3, 0.01, 0.5)
 
 ------------------------------------------------------------------------------------------------------------------------------	
+
 	UI.AddTab("Buff Sniper")
 		UI.AddHeader("If World buff drops log off")
 		UI.AddHeader("Only select one")
 		UI.AddToggle("WCB", "If Warchiefsblessing is on you log off", false)
 		UI.AddToggle("Ony_Nef", "If Dragonslayer is on you log off", false)
 		UI.AddToggle("ZG", "If Spirit of Zandalar is on you log off", false)
-	
+
+
 ------------------------------------------------------------------------------------------------------------------------------	
+
 	--Debug/Print
 	UI.AddTab("Debug/Print")
 	UI.AddToggle("Debug","enables Debug, pls activate rotation once", false)
 	UI.AddToggle("Log","enables Log, pls activate rotation once", false)
+	UI.AddToggle("Print Target Armor","Prints the Calculated Target Armor....can be wrong on low level Mobs", false)
+	UI.AddToggle("Print Armormitigation","Prints the Armormitigation", false)
 	
 end
