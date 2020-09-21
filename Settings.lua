@@ -77,6 +77,9 @@ function Warrior.Settings()
         UI.AddToggle("Whirlwind","Not used in FurryProt", true)
         UI.AddToggle("Overpower","Not used in FurryProt", true)
 		UI.AddToggle("MortalStrike", nil, false)
+		UI.AddToggle("Heroic Strike", "Will use Heroic Strike for Rage dump, else it will Cleave", true)
+		UI.AddToggle("Cleave", "Will use Cleave for Rage dump when there are more targets", true)
+		UI.AddToggle("Execute", "Main toogle for Execute", true)
 		UI.AddToggle("Hamstring < 35% Enemy HP", nil, true)
 		UI.AddToggle("Hamstring PvP", nil, true)
 		
@@ -97,9 +100,9 @@ function Warrior.Settings()
 		UI.AddToggle("Use Slam over BT", "Uses Slam over BT when we have less then 1500AP", false)
 		UI.AddBlank()
 		UI.AddToggle("Queue HS/ExecutePhase", "Will queue HS in Execute Phase when there is more rage than Excost", false)
-		UI.AddToggle("HS Rage dump", "Will use Heroic Strike for Rage dump, else it will Cleave", true)
 		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 1, 30)
-
+		UI.AddToggle("Calculate Rage", "Will use ragecalc", true)
+		
 ------------------------------------------------------------------------------------------------------------------------------
 
     UI.AddTab("CDs & Consumables")
@@ -209,6 +212,7 @@ function Warrior.Settings()
 	UI.AddTab("Debug/Print")
 	UI.AddToggle("Debug","enables Debug, pls activate rotation once", false)
 	UI.AddToggle("Log","enables Log, pls activate rotation once", false)
-	UI.AddToggle("Print Target Armor","Prints the Calculated Target Armor", false)
+	UI.AddToggle("Print Target Armor","Prints the Calculated Target Armor....can be wrong on low level Mobs", false)
+	UI.AddToggle("Print Armormitigation","Prints the Armormitigation", false)
 	
 end

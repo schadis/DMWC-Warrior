@@ -6,15 +6,14 @@ local Player, Buff, Debuff, Spell, Stance, Target, Talent, Item, GCD, CDs, HUD, 
       Enemy30YC, Enemy8Y, Enemy8YC, rageLost, dumpEnabled, castTime, syncSS, combatLeftCheck, stanceChangedSkill,
       stanceChangedSkillTimer, stanceChangedSkillUnit, targetChange, whatIsQueued, oldTarget, rageLeftAfterStance, firstCheck,
       secondCheck, thirdCheck, SwingMH, SwingOH, MHSpeed, PosX, PosY, PosZ
-local base, posBuff, negBuff = UnitAttackPower("player")
-local effectiveAP = base + posBuff + negBuff  
+local effectiveAP = 1500  
 local UseCDsTime = 0
 local SunderStacks = 0
 local SunderedMobStacks = {}
 local ReadyCooldownCountValue
 local ItemUsage = GetTime()
-local armorMitigation = 0.155
-local TargetArmor = 1000
+local armorMitigation = 0.5
+local TargetArmor = 3500
 local DmgModiBuffOrStance = 1
 
 local function round(num, numDecimalPlaces)
@@ -242,6 +241,11 @@ local function Locals()
     dumpEnabled = false
     syncSS = false
     whatIsQueued = checkOnHit()
+	local base, posBuff, negBuff = UnitAttackPower("player")
+	local effectiveAP = base + posBuff + negBuff  
+	
+	
+	
     -- print(Talent.TacticalMastery.Rank)
 	
 	-- Sets sweeping strikes to of after use
@@ -292,13 +296,10 @@ local function Locals()
         Stance = "Berserk"
     end
 	
-	if Target and Player.Combat
-	then
-		threatPercent = select(4, Target:UnitDetailedThreatSituation())
-		if threatPercent == nil 
-			then
-		threatPercent = 0
-		end
+	if not (Target or not Player.Combat)
+		then
+		armorMitigation = 0.5
+		TargetArmor = 3500
 	end
 	
 	local a,b,c = 1, 1, 1
@@ -453,7 +454,15 @@ local function GetArmorOfTarget(...)
 			-- then TargetArmor = 0
 		-- end
 		
-		if Setting("Print Target Armor") then print(round(TargetArmor, 2)) end
+		if Setting("Print Target Armor") 
+		and TargetArmor >= 0
+			then print("Target Armor: ", round(TargetArmor, 2)) 
+		elseif Setting("Print Target Armor") 
+		and TargetArmor < 0
+			then print("Target Armor: 0") 
+		end
+		
+		if Setting("Print Armormitigation") then print(round(armorMitigation, 4)) end
 end
 
 --calculate rage values per MH and Offhand hit 
@@ -463,7 +472,7 @@ local function ragegain(t)--t is the time for which we calculate the rage income
 	local cFactor = 0.0091107836 * (UnitLevel("player"))^2 + 3.225598133 * (UnitLevel("player"))^2 + 4.2652911
 	local mainhandSpeed = select(1, UnitAttackSpeed("player"))
 	local calcDamageDoneMH = DmgModiBuffOrStance* (((maxDamage + minDamage) / 2) + (effectiveAP / 14) * mainhandSpeed)
-	local rageFromDamageMH = (calcDamageDoneMH * armorMitigation) / cFactor * 7.5
+	local rageFromDamageMH = (calcDamageDoneMH * (1 - armorMitigation)) / cFactor * 7.5
 	local hasOffHand = false
 	local offhandSpeed = select(2, UnitAttackSpeed("player")) 
 	local calcDamageOH = 0
@@ -485,7 +494,7 @@ local function ragegain(t)--t is the time for which we calculate the rage income
 	if hasOffHand
 		then 
 		calcDamageOH = DmgModiBuffOrStance *(((minOffHandDamage + maxOffHandDamage)/2) + (effectiveAP / 14) * offhandSpeed * (0.5 + 0.025 * Talent.DuelWieldSpec.Rank))
-		rageFromDamageOffH = (calcDamageOH * armorMitigation) / cFactor * 7.5
+		rageFromDamageOffH = (calcDamageOH * (1 - armorMitigation)) / cFactor * 7.5
 	end
 
 	--calculate rage values per Damage Taken infight (via Deatails addon)	
@@ -571,7 +580,8 @@ local function dumpRage(value)
 
 	if Setting("Slam")
 	and Setting("RotationType") == 1
-	and (Enemy5YC >= 2 or not Setting("HS Rage dump"))
+	and (Enemy5YC >= 2 or not Setting("Heroic Strike"))
+	and Setting("Cleave")
 	and whatIsQueued == "NA"
 	and Player.Power >= Spell.Cleave:Cost()
 		then
@@ -643,25 +653,26 @@ local function dumpRage(value)
 	if whatIsQueued == "NA" 
 		then
         if (Setting("RotationType") == 1 or Setting("RotationType") == 2)
-		and (Enemy5YC >= 2 or not Setting("HS Rage dump")) 
+		and (Enemy5YC >= 2 or not Setting("Heroic Strike"))
+		and Setting("Cleave")
 		and Player.Power >= Spell.Cleave:Cost()
-		and (Player.Power - Spell.Cleave:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost()
+		and (not Setting("Calculate Rage") or (Player.Power - Spell.Cleave:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost())
 			then 
 			RunMacroText("/cast Cleave")
 			value = value - Spell.Cleave:Cost()
 			DMW.Player.SwingDump = true
 
 		elseif Player.Power >= Spell.HeroicStrike:Cost()
-		and Setting("HS Rage dump")
+		and Setting("Heroic Strike")
 		then		
 			if  Spell.Bloodthirst:Known()
-			and (Player.Power - Spell.HeroicStrike:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost()
+			and (not Setting("Calculate Rage") or (Player.Power - Spell.HeroicStrike:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
 				then
 				RunMacroText("/cast Heroic Strike")
 				value = value - Spell.HeroicStrike:Cost()
 				DMW.Player.SwingDump = true
 			elseif Spell.MortalStrike:Known()
-			and (Player.Power - Spell.HeroicStrike:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost()
+			and (not Setting("Calculate Rage") or (Player.Power - Spell.HeroicStrike:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost())
 				then
 				RunMacroText("/cast Heroic Strike")
 				value = value - Spell.HeroicStrike:Cost()
@@ -710,7 +721,7 @@ local function dumpRage(value)
 		and Spell.Whirlwind:Known()
 		and Player.Power >= Spell.Whirlwind:Cost()
 		and Spell.Whirlwind:CD() == 0
-		and (Player.Power - Spell.Whirlwind:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost()
+		and (not Setting("Calculate Rage") or (Player.Power - Spell.Whirlwind:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
 			then
             if Spell.Whirlwind:Cast(Player) 
 				then
@@ -724,7 +735,7 @@ local function dumpRage(value)
 			then
 			if Spell.Bloodthirst:Known()
 			and Spell.Bloodthirst:CD() >= 1.5
-			and (Player.Power - Spell.SunderArmor:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost()
+			and (not Setting("Calculate Rage") or (Player.Power - Spell.SunderArmor:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
 				then
 				if Spell.SunderArmor:Cast(Target) 
 					then
@@ -732,7 +743,7 @@ local function dumpRage(value)
 				end
 			elseif Spell.MortalStrike:Known()
 			and Spell.MortalStrike:CD() >= 1.5
-			and (Player.Power - Spell.SunderArmor:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost()
+			and (not Setting("Calculate Rage") or (Player.Power - Spell.SunderArmor:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost())
 				then
 				if Spell.SunderArmor:Cast(Target)  
 					then
@@ -900,7 +911,8 @@ local function AutoExecute()
 	--Getting Executable Tagets in 5yards Range
     -- if Player.Power >= 10 then
     local exeCount = 0
-    if (HUD.Execute == 1 or HUD.Execute == 2 or HUD.Execute == 3 or HUD.Execute == 4)
+    if Setting("Execute")
+	and	(HUD.Execute == 1 or HUD.Execute == 2 or HUD.Execute == 3 or HUD.Execute == 4)
 		then
         for _, Unit in ipairs(Enemy5Y) do
             if Unit.HP <= 20 then
@@ -908,7 +920,8 @@ local function AutoExecute()
             end
         end
     end
-    if HUD.Execute == 1 
+    if Setting("Execute") 
+	and HUD.Execute == 1 
 		then
         if Spell.Execute:Known() 
 		and exeCount >= 1
@@ -936,7 +949,8 @@ local function AutoExecute()
                 end
             end
         end
-    elseif HUD.Execute == 2
+    elseif Setting("Execute") 
+	and HUD.Execute == 2
 	and exeCount >= 1	
 		then
         if Enemy5YC <= 3 then -- <= 3 then
@@ -965,7 +979,8 @@ local function AutoExecute()
                 end
             end
         end
-    elseif HUD.Execute == 3 
+    elseif Setting("Execute") 
+	and HUD.Execute == 3 
 		then
         if Target 
 		and Target.HP <= 20
@@ -1002,7 +1017,8 @@ local function AutoExecute()
 				then return true 
 			end		
 		end
-	elseif HUD.Execute == 4
+	elseif Setting("Execute") 
+	and HUD.Execute == 4
         then
 		if Enemy5YC <= 6 
 		and Enemy5YC >= 2
@@ -1801,8 +1817,6 @@ end
 function Warrior.Rotation()
     Locals()
 
-
-
 	--Debug and Log Info	
 	if Setting("Debug")
 	and not DMW.UI.Debug.Frame:IsShown() 
@@ -2038,16 +2052,16 @@ function Warrior.Rotation()
 						if Setting("Bloodthirst") 
 						and Spell.Bloodthirst:Known() 
 						and Spell.Bloodthirst:CD() == 0
-						and (Player.Power - Spell.Bloodthirst:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost()
+						and (not Setting("Calculate Rage") or (Player.Power - Spell.Bloodthirst:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost())
 						and  Player.Power >= Spell.Bloodthirst:Cost()
-							then						
+							then 				
 							if smartCast("Bloodthirst", Target, true) 
 								then return true 
 							end
 						elseif Setting("MortalStrike") 
 						and Spell.MortalStrike:Known() 
 						and Spell.MortalStrike:CD() == 0 
-						and (Player.Power - Spell.MortalStrike:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost()
+						and (not Setting("Calculate Rage") or (Player.Power - Spell.MortalStrike:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost())
 						and  Player.Power >= Spell.MortalStrike:Cost()
 							then
 							if smartCast("MortalStrike", Target, true) 
@@ -2106,14 +2120,14 @@ function Warrior.Rotation()
 							then
 							if Setting("Bloodthirst") 
 							and Spell.Bloodthirst:Known() 
-							and (Player.Power - Spell.Whirlwind:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Whirlwind:Cost()
+							and (not Setting("Calculate Rage") or (Player.Power - Spell.Whirlwind:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
 								then
 									if smartCast("Whirlwind", Unit, nil) 
 										then return true 
 									end
 							elseif Setting("MortalStrike")  
 							and Spell.MortalStrike:Known()
-							and (Player.Power - Spell.Whirlwind:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.MortalStrike:Cost()
+							and (not Setting("Calculate Rage") or (Player.Power - Spell.Whirlwind:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost())
 								then                 
 								if smartCast("Whirlwind", Unit, nil) 
 									then return true 
@@ -2479,14 +2493,14 @@ function Warrior.Rotation()
 				then 
 					if Spell.Bloodthirst:Known()
 					and Spell.Bloodthirst:CD() >= 1.5
-					and (Player.Power - Spell.SunderArmor:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost()
+					and (not Setting("Calculate Rage") or (Player.Power - Spell.SunderArmor:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
 						then
 						if Spell.SunderArmor:Cast(Target) 
 							then return true 
 						end
 					elseif Spell.MortalStrike:Known()
 					and Spell.MortalStrike:CD() >= 1.5
-					and (Player.Power - Spell.SunderArmor:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost()
+					and (not Setting("Calculate Rage") or (Player.Power - Spell.SunderArmor:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost())
 						then
 						if Spell.SunderArmor:Cast(Target) 
 							then return true 

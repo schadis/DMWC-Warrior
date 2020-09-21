@@ -21,9 +21,13 @@
 
 ## Todo: 
 
-* make rage calculation more accurate
-
 ## Changelog
+
+## 21.09.2020
+
+* fixed a bug in ragecalc (was not working without a reload)
+* added toogle to switch of ragecalc
+* added Heroic Strike and Cleave and Execute Main toggles
 
 ## 09.09.2020
 
