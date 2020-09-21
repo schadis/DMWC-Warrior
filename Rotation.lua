@@ -949,8 +949,10 @@ local function AutoExecute()
                 end
             end
         end
+
     elseif Setting("Execute") 
 	and HUD.Execute == 2
+
 	and exeCount >= 1	
 		then
         if Enemy5YC <= 3 then -- <= 3 then
