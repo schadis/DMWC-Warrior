@@ -244,10 +244,7 @@ local function Locals()
 	local base, posBuff, negBuff = UnitAttackPower("player")
 	local effectiveAP = base + posBuff + negBuff  
 	
-	
-	
-    -- print(Talent.TacticalMastery.Rank)
-	
+
 	-- Sets sweeping strikes to of after use
     if Setting("Auto Disable SS") 
 	and HUD.Sweeping == 1 
@@ -280,11 +277,6 @@ local function Locals()
 		firstCheck = "Defensive"
 		secondCheck = "Battle"
 		thirdCheck = "Berserk"
-	elseif Setting("RotationType") == 10 --deffskillstance for furry
-		then 
-		firstCheck = "Defensive"
-		secondCheck = "Berserk"
-		thirdCheck = "Battle"
 	end
 	
 	-- getting actual Stance
@@ -728,7 +720,7 @@ local function dumpRage(value)
 				value = value - Spell.Whirlwind:Cost()	
 			end
 		elseif Setting("SunderArmor") 
-		and (Setting("RotationType") == 2 or Setting("RotationType") == 10)
+		and Setting("RotationType") == 2
 		and Spell.SunderArmor:Known()
 		and Player.Power >= Spell.SunderArmor:Cost()
 		and Spell.SunderArmor:CD() == 0
@@ -815,7 +807,7 @@ local function dumpRage(value)
 end
 
 local function stanceDanceCast(spell, dest, stance)
-    if rageLost <= Setting("RageLose on StanceChange") then
+    if (Setting("FuckRage&StanceDance") or rageLost <= Setting("RageLose on StanceChange")) then
         if GetShapeshiftFormCooldown(1) == 0 and not stanceChangedSkill and Player.Power >= Spell[spell]:Cost() and Spell[spell]:CD() <= 0.3 then
             if stance == "Battle" then
                 if Spell.StanceBattle:Cast() then
@@ -856,7 +848,7 @@ local function smartCast(spell, Unit, pool)
 
     if Spell[spell] ~= nil then
 
-        if (Setting("RotationType") == 1 or Setting("RotationType") == 2 or Setting("RotationType") == 10) 
+        if (Setting("RotationType") == 1 or Setting("RotationType") == 2) 
 			then
             if stanceCheck[firstCheck][spell] then 
                 if Stance == firstCheck then
@@ -1467,7 +1459,6 @@ local ItemTypeOffhand
 
 					if item ~= nil
 					and select(7, GetItemInfo(item)) == itemtype
-					and select(3, GetItemInfo(item)) >= Setting("Min Q. gear for Kick Gear") 
 						then
 						UseContainerItem(bag,slot)
 						return true
@@ -1492,32 +1483,198 @@ local ItemTypeOffhand
 	end
 end
 
-local function lifesaver()
-
-	DMW.Settings.profile.Rotation.RotationType = 10
-
-	if not IsEquippedItemType("One-Handed Axes" or "One-Handed Maces" or "One-Handed Swords" or "Daggers")
-	and UnitIsEnemy("player", "target")
-	and not UnitPlayerControlled("target")
-	and UnitInRaid("player") ~= nil
-	--and Target:IsBoss()
+local function IsEquipped(itemID, slot)
+    local ID = GetInventoryItemID("player", slot)
+    if ID == itemID
 		then
-			UseContainerItemByItemtype("One-Handed Maces")
-			UseContainerItemByItemtype("One-Handed Swords")
-			UseContainerItemByItemtype("Daggers")
-			UseContainerItemByItemtype("One-Handed Axes")
-	end
-	
-	if not IsEquippedItemType("Shields")
-	and UnitIsEnemy("player", "target")
-	and not UnitPlayerControlled("target")
-	and UnitInRaid("player") ~= nil
-	--and Target:IsBoss()
-		then
-			UseContainerItemByItemtype("Shields")
-	end
+		return true
 
+	else return false
+    end
 end
+
+
+local function weaponswap(def,off)
+local MainhandName = select(1, GetItemInfo(Setting("ItemID Mainhand")))
+local DefMainhandName = select(1, GetItemInfo(Setting("ItemID DefMainhand")))
+local OffhandName = select(1, GetItemInfo(Setting("ItemID Offhand")))
+local ShieldName = select(1, GetItemInfo(Setting("ItemID Shield")))
+local TwohanderName = select(1, GetItemInfo(Setting("ItemID 2 Hander")))
+local ItemIdMH =  tonumber(Setting("ItemID Mainhand"))
+local ItemIdDefMh = tonumber(Setting("ItemID DefMainhand"))
+local ItemIdOH = tonumber(Setting("ItemID Offhand"))
+local ItemIdS = tonumber(Setting("ItemID Shield"))
+local ItemIdTH = tonumber(Setting("ItemID 2 Hander"))
+
+
+	if (Setting("Equip 1h and shield when aggro") or Setting("Swap to shield for kick"))
+	and def
+	and ItemIdDefMh ~= nil
+	and ItemIdS ~= nil
+	and (not IsEquipped(ItemIdDefMh, 16) or not IsEquipped(ItemIdS, 17)) --16Mainhand 17Offhand
+		then 
+		for bag = 0,4 do
+			for slot = 1,GetContainerNumSlots(bag) do
+				local item = GetContainerItemID(bag,slot)
+				if item ~= nil
+				and item == ItemIdDefMh
+					then
+					RunMacroText("/equipslot 16 " .. DefMainhandName)
+
+				end
+				if item ~= nil
+				and item == ItemIdS
+					then 
+					RunMacroText("/equipslot 17 " .. ShieldName)
+
+				end
+				if IsEquipped(ItemIdDefMh, 16) and IsEquipped(ItemIdS, 17)
+				then return true end
+			end
+		end
+		
+	elseif Setting("Equip 2 x 1h after aggroloose")
+	and off
+	and ItemIdMH ~= nil
+	and ItemIdOH ~= nil
+	and (not IsEquipped(ItemIdMH, 16) or not IsEquipped(ItemIdOH, 17)) --16Mainhand 17Offhand
+		then 
+		for bag = 0,4 do
+			for slot = 1,GetContainerNumSlots(bag) do
+				local item = GetContainerItemID(bag,slot)
+
+				if item ~= nil
+				and item == ItemIdMH
+					then 
+					RunMacroText("/equipslot 16 " .. MainhandName)
+					
+				end
+				if item ~= nil
+				and item == ItemIdOH
+					then 
+					RunMacroText("/equipslot 17 " .. OffhandName)
+					
+				end
+				if IsEquipped(ItemIdMH, 16) and IsEquipped(ItemIdOH, 17)
+				then return true end
+			end
+		end
+	elseif Setting("Equip 2H after aggroloose")
+	and off
+	and ItemIdTH ~= nil
+	and not IsEquipped(ItemIdTH, 16) --16Mainhand 17Offhand
+		then 
+		for bag = 0,4 do
+			for slot = 1,GetContainerNumSlots(bag) do
+				local item = GetContainerItemID(bag,slot)
+
+				if item ~= nil
+				and item == ItemIdTH
+					then 
+					RunMacroText("/equipslot 16 " .. TwohanderName)
+					
+				end
+				if IsEquipped(ItemIdTH, 16)
+				then return true end
+			end
+		end
+	-- elseif Setting("Swap to shield for kick")
+	-- and off
+	-- and ItemIdOH ~= nil
+	-- and not IsEquipped(ItemIdOH, 17) --16Mainhand 17Offhand
+		-- then 
+		-- for bag = 0,4 do
+			-- for slot = 1,GetContainerNumSlots(bag) do
+				-- local item = GetContainerItemID(bag,slot)
+
+				-- if item ~= nil
+				-- and item == ItemIdOH
+					-- then 
+					-- RunMacroText("/equipslot 17 " .. OffhandName)
+					
+				-- end
+				-- if IsEquipped(ItemIdOH, 17)
+				-- then return true end
+			-- end
+		-- end
+		
+	elseif (((Setting("Equip 1h and shield when aggro") or Setting("Swap to shield for kick")) and IsEquipped(ItemIdDefMh, 16) and IsEquipped(ItemIdS, 17))
+	or (Setting("Equip 2 x 1h after aggroloose") and IsEquipped(ItemIdMH, 16) and IsEquipped(ItemIdOH, 17))
+	or (Setting("Equip 2H after aggroloose") and IsEquipped(ItemIdTH, 16))) --or (Setting("Swap to shield for kick") and not def and IsEquipped(ItemIdOH, 17)) or (Setting("Swap to shield for kick") and def and IsEquipped(ItemIdS, 17))
+		then return true
+
+	end	
+end
+
+
+local function lifesaver()
+	if Target
+	and Player:IsTanking()
+	and not UnitPlayerControlled("target")
+	and (not Setting("Lifesaver only in Raid") or (Setting("Lifesaver only in Raid") and UnitInRaid("player") ~= nil))
+	and Setting("RotationType") == 1
+		then
+		if Setting("Lifes. allways")
+			then
+			if Setting("Equip 1h and shield when aggro")
+			then
+				if weaponswap(true,false)
+					then DMW.Settings.profile.Rotation.RotationType = 2 return true
+				end
+			else DMW.Settings.profile.Rotation.RotationType = 2 return true
+			end
+		elseif Setting("Lifes. Enemy Max HP")
+		and Target.HealthMax >= Setting("MaxHP in tousands")
+			then 
+			if Setting("Equip 1h and shield when aggro")
+			then
+				if weaponswap(true,false)
+					then DMW.Settings.profile.Rotation.RotationType = 2 return true
+				end
+			else DMW.Settings.profile.Rotation.RotationType = 2 return true
+			end
+		elseif Setting("Lifes. Enemy Level")
+		and Target.Level >= Setting("EnemyLvl")
+			then 
+			if Setting("Equip 1h and shield when aggro")
+			then
+				if weaponswap(true,false)
+					then DMW.Settings.profile.Rotation.RotationType = 2 return true
+				end
+			else DMW.Settings.profile.Rotation.RotationType = 2 return true
+			end			
+		elseif Setting("Lifes. Bossaggro")
+		and Target.IsBoss()
+			then 
+			if Setting("Equip 1h and shield when aggro")
+			then
+				if weaponswap(true,false)
+					then DMW.Settings.profile.Rotation.RotationType = 2 return true
+				end
+			else DMW.Settings.profile.Rotation.RotationType = 2 return true
+			end			
+		end
+		
+	elseif Setting("RotationType") == 2
+	and (not Player:IsTanking() or not Player.Combat)
+		then
+		if Setting("Equip 2 x 1h after aggroloose")
+			then
+				if weaponswap(false,true)
+					then DMW.Settings.profile.Rotation.RotationType = 1 return true
+				end
+		elseif Setting("Equip 2H after aggroloose")
+			then
+				if weaponswap(false,true)
+					then DMW.Settings.profile.Rotation.RotationType = 1 return true
+				end
+		else DMW.Settings.profile.Rotation.RotationType = 1 return true
+		end
+		
+
+	end 
+end
+
 
 local function AutoTargetAndFacing()
 
@@ -1908,15 +2065,8 @@ function Warrior.Rotation()
 	
     if Setting("RotationType") == 1 --or (Target and Target.Player) 
 		then
-		
-        if Setting("Lifesaver") 
-		and Setting("Equip 2H after aggroloose")
-		and not IsEquippedItemType("Two-Hand")
-			then
-			UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")
-		end
-		
-		
+		Locals()
+	
 		-- AutoAttack
 		if Target 
 		and not Target.Dead 
@@ -1934,30 +2084,12 @@ function Warrior.Rotation()
 
 			-----life saver if aggro---------
 			if Setting("Lifesaver") 
-			and Target
-			and not UnitPlayerControlled("target")
-			and UnitInRaid("player") ~= nil
-			and Player:IsTanking()
-				then
-				lifesaver()
-			
-			elseif Setting("Lifesaver") 
-			and Target
-			and not Player:IsTanking()
-				then
-				DMW.Settings.profile.Rotation.RotationType = 1
-								
-			elseif Setting("Lifesaver") 
-			and Setting("Equip 2H after aggroloose")
-			and Target
-			and not Player:IsTanking()
-			and not IsEquippedItemType("Two-Hand")
-			then
-				UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")					
+				then 
+				if lifesaver()
+					then return true
+				end
 			end
-			
-			
-			
+	
 			-- Bers Rage --
 			if Setting("Berserker Rage") 
 			and Spell.BersRage:CD() == 0 
@@ -2181,182 +2313,22 @@ function Warrior.Rotation()
 			end		
         end
 		
-	--------------------------------------------switch to deff stance with lifesaver rotation---------------------------------------
-	
-	
-	
-	elseif Setting("RotationType") == 10 --or (Target and Target.Player) 
-			then
 
-			if not Player.Combat 
-			and Setting("Lifesaver")
-			and Setting("Equip 2H after aggroloose")
-				then
-				UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")
-				DMW.Settings.profile.Rotation.RotationType = 1
-			end
-			
-			
-			-- AutoAttack
-			if Target 
-			and not Target.Dead 
-			and Target.Distance <= 5 
-			and Target.Attackable 
-			and not IsCurrentSpell(Spell.Attack.SpellID) 
-				then
-				StartAttack()
-			end
-
-			if Player.Combat
-			and Enemy5YC ~= nil
-			and Enemy5YC > 0 
-				then
-
-
-				-----life saver if aggro---------
-				if Setting("Lifesaver") 
-				and not UnitPlayerControlled("target")
-				and Player:IsTanking()
-				and Target
-				and (DMW.Settings.profile.Rotation.RotationType ~= 10 or not IsEquippedItemType("Shields"))
-					then
-					lifesaver()
-				elseif Setting("Lifesaver") 
-				and Target
-				and not Player:IsTanking()
-					then
-					DMW.Settings.profile.Rotation.RotationType = 1
-				elseif Setting("Lifesaver")
-				and Target
-				and not Player:IsTanking()
-				and not IsEquippedItemType("Two-Hand")
-					then
-					UseContainerItemByItemtype("Two-Handed Axes" or "Two-Handed Maces" or "Two-Handed Swords")
-				end
-
-
-				-- Bloodrage --
-				if Setting("Bloodrage")
-				and Spell.Bloodrage:Known()
-				and Spell.Bloodrage:CD() == 0
-				and Player.Power <= 50 
-				and Player.HP >= 30
-				and regularCast("Bloodrage", Player)
-					then return true
-				end
-				
-				-- Buffs Battleshout
-				if (AutoBuff() or AutoRevenge())
-					then return true 
-				end
-
-				--wall if low health
-				if Player.HP <= 60
-				and Spell.ShieldWall:Known()
-				and Spell.ShieldWall:CD() == 0
-				and IsEquippedItemType("Shields")
-				and smartCast("ShieldWall", Player, true)
-					then return true 
-				end
-				
-				
-				if Target 
-					then
-					
-					--unqueue HS or Cleave when low rage
-					if Player.Power < 20
-					and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
-					and Player.SwingMH <= 0.3
-					and Player.SwingMH > 0
-						then				
-						cancelAAmod()
-					end
-					
-					
-					
-					-- AutoKICK with Shield Bash if something in 5Yards casts something
-					if Setting("Pummel/ShildBash") 
-						and IsEquippedItemType("Shields")
-						and Spell.ShieldBash:Known()
-						and Spell.ShieldBash:CD() == 0
-						and Player.Power >= Spell.ShieldBash:Cost()
-							then
-							local castName = Target:CastingInfo()
-							if castName ~= nil 
-							and (Target:Interrupt() or interruptList[castName]) 
-								then
-								if smartCast("ShieldBash", Target, true) 
-									then return true 
-								end
-							end
-					end
-
-                    if Setting("Bloodthirst")
-					and Spell.Bloodthirst:Known()
-					and Spell.Bloodthirst:CD() == 0
-					and Player.Power >= Spell.Bloodthirst:Cost()
-					and smartCast("Bloodthirst", Target, true) 
-						then return true 
-					
-					elseif Setting("MortalStrike") 
-					and Spell.MortalStrike:Known()
-					and Spell.MortalStrike:CD() == 0
-					and Spell.Whirlwind:CD() >= 2 
-					and Player.Power >= Spell.MortalStrike:Cost()
-					and smartCast("MortalStrike", Target, true) 
-						then return true 
-					end
-
-                    if Setting("SunderArmor")
-					and ((Spell.Bloodthirst:Known() and Spell.Bloodthirst:CD() >= 3) or (Spell.MortalStrike:Known() and Spell.MortalStrike:CD() >= 3))
-					and Spell.SunderArmor:Known()
-					and GCD == 0
-					and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
-					and SunderStacks < 5
-					and Player.Power >= Spell.SunderArmor:Cost()
-					and smartCast("SunderArmor", Target, true)
-						then return true 
-					end
-					
-					if Setting("Use ShieldBlock")
-					and IsEquippedItemType("Shields")
-					and Player.Power >= Spell.ShieldBlock:Cost()
-						then
-						for k, v in pairs(Enemy10Y) do
-							if UnitIsUnit(UnitTarget(v.Pointer), "player")
-							and Spell.ShieldBlock:Known()
-							and Spell.ShieldBlock:CD() == 0
-							and Player.HP <= Setting("Shieldblock HP") 
-							and UnitIsUnit(v.Target, "player") 
-							and (v.SwingMH > 0 or v.SwingMH <= 0.5) 
-								then
-								smartCast("ShieldBlock", Player)
-								break
-							end
-						end
-					end
-	
-					-- AbuseHS()
-					--Rage dump with HS or Cleave if there is still rage with harmstring if activated
-					if Setting("Rage Dump?") 
-					and Player.Power >= Setting("Rage Dump") 
-						then
-						if dumpRage(Player.Power - Setting("Rage Dump")) 
-							then return true 
-						end
-					end
-
-				end
-			end
-	
-    
     -----------------FURY Prot PART--------------------FURY Prot PART--------------------FURY Prot PART--------------------FURY Prot PART------
     ---FURY Prot PART--------------------FURY Prot PART--------------------FURY Prot PART--------------------FURY Prot PART--------------------
     -----------------FURY Prot PART--------------------FURY Prot PART--------------------FURY Prot PART--------------------FURY Prot PART------	
 	
 	elseif Setting("RotationType") == 2 --or (Target and Target.Player) 
 		then
-		
+		Locals()
+		-- swap back to main weapons and rotation
+		if Setting("Lifesaver") 
+			then 
+			if lifesaver()
+				then return true
+			end
+		end	
+
 
 		-- AutoAttack
 		if Target 
@@ -2368,20 +2340,29 @@ function Warrior.Rotation()
 			StartAttack()
         end
 		
-		--Swap back to 1h offhand
-		if Setting("Swap to shild for kick")
-		and IsEquippedItemType("Shields")
-		and Spell.ShieldBash:CD() >= 1.6
-			then
-			UseContainerItemByItemtype("Offhand")
-		end
-		
+		-- Swap back to 1h offhand
+		-- if Setting("Swap to shield for kick")
+		-- and IsEquippedItemType("Shields")
+		-- then
+			-- for _, Unit in ipairs(Enemy5Y) do
+			-- local castName = Unit:CastingInfo()
+				-- if castName == nil
+				-- and not (Unit:Interrupt() or interruptList[castName])
+					-- then 
+					-- if weaponswap(false,true) 
+						-- then return true
+					-- end
+				-- end
+			-- end
+		-- end
+
         if Player.Combat
 		and Enemy5YC ~= nil
 		and Enemy5YC > 0 
 			then
+		
 
-
+			
 			-- Bloodrage --
 			if Setting("Bloodrage")
 			and Spell.Bloodrage:Known()
@@ -2443,22 +2424,27 @@ function Warrior.Rotation()
 						then return true 
 					end
 				end
-			elseif Setting("Swap to shild for kick")
-			and Target 
-			and not IsEquippedItemType("Shields")
-			and Spell.ShieldBash:Known()
-			and Spell.ShieldBash:CD() == 0
-			and Player.Power >= Spell.ShieldBash:Cost()
-				then
-				local castName = Target:CastingInfo()
-				if castName ~= nil 
-				and (Target:Interrupt() or interruptList[castName]) 
-					then
-					UseContainerItemByItemtype("Shields")
-					if smartCast("ShieldBash", Target, true) 
-						then return true 
-					end
-				end
+			-- elseif Setting("Swap to shield for kick")
+			-- and Setting("Pummel/ShildBash")
+			-- and Target 
+			-- and not IsEquippedItemType("Shields")
+			-- and Spell.ShieldBash:Known()
+			-- and Spell.ShieldBash:CD() == 0
+			-- and Player.Power >= Spell.ShieldBash:Cost()
+				-- then
+				-- for _, Unit in ipairs(Enemy5Y) do
+				-- local castName = Unit:CastingInfo()
+					-- if castName ~= nil 
+					-- and (Unit:Interrupt() or interruptList[castName]) 
+						-- then
+						-- if weaponswap(true,false) 
+							-- then 
+							-- if smartCast("ShieldBash", Target, true) 
+								-- then return true
+							-- end
+						-- end
+					-- end	
+				-- end
 			end
 
 			
@@ -2545,7 +2531,17 @@ function Warrior.Rotation()
 						end
 					end
 				end
-											
+				
+				if Setting("ShieldWall")
+				and Player.HP <= Setting("Shieldwall HP")
+				and Spell.ShieldWall:Known()
+				and Spell.ShieldWall:CD() == 0
+				and IsEquippedItemType("Shields")
+				and smartCast("ShieldWall", Player, true)
+					then return true 
+				end
+
+				
 				if Setting("Rage Dump?") 
 				and Player.Power >= Setting("Rage Dump") 
 					then
@@ -2578,5 +2574,3 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
 		Buffsniper()		
 	end
 end)
-
-

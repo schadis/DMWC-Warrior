@@ -21,8 +21,17 @@
 
 ## Todo: 
 
+* First Global Sunder
+
 ## Changelog
 
+## 23.09.2020
+
+* removed seperate lifesaver rotation will switch to furry prot instead
+* added weapon switching in defferent forms
+* removed equip shild for kick cause was not working
+* added more settings for differen things like shildwall if you want to use it as lifesaver
+* added different seetings for lifesaver as trigger (allways, bossaggro, aggro of a target lvl+ or its maxHP)
 
 ## 21.09.2020
 

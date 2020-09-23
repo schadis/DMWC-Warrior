@@ -102,7 +102,7 @@ function Warrior.Settings()
 		UI.AddToggle("Queue HS/ExecutePhase", "Will queue HS in Execute Phase when there is more rage than Excost", false)
 		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 1, 30)
 		UI.AddToggle("Calculate Rage", "Will use ragecalc", true)
-		
+		UI.AddToggle("FuckRage&StanceDance", "Will dance Stances no matter what rage lvl you are", true)
 ------------------------------------------------------------------------------------------------------------------------------
 
     UI.AddTab("CDs & Consumables")
@@ -161,37 +161,57 @@ function Warrior.Settings()
 ------------------------------------------------------------------------------------------------------------------------------	
 
 	UI.AddTab("Tanky")
-    UI.AddHeader("Tanky Stuff")
+    UI.AddHeader("Tanky & Debuffs")
         UI.AddToggle("SunderArmor", "Applies SunderArmor Spam on GCD if FurryProt", true)
 		UI.AddDropdown("Apply Stacks of Sunder Armor", "Apply # Stacks of Sunder Armor", {"1","2","3","4","5"}, "5")
 		UI.AddToggle("Revenge", "Auto use Revenge", false)
         UI.AddToggle("Use ShieldBlock", nil, true)
-        UI.AddRange("Shieldblock HP", nil, 30, 100, 10, 50, true)
+        UI.AddRange("Shieldblock HP", nil, 30, 100, 5, 50, true)
+		UI.AddToggle("Use Shielwall", nil, false)
+        UI.AddRange("Shieldwall HP", nil, 30, 100, 5, 50, true)
+		UI.AddHeader("Debuffs")
+		UI.AddRange("PiercingHowl", "Units near w/o debuff", 0, 10, 1, 0)
+        UI.AddRange("ThunderClap", "Units near w/o debuff, take care will swap you in BattleStance", 0, 10, 1, 0)
+        UI.AddRange("DemoShout", "Units near w/o debuff", 0, 10, 1, 0)
+		
 	
-	UI.AddHeader("Only for FurryProt")
-		UI.AddToggle("Swap to shild for kick","Swaps back to 1h after Pummel/ShildBash has to be activ", false)
-		UI.AddDropdown("ItemType for Offhand", "Searches for the first item it can equip with selected Type", {"One-Handed Axes","One-Handed Maces","One-Handed Swords","Daggers"}, 1)
-		UI.AddBlank()
-		UI.AddDropdown("Min Q. gear for Kick Gear","Searches for the first item it can equip with selected Quality", {"white","green","blue","purple"}, 3)
+
+		-- UI.AddDropdown("ItemType for Offhand", "Searches for the first item it can equip with selected Type", {"One-Handed Axes","One-Handed Maces","One-Handed Swords","Daggers"}, 1)
+		-- UI.AddBlank()
+		-- UI.AddDropdown("Min Q. gear for Kick Gear","Searches for the first item it can equip with selected Quality", {"white","green","blue","purple"}, 3)
        
 
 	    -- UI.AddToggle("MockingBlow", nil, false)
         -- UI.AddToggle("Taunt", nil, false)
 		
-    UI.AddHeader("Lifesaver for 2Hand Furry - if Aggro in Raid from boss")		
-		UI.AddToggle("Lifesaver", "Will equip a shield and 1h and cast shieldwall if Aggro in RAID", false)
-		UI.AddDropdown("Min Q. gear equiped with Lifesaver", "searches for the first item it can equip", {"white","green","blue","purple"}, "3")
-		UI.AddToggle("Equip 2H after aggroloose", "Will equip a shield and 1h and cast shieldwall if Aggro in RAID", false)
+    UI.AddTab("Lifesaver Weapon and Rotation Changes")
+		-- UI.AddHeader("Swap in a Shield to kick")
+		-- UI.AddToggle("Swap to shield for kick","Swaps back to 1h after... Pummel/ShildBash has to be activ", false)
 		
-	UI.AddTab("Debuffs")	
-	UI.AddHeader("Debuffs")
-        if DMW.Player.Spells.PiercingHowl:Known() 
-		then
-			UI.AddRange("PiercingHowl", "Units near w/o debuff", 0, 10, 1, 0)
-        end
-		UI.AddRange("ThunderClap", "Units near w/o debuff, take care will swap you in BattleStance", 0, 10, 1, 0)
-        UI.AddRange("DemoShout", "Units near w/o debuff", 0, 10, 1, 0)
-    
+		UI.AddHeader("Lifesaver Weapon and Rotation Changes")
+		UI.AddToggle("Lifesaver", "Will swap to defensive rotation", false)
+		UI.AddToggle("Lifes. allways", "Will trigger lifesaver allways on Aggro", false)
+		UI.AddToggle("Lifesaver only in Raid", "Will use this only in a Raid", false)
+		UI.AddToggle("Lifes. Bossaggro", "Will trigger lifesaver only on Bossaggro", false)
+		UI.AddToggle("Lifes. Enemy Level", "Will activate Lifesaver on Enemy LVL", false)
+		UI.AddRange("EnemyLvl", "Will trigger lifesaver only on Enemies Lvl", 0, 63, 1 ,61)
+		UI.AddToggle("Lifes. Enemy Max HP", "Will activate Lifesaver on Max Hp", false)
+		UI.AddRange("MaxHP in tousands", "Will trigger lifesaver only on Enemies with more ... max health in kilo", 5, 100, 5 ,20)
+
+
+		UI.AddToggle("Equip 1h and shield when aggro", "Equips 1 hander and Shield on aggro", false)
+		UI.AddBlank()
+		UI.AddTextBox("ItemID DefMainhand", "Put in the ItemID of your Defensive Mainhand", 0.9, nil)		
+		UI.AddTextBox("ItemID Shield", "Put in the ItemID of you Shield", 0.9, nil)
+		
+		UI.AddToggle("Equip 2 x 1h after aggroloose", "Will equip 2 x 1 hander after aggroloose", false)
+		UI.AddBlank()
+		UI.AddTextBox("ItemID Mainhand", "Put in the ItemID of your Mainhand", 0.9, nil)
+		UI.AddTextBox("ItemID Offhand", "Put in the ItemID of your Offhand", 0.9, nil)
+		
+		UI.AddToggle("Equip 2H after aggroloose", "Will equip 2 hander after aggroloose", false)
+		UI.AddTextBox("ItemID 2 Hander", "Put in the ItemID of you 2 Hander", 0.9, nil)
+
 	-- UI.AddHeader("Experiments")
         -- UI.AddToggle("abuse", nil, false)
         -- UI.AddRange("abuse range", "qwe", 0, 3, 0.01, 0.5)
