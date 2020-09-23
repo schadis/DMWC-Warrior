@@ -5,8 +5,6 @@
 * install details addon for rage calc of incoming dmg
 * There is a DMWC fork in my repo pls use it until merge to main git
 
-## This is a Experimental/Test Version feedback in Discord is welcome
-
 ## Supported Trinkets and Consums
 
 * DiamondFlask
