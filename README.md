@@ -1,11 +1,12 @@
 # DMWC-Warrior
 
-* 2h Fury same as Furry and FuryProt (there is no PVP coding)
+* 2h Fury same as Furry and FuryProt
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 * install details addon for rage calc of incoming dmg
 * There is a DMWC fork in my repo pls use it until merge to main git
 
 ## This is a Experimental/Test Version feedback in Discord is welcome
+## Tthere is no PVP coding or Lvling Support
 
 ## Supported Trinkets and Consums
 
@@ -19,11 +20,16 @@
 * SapperCharges
 * Nates and Dynamite (not all and this part need work)
 
-## Todo: 
-
-* First Global Sunder
+## Todo: ???
 
 ## Changelog
+
+## 27.09.2020
+
+* First Global Sunder
+* battleshout monitoring to prevent overriding
+* toggle to ignore rageloose when stancedancing
+* changed most spellcast on smartcast to ensure stance is correct
 
 ## 23.09.2020
 
