@@ -1,11 +1,15 @@
 # DMWC-Warrior
 
-* 2h Fury same as Furry and FuryProt (there is no PVP coding)
+* 2h Fury same as Furry and FuryProt and simple Leveling rota
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 * install details addon for rage calc of incoming dmg
 * There is a DMWC fork in my repo pls use it until merge to main git
 
-## Supported Trinkets and Consums
+## Feedback in Discord is welcome
+
+## There is no PVP coding or Support
+
+## Supported Trinkets and Consumes
 
 * DiamondFlask
 * Earthstrike
@@ -17,10 +21,37 @@
 * SapperCharges
 * Nates and Dynamite (not all and this part need work)
 
-## Todo: 
+## Todo: ???
 
 ## Changelog
 
+## 05.10.2020
+
+* added simple leveling rota (not every option does something in this, pls try yourself)
+* fixed Settings for First Global Sunder
+* fixed Settings for lifesaver
+* fixed whatisqued
+* added toogle for HS toggling (was auto on before)
+* exposed armor check for sunder armor
+* restructure of the code
+* merged experimental into master branch
+
+* still a bug with stancedance.. stuck in battlest. some time
+
+## 27.09.2020
+
+* First Global Sunder
+* battleshout monitoring to prevent overriding
+* toggle to ignore rageloose when stancedancing
+* changed most spellcast on smartcast to ensure stance is correct
+
+## 23.09.2020
+
+* removed seperate lifesaver rotation will switch to furry prot instead
+* added weapon switching in defferent forms
+* removed equip shild for kick cause was not working
+* added more settings for differen things like shildwall if you want to use it as lifesaver
+* added different seetings for lifesaver as trigger (allways, bossaggro, aggro of a target lvl+ or its maxHP)
 
 ## 21.09.2020
 
