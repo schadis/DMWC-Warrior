@@ -50,7 +50,7 @@ function Warrior.Settings()
 	
     UI.AddHeader("Usual Options")
 	    -- UI.AddToggle("Debug", nil, false)
-		UI.AddDropdown("RotationType", nil, {"2HFury/Fury","FurryProt"}, 1)
+		UI.AddDropdown("RotationType", nil, {"2HFury/Fury","FuryProt","Leveling"}, 1)
 		UI.AddBlank()
 		UI.AddToggle("BattleStance NoCombat", "Switches to Battle Stance if we are not InCombat" , false)
         UI.AddToggle("Charge&Intercept", nil, false)
@@ -64,8 +64,13 @@ function Warrior.Settings()
     UI.AddHeader("Auto Stuff")
         UI.AddToggle("AutoFace", "Makes you Face the Target all the Time", false)
         UI.AddToggle("AutoTarget", "Targets the next Target automaticly", false)
+<<<<<<< Updated upstream
         UI.AddToggle("BattleShout", nil, true)
         UI.AddToggle("Pummel/ShildBash", "Has to be checked for FurryProt swap option", false)
+=======
+        UI.AddToggle("BattleShout", nil, false)
+        UI.AddToggle("Pummel/ShildBash", "Has to be checked for FuryProt swap option", false)
+>>>>>>> Stashed changes
         -- UI.AddToggle("Auto Disable SS", nil, false)
 		-- UI.AddToggle("AutoTreatTarget", nil, false) only in tank rota not supported atm
 		
@@ -73,9 +78,15 @@ function Warrior.Settings()
     UI.AddHeader("DPS Shit/Spells")
         -- UI.AddToggle("Rend", nil, false)	not programmed
 		-- UI.AddToggle("SweepingStrikes", nil, false) not programmed
+<<<<<<< Updated upstream
         UI.AddToggle("Bloodthirst", nil, true)
         UI.AddToggle("Whirlwind","Not used in FurryProt", true)
         UI.AddToggle("Overpower","Not used in FurryProt", true)
+=======
+        UI.AddToggle("Bloodthirst", nil, false)
+        UI.AddToggle("Whirlwind","Not used in FuryProt", false)
+        UI.AddToggle("Overpower","Not used in FuryProt", false)
+>>>>>>> Stashed changes
 		UI.AddToggle("MortalStrike", nil, false)
 		UI.AddToggle("Heroic Strike", "Will use Heroic Strike for Rage dump, else it will Cleave", true)
 		UI.AddToggle("Cleave", "Will use Cleave for Rage dump when there are more targets", true)
@@ -91,14 +102,14 @@ function Warrior.Settings()
 		UI.AddToggle("Berserker Rage", "Use Berserker Rage", false)
         UI.AddToggle("Rage Dump?", "Shall we Dump the Rage that is too much", false)
         UI.AddRange("Rage Dump", "On witch Value do we have too much Rage", 30, 100, 1, 30)
-        UI.AddToggle("Hamstring Dump", "Dumps Rage also with Hamstring, good with Windfurry, not used in FurryProt", false)
+        UI.AddToggle("Hamstring Dump", "Dumps Rage also with Hamstring, good with Windfury, not used in FuryProt", false)
 		UI.AddRange("Hamstring dump above # rage", "At what amount of rage Hamstring will also be used as dump", 0, 100, 1, 50)
 		UI.AddToggle("Only HString MHSwing >= GCD", "Uses Hamstring only when MH swing duration is at min. a GCD", false)
 		UI.AddBlank()
 		UI.AddToggle("Use Slam", "For 2H Slam Spec", false)
 		UI.AddRange("Use Slam above # rage", "At what amount of rage Slam will also be used as dump", 0, 100, 1, 50)
 		UI.AddToggle("Use Slam over BT", "Uses Slam over BT when we have less then 1500AP", false)
-		UI.AddBlank()
+		UI.AddToggle("Toggle HS", "Will queue and unque HS ... when its needed", false)
 		UI.AddToggle("Queue HS/ExecutePhase", "Will queue HS in Execute Phase when there is more rage than Excost", false)
 		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 1, 30)
 		UI.AddToggle("Calculate Rage", "Will use ragecalc", true)
@@ -161,8 +172,15 @@ function Warrior.Settings()
 ------------------------------------------------------------------------------------------------------------------------------	
 
 	UI.AddTab("Tanky")
+<<<<<<< Updated upstream
     UI.AddHeader("Tanky Stuff")
         UI.AddToggle("SunderArmor", "Applies SunderArmor Spam on GCD if FurryProt", true)
+=======
+    UI.AddHeader("Tanky & Debuffs")
+		UI.AddToggle("First Global Sunder", "On new Target the first Global will be SunderArmor if not 5 Stacks", false)
+		UI.AddRange("GCDSunder MaxHP", "Will Sunder on first GCD only mobs with a bigger max health in tousands", 5, 100, 5 ,25)		
+		UI.AddToggle("SunderArmor", "Applies SunderArmor Spam on GCD if FuryProt", false)
+>>>>>>> Stashed changes
 		UI.AddDropdown("Apply Stacks of Sunder Armor", "Apply # Stacks of Sunder Armor", {"1","2","3","4","5"}, "5")
 		UI.AddToggle("Revenge", "Auto use Revenge", false)
         UI.AddToggle("Use ShieldBlock", nil, true)
