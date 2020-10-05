@@ -1,14 +1,15 @@
 # DMWC-Warrior
 
-* 2h Fury same as Furry and FuryProt
+* 2h Fury same as Furry and FuryProt and simple Leveling rota
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 * install details addon for rage calc of incoming dmg
 * There is a DMWC fork in my repo pls use it until merge to main git
 
-## This is a Experimental/Test Version feedback in Discord is welcome
-## Tthere is no PVP coding or Lvling Support
+## Feedback in Discord is welcome
 
-## Supported Trinkets and Consums
+## There is no PVP coding or Support
+
+## Supported Trinkets and Consumes
 
 * DiamondFlask
 * Earthstrike
@@ -23,6 +24,19 @@
 ## Todo: ???
 
 ## Changelog
+
+## 05.10.2020
+
+* added simple leveling rota (not every option does something in this, pls try yourself)
+* fixed Settings for First Global Sunder
+* fixed Settings for lifesaver
+* fixed whatisqued
+* added toogle for HS toggling (was auto on before)
+* exposed armor check for sunder armor
+* restructure of the code
+* merged experimental into master branch
+
+* still a bug with stancedance.. stuck in battlest. some time
 
 ## 27.09.2020
 
