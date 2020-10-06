@@ -25,6 +25,11 @@
 
 ## Changelog
 
+## 06.10.2020
+
+* fixed Stuck in stance dance
+* added bandage support
+
 ## 05.10.2020
 
 * added simple leveling rota (not every option does something in this, pls try yourself)
@@ -35,8 +40,6 @@
 * exposed armor check for sunder armor
 * restructure of the code
 * merged experimental into master branch
-
-* still a bug with stancedance.. stuck in battlest. some time
 
 ## 27.09.2020
 

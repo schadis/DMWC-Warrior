@@ -10,6 +10,7 @@ local effectiveAP = 1500
 local UseCDsTime = 0
 local SunderStacks = 0
 local ExposeArmor = false
+local Bandaged = false
 local SunderedMobStacks = {}
 local ReadyCooldownCountValue
 local ItemUsage = GetTime()
@@ -216,36 +217,7 @@ local function ReadyCooldown()
 
 end
 
-local function Locals()
-    Player = DMW.Player
-    Buff = Player.Buffs
-    Debuff = Player.Debuffs
-    Spell = Player.Spells
-    Talent = Player.Talents
-    Item = Player.Items
-    Target = (Player.Target or false)
-    HUD = DMW.Settings.profile.HUD
-    CDs = Player:CDs()
-	Target5Y, Target5YC = EnemiesAroundTarget()
-    Enemy5Y, Enemy5YC = Player:GetEnemies(5)
-    Enemy8Y, Enemy8YC = Player:GetEnemies(8)
-    Enemy10Y, Enemy10YC = Player:GetEnemies(10)
-    Enemy30Y, Enemy30YC = Player:GetEnemies(30)
-
-    -- mainSwing, mainSpeed = Player:GetSwing("main")
-    GCD = Player:GCDRemain()
-    -- firstCheck = stanceNumber[Setting("First check Stance")]
-    -- secondCheck = stanceNumber[Setting("Second check Stance")]
-    -- thirdCheck = stanceNumber[Setting("Third check Stance")]
-    if castTime == nil then castTime = DMW.Time end
-    rageLeftAfterStance = Talent.TacticalMastery.Rank * 5
-    rageLost = Player.Power - rageLeftAfterStance
-    dumpEnabled = false
-    syncSS = false
-    whatIsQueued = checkOnHit()
-	local base, posBuff, negBuff = UnitAttackPower("player")
-	local effectiveAP = base + posBuff + negBuff  
-	
+local function CdTriggers()
 
 	-- Sets sweeping strikes to of after use
     if Setting("Auto Disable SS") 
@@ -267,7 +239,10 @@ local function Locals()
 	and (HUD.CDs == 2 or HUD.CDs == 1)
 		then DMWHUDCDS:Toggle(3)
 	end
-	
+
+end
+
+local function GetStanceAndChecks()
 
 	if Setting("RotationType") == 1 or Setting("RotationType") == 3
 		then 
@@ -290,16 +265,17 @@ local function Locals()
         Stance = "Berserk"
     end
 	
+end
+
+
+local function ArmorCalcThings()
+
 	if not (Target or not Player.Combat)
 		then
 		armorMitigation = 0.5
 		TargetArmor = 3500
 	end
-	if not Player.Combat
-		then
-		table.wipe(SunderedMobStacks)
-	end	
-
+	
 	local a,b,c = 1, 1, 1
 	
 	if Buff.SaygesDarkFortuneofDamage:Exist(Player)
@@ -316,6 +292,59 @@ local function Locals()
 	end	
 	DmgModiBuffOrStance = a * b * c		
 	
+end
+
+local function TableAndStanceReset()
+
+	if not Player.Combat
+		then
+		table.wipe(SunderedMobStacks)
+		stanceChangedSkill = nil
+        stanceChangedSkillUnit = nil
+        stanceChangedSkillTimer = nil
+	elseif stanceChangedSkillTimer
+	and DMW.Time - stanceChangedSkillTimer >= 0.5
+	then 
+		stanceChangedSkill = nil
+        stanceChangedSkillUnit = nil
+        stanceChangedSkillTimer = nil
+	end	
+
+end
+
+local function Locals()
+    Player = DMW.Player
+    Buff = Player.Buffs
+    Debuff = Player.Debuffs
+    Spell = Player.Spells
+    Talent = Player.Talents
+    Item = Player.Items
+    Target = (Player.Target or false)
+    HUD = DMW.Settings.profile.HUD
+    CDs = Player:CDs()
+	Target5Y, Target5YC = EnemiesAroundTarget()
+    Enemy5Y, Enemy5YC = Player:GetEnemies(5)
+    Enemy8Y, Enemy8YC = Player:GetEnemies(8)
+    Enemy10Y, Enemy10YC = Player:GetEnemies(10)
+    Enemy30Y, Enemy30YC = Player:GetEnemies(30)
+    GCD = Player:GCDRemain()
+    rageLeftAfterStance = Talent.TacticalMastery.Rank * 5
+    rageLost = Player.Power - rageLeftAfterStance
+    dumpEnabled = false
+    syncSS = false
+    whatIsQueued = checkOnHit()
+    if castTime == nil then castTime = DMW.Time end
+	local base, posBuff, negBuff = UnitAttackPower("player")
+	local effectiveAP = base + posBuff + negBuff  
+	
+	CdTriggers()
+	
+	GetStanceAndChecks()
+	
+	ArmorCalcThings()
+	
+	TableAndStanceReset()
+
 end
 
 -- Getting GetDebuffStacks
@@ -345,6 +374,18 @@ local function GetDebuffStacks()
 					break
 				elseif DMW.Player.Target.ValidEnemy and UnitDebuff("target", i) ~= "Expose Armor" then
 					ExposeArmor = false
+				end
+			end
+		end
+		
+		if not Player:IsPlayerReallyDead() 
+			then
+			for i = 1, 16 do
+				if UnitDebuff("player", i) == "Recently Bandaged" then
+					Bandaged = true
+					break
+				elseif UnitDebuff("player", i) ~= "Recently Bandaged" then
+					Bandaged = false
 				end
 			end
 		end
@@ -1209,23 +1250,15 @@ local function AutoOverpower()
 	and Spell.Overpower:Known()
 	then
         for _, Unit in ipairs(Enemy5Y) do
-            if Player.OverpowerUnit[Unit.Pointer] ~= nil
-			and Player.Power <= 25 
+			if Player.OverpowerUnit[Unit.Pointer] ~= nil
+			and Player.Power <= 60 
 			and Unit.HP > 20 
-			and Player.SwingMH >= 1
-			and Spell.Overpower:CD() < Player.OverpowerUnit[Unit.Pointer].time - 0.3 
+			and Player.SwingMH >= 0.5
+			and ((Spell.Bloodthirst:Known() and Spell.Bloodthirst:CD() >= 2.5) or (Spell.MortalStrike:Known() and Spell.MortalStrike:CD() >= 2.5))
+			and Spell.Overpower:CD() < (Player.OverpowerUnit[Unit.Pointer].time - 0.5 - DMW.Time)
 			then
-				if Spell.Bloodthirst:Known()
-				and Spell.Bloodthirst:CD() >= 2 
-				then                 
-					if smartCast("Overpower", Unit, nil) 
-					then return true end
-				elseif Spell.MortalStrike:Known()
-				and Spell.MortalStrike:CD() >= 2 
-				then                 
-					if smartCast("Overpower", Unit, nil) 
-					then return true end
-				end
+				if smartCast("Overpower", Unit, nil) 
+				then return true end
             end
         end
     end
@@ -1532,13 +1565,14 @@ local function StanceChangedSpell()
             stanceChangedSkill = nil
             stanceChangedSkillUnit = nil
             stanceChangedSkillTimer = nil
-        elseif DMW.Time - stanceChangedSkillTimer >= 0.5 then
+			return true
+		elseif DMW.Time - stanceChangedSkillTimer >= 0.5 then
             -- print(stanceChangedSkill .. " at " .. stanceChangedSkillUnit.Name .. " failed")
             stanceChangedSkill = nil
             stanceChangedSkillUnit = nil
             stanceChangedSkillTimer = nil
-        end
-        return true
+			return true
+		end
     end
 end
 
@@ -1730,8 +1764,12 @@ end
 
 
 local function lifesaver()
-	local WeHaveAggro = select(2, UnitDetailedThreatSituation(Player.Pointer, Target.Pointer))
+	local WeHaveAggro = 0
 	
+	if Target
+		then WeHaveAggro = select(2, UnitDetailedThreatSituation(Player.Pointer, Target.Pointer))
+	end
+		
 	if WeHaveAggro == nil
 	then WeHaveAggro = 0
 	end
@@ -2099,6 +2137,65 @@ local function Consumes()
 			end
 		end
 	end
+	
+	if Setting("Use Bandages") then
+		if DMW.Player.HP <= Setting("Use Bandages at #% HP") 
+		and not Player.Moving and (Enemy8YC == nil or Enemy8YC == 0)
+		and (DMW.Time - ItemUsage) > 1.5 then
+			if GetItemCount(14530) >= 1 and GetItemCooldown(14530) == 0 then
+				name = GetItemInfo(14530)
+				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
+				return true 
+			elseif GetItemCount(14529) >= 1 and GetItemCooldown(14529) == 0 then
+				name = GetItemInfo(14529)
+				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
+				return true
+			elseif GetItemCount(2581) >= 1 and GetItemCooldown(2581) == 0 then
+				name = GetItemInfo(2581)
+				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
+				return true
+			elseif GetItemCount(8545) >= 1 and GetItemCooldown(8545) == 0 then
+				name = GetItemInfo(8545)
+				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
+				return true
+			elseif GetItemCount(6451) >= 1 and GetItemCooldown(6451) == 0 then
+				name = GetItemInfo(6451)
+				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
+				return true
+			elseif GetItemCount(3531) >= 1 and GetItemCooldown(3531) == 0 then
+				name = GetItemInfo(3531)
+				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
+				return true
+			elseif GetItemCount(1251) >= 1 and GetItemCooldown(1251) == 0 then
+				name = GetItemInfo(1251)
+				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
+				return true
+			elseif GetItemCount(8544) >= 1 and GetItemCooldown(8544) == 0 then
+				name = GetItemInfo(8544)
+				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
+				return true
+			elseif GetItemCount(6450) >= 1 and GetItemCooldown(6450) == 0 then
+				name = GetItemInfo(6450)
+				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
+				return true
+			elseif GetItemCount(3530) >= 1 and GetItemCooldown(3530) == 0 then
+				name = GetItemInfo(3530)
+				RunMacroText("/use " .. name)
+				ItemUsage = DMW.Time
+				return true					
+			end
+		end
+	end
+	
 end
 
 local function BattleOutCombat()
