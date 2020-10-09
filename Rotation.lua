@@ -5,7 +5,10 @@ local Setting = DMW.Helpers.Rotation.Setting
 local Player, Buff, Debuff, Spell, Stance, Target, Talent, Item, GCD, CDs, HUD, Enemy5Y, Enemy5YC, Enemy10Y, Enemy10YC, Enemy30Y,
       Enemy30YC, Enemy8Y, Enemy8YC, rageLost, dumpEnabled, castTime, syncSS, combatLeftCheck, stanceChangedSkill,
       stanceChangedSkillTimer, stanceChangedSkillUnit, targetChange, whatIsQueued, oldTarget, rageLeftAfterStance, firstCheck,
-      secondCheck, thirdCheck, SwingMH, SwingOH, MHSpeed, PosX, PosY, PosZ
+      secondCheck, thirdCheck, SwingMH, SwingOH, MHSpeed, PosX, PosY, PosZ, name
+local Enemy5YC = nil
+local Enemy10YC = nil
+local Enemy30YC = nil
 local effectiveAP = 1500  
 local UseCDsTime = 0
 local SunderStacks = 0
@@ -18,6 +21,14 @@ local armorMitigation = 0.5
 local TargetArmor = 3500
 local DmgModiBuffOrStance = 1
 local TargetSundered = nil
+local hasMainHandEnchant, mainHandExpiration, _ , mainHandEnchantID, hasOffHandEnchant, offHandExpiration, _ , offHandEnchantId = GetWeaponEnchantInfo()
+local isTanking, threatStatus, threatPercent, rawThreatPercent, threatValue
+local AggroMobCount = 0
+local AggroEliteMobCount = 0
+local WindFuryExTimeMainHand = 0
+local WindFuryExTimeOffHand = 0
+local WindFuryMainHand = false
+local WindFuryOffHand = false
 
 local function round(num, numDecimalPlaces)
   local mult = 10^(numDecimalPlaces or 0)
@@ -378,7 +389,8 @@ local function GetDebuffStacks()
 			end
 		end
 		
-		if not Player:IsPlayerReallyDead() 
+		if not IsMounted()
+		and not DMW.Player:IsPlayerReallyDead() 
 			then
 			for i = 1, 16 do
 				if UnitDebuff("player", i) == "Recently Bandaged" then
@@ -457,6 +469,46 @@ local worldbufffound = false
 	end	
 end
 
+local function GetWindfury()
+    -- 283 Windfury 1
+    -- 284 Windfury 2
+	-- 525 Windfury 3
+	-- 1669 Windfury 4
+	hasMainHandEnchant, mainHandExpiration, _ , mainHandEnchantID, hasOffHandEnchant, offHandExpiration, _ , offHandEnchantId = GetWeaponEnchantInfo()
+	
+	if hasMainHandEnchant
+	and (mainHandEnchantID == 283 or mainHandEnchantID == 284 or mainHandEnchantID == 525 or mainHandEnchantID == 1669)
+	and mainHandExpiration >= 0
+		then
+		WindFuryMainHand = true
+		WindFuryExTimeMainHand = DMW.Time + mainHandExpiration * 1000 
+	elseif (hasMainHandEnchant and (mainHandEnchantID ~= 283 or mainHandEnchantID ~= 284 or mainHandEnchantID ~= 525 or mainHandEnchantID ~= 1669)) or not hasMainHandEnchant
+		then
+		WindFuryMainHand = false
+		WindFuryExTimeMainHand = DMW.Time	
+	end	
+	if hasOffHandEnchant
+	and (offHandEnchantIdD == 283 or offHandEnchantId == 284 or offHandEnchantId == 525 or offHandEnchantId == 1669)
+	and offHandExpiration >= 0
+		then
+		WindFuryOffHand = true
+		WindFuryExTimeOffHand = DMW.Time + offHandExpiration * 1000 
+	elseif (hasOffHandEnchant and (offHandEnchantID ~= 283 or offHandEnchantID ~= 284 or offHandEnchantID ~= 525 or offHandEnchantID ~= 1669)) or not hasOffHandEnchant
+		then
+		WindFuryOffHand = false
+		WindFuryExTimeOffHand = DMW.Time			
+	end		
+
+	if Setting("Print WindfuryStatus")
+		then 
+		print("Windfurry Status Mainhand:   ", WindFuryMainHand)
+		print("Windfurry Status Offhand:   ", WindFuryOffHand)
+	end
+end
+
+
+
+
 local function GetDTfromDetails()
 	if IsAddOnLoaded("Details! Damage Meter")
 	and Player.CombatTime >= 5
@@ -516,7 +568,14 @@ local function GetArmorOfTarget(...)
 			then print("Target Armor: 0") 
 		end
 		
-		if Setting("Print Armormitigation") then print(round(armorMitigation, 4)) end
+		if Setting("Print Armormitigation") 
+		and round(armorMitigation, 4) >= 0
+			then print("Armormitigation: ", round(armorMitigation, 4)) 
+		elseif Setting("Print Armormitigation") 
+		and round(armorMitigation, 4) < 0
+			then print("Armormitigation: 0") 
+		end
+
 end
 
 --calculate rage values per MH and Offhand hit 
@@ -1762,6 +1821,37 @@ local ItemIdFrost = 10761
 	end	
 end
 
+local function AggroEnemyCount()-- return normal enemies, elites
+
+	AggroMobCount = 0
+	AggroEliteMobCount = 0
+	for _, Unit in pairs(DMW.Enemies) do
+		isTanking, threatStatus, threatPercent, rawThreatPercent, threatValue = Unit:UnitDetailedThreatSituation(Player)-- or nil, 0, nil, nil, 0	
+		if isTanking 
+			then AggroMobCount = AggroMobCount + 1
+		end
+		
+		if isTanking
+		and ((Unit.Classification == "worldboss" or Unit.Classification == "rareelite" or Unit.Classification == "elite" or Unit:IsBoss()) and (Unit.Level >= 60 or Unit.Level == -1))
+			then AggroEliteMobCount = AggroEliteMobCount + 1
+		end
+	end
+	return AggroMobCount, AggroEliteMobCount
+end
+
+local function AggroCheckLIP()
+
+	for _, Unit in pairs(DMW.Enemies) do
+		isTanking, threatStatus, threatPercent, rawThreatPercent, threatValue = Unit:UnitDetailedThreatSituation(Player) -- or nil, 0, nil, nil, 0	
+		if (((isTanking or threatStatus > 1 or threatPercent >= Setting("% of Aggro to use LIP"))and UnitIsUnit(Unit.Ppointer, Target.Pointer))
+		or (isTanking and Unit:IsBoss()))
+			then return true
+		end
+	end
+end
+
+
+
 
 local function lifesaver()
 	local WeHaveAggro = 0
@@ -1809,16 +1899,16 @@ local function lifesaver()
 				end
 			else DMW.Settings.profile.Rotation.RotationType = 2 return true
 			end			
-		-- elseif Setting("Lifes. Bossaggro")
-		-- and Target.IsBoss()
-			-- then 
-			-- if Setting("Equip 1h and shield when aggro")
-			-- then
-				-- if weaponswap(true,false)
-					-- then DMW.Settings.profile.Rotation.RotationType = 2 return true
-				-- end
-			-- else DMW.Settings.profile.Rotation.RotationType = 2 return true
-			-- end			
+		elseif Setting("Lifes. Bossaggro")
+		and Target:IsBoss()
+			then 
+			if Setting("Equip 1h and shield when aggro")
+			then
+				if weaponswap(true,false)
+					then DMW.Settings.profile.Rotation.RotationType = 2 return true
+				end
+			else DMW.Settings.profile.Rotation.RotationType = 2 return true
+			end			
 		end
 		
 	elseif Setting("RotationType") == 2 
@@ -1846,7 +1936,7 @@ local function AutoTargetAndFacing()
 
 -- Auto targets Enemy in Range
     if Setting("AutoTarget") 
-	and (not Target or not Target.ValidEnemy or Target.Dead or not ObjectIsFacing("Player", Target.Pointer, 160) or IsSpellInRange("Hamstring", "target") == 0)
+	and (not Target or not Target.ValidEnemy or Target.Dead or not ObjectIsFacing("Player", Target.Pointer, 100) or IsSpellInRange("Hamstring", "target") == 0)
 		then 
 		for _, Unit in ipairs(Enemy5Y) do	
 			if GetRaidTargetIndex(Unit.Pointer) == 8 
@@ -1902,9 +1992,11 @@ local function AutoTargetAndFacing()
     and Player.Combat 
 	and Target 
 	and Target.ValidEnemy
+	and LastTargetFaced ~= Target.GUID
 	and IsSpellInRange("Hamstring", "target") == 1
-	and not ObjectIsFacing("Player", Target.Pointer, 160) then
+	and not ObjectIsFacing("Player", Target.Pointer, 100) then
         FaceDirection(Target.Pointer, true)
+		LastTargetFaced = Target.GUID
 		return true 
     end
 end
@@ -1983,15 +2075,30 @@ end
 
 local function Consumes()
 
+-- lesser invulnerability potion
+	if (Setting("RotationType") == 1 or Setting("RotationType") == 2)
+	and Setting("Use LIP")
+	and Player.Combat
+	and (DMW.Time - ItemUsage) > 1.5 
+	and GetItemCount(Item.LimitedInvulnerabilityPotion.ItemID) >= 1
+	and GetItemCooldown(Item.LimitedInvulnerabilityPotion.ItemID) == 0
+	and (AggroCheckLIP() or select(2, AggroEnemyCount()) >= Setting("Elite Mobs AggroCount"))
+	and Item.LimitedInvulnerabilityPotion:Use(Player)
+		then
+		ItemUsage = DMW.Time
+		return true 
+	end
+
+
 -- Sapper Charge
-	if Setting("RotationType") == 1 or Setting("RotationType") == 2
+	if (Setting("RotationType") == 1 or Setting("RotationType") == 2)
 	and Setting("Use Sapper Charge")
 	and Player.Combat
 	and (DMW.Time - ItemUsage) > 1.5 
 	and Enemy10YC ~= nil
 	and Enemy10YC >= Setting("Enemys 10Y")
 	and GetItemCount(Item.GoblinSapperCharge.ItemID) >= 1
-	and Item.GoblinSapperCharge:CD() == 0 
+	and Item.GoblinSapperCharge:CD() == 0
 		then 
 		if Item.GoblinSapperCharge:Use(Player)
 			then 
@@ -2001,7 +2108,7 @@ local function Consumes()
 	end
 
 -- Granates and dynamite
-	if Setting("RotationType") == 1 or Setting("RotationType") == 2
+	if (Setting("RotationType") == 1 or Setting("RotationType") == 2)
 	and Setting("Use Trowables") >= 1
 	and Target
 	and Player.Combat
@@ -2104,43 +2211,44 @@ local function Consumes()
 	-- Use Best HP Pot
 	if Setting("Use Best HP Potion") then
 		if DMW.Player.HP <= Setting("Use Potion at #% HP") and Player.Combat and (DMW.Time - ItemUsage) > 1.5 then
-			if GetItemCount(13446) >= 1 and GetItemCooldown(13446) == 0 then
-				name = GetItemInfo(13446)
-				RunMacroText("/use " .. name)
+			if GetItemCount(Item.MajorHealingPotion.ItemID) >= 1 and Item.MajorHealingPotion:IsReady() 
+			and Item.MajorHealingPotion:Use(Player) 
+				then
 				ItemUsage = DMW.Time
 				return true 
-			elseif GetItemCount(3928) >= 1 and GetItemCooldown(3928) == 0 then
-				name = GetItemInfo(3928)
-				RunMacroText("/use " .. name)
+			elseif GetItemCount(Item.SuperiorHealingPotion.ItemID) >= 1 and Item.SuperiorHealingPotion:IsReady() 
+			and Item.SuperiorHealingPotion:Use(Player) 
+				then
 				ItemUsage = DMW.Time
-				return true
-			elseif GetItemCount(1710) >= 1 and GetItemCooldown(1710) == 0 then
-				name = GetItemInfo(1710)
-				RunMacroText("/use " .. name)
+				return true 
+			elseif GetItemCount(Item.GreaterHealingPotion.ItemID) >= 1 and Item.GreaterHealingPotion:IsReady() 
+			and Item.GreaterHealingPotion:Use(Player) 
+				then
 				ItemUsage = DMW.Time
-				return true
-			elseif GetItemCount(929) >= 1 and GetItemCooldown(929) == 0 then
-				name = GetItemInfo(929)
-				RunMacroText("/use " .. name)
+				return true 
+			elseif GetItemCount(Item.HealingPotion.ItemID) >= 1 and Item.HealingPotion:IsReady() 
+			and Item.HealingPotion:Use(Player) 
+				then
 				ItemUsage = DMW.Time
-				return true
-			elseif GetItemCount(858) >= 1 and GetItemCooldown(858) == 0 then
-				name = GetItemInfo(858)
-				RunMacroText("/use " .. name)
+				return true 
+			elseif GetItemCount(Item.LesserHealingPotion.ItemID) >= 1 and Item.LesserHealingPotion:IsReady() 
+			and Item.LesserHealingPotion:Use(Player) 
+				then
 				ItemUsage = DMW.Time
-				return true
-			elseif GetItemCount(118) >= 1 and GetItemCooldown(118) == 0 then
-				name = GetItemInfo(118)
-				RunMacroText("/use " .. name)
+				return true 
+			elseif GetItemCount(Item.MinorHealingPotion.ItemID) >= 1 and Item.MinorHealingPotion:IsReady() 
+			and Item.MinorHealingPotion:Use(Player) 
+				then
 				ItemUsage = DMW.Time
-				return true
+				return true 
 			end
 		end
 	end
 	
 	if Setting("Use Bandages") then
 		if DMW.Player.HP <= Setting("Use Bandages at #% HP") 
-		and not Player.Moving and (Enemy8YC == nil or Enemy8YC == 0)
+		and not Bandaged and (Enemy5YC == nil or Enemy5YC == 0) 
+		and ((Player.Combat and (Player:TimeStanding() >= 2)) or Player.CombatLeftTime >= 2)
 		and (DMW.Time - ItemUsage) > 1.5 then
 			if GetItemCount(14530) >= 1 and GetItemCooldown(14530) == 0 then
 				name = GetItemInfo(14530)
@@ -3095,7 +3203,7 @@ end
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
 eventFrame:RegisterEvent("UNIT_AURA");
-
+eventFrame:RegisterEvent("UNIT_INVENTORY_CHANGED", "player");
 
 
 eventFrame:SetScript("OnEvent", function(self, event, ...)
@@ -3107,6 +3215,8 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
 		GetArmorOfTarget(CombatLogGetCurrentEventInfo())		
 	elseif(event == "UNIT_AURA") and DMW.UI.MinimapIcon then
 		GetDebuffStacks()
-		Buffsniper()		
+		Buffsniper()
+	elseif (event == "UNIT_INVENTORY_CHANGED") and DMW.UI.MinimapIcon then
+		GetWindfury()
 	end
 end)

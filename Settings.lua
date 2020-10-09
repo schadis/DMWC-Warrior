@@ -118,12 +118,19 @@ function Warrior.Settings()
 
 
 		UI.AddHeader("Consumables")
+		UI.AddToggle("Use LIP", "Uses lesser invulnerability Potion on conditions")
+		UI.AddRange("Elite Mobs AggroCount", nil, 1, 15, 1, 5)
+		UI.AddRange("% of Aggro to use LIP", nil, 90, 100, 1, 98)
+		UI.AddBlank()
+		UI.AddRange("Use Potion at #% HP", nil, 1, 100, 1, 8)
 		UI.AddToggle("Use Best HP Potion", "Check back for Potions and use best available one")
 		UI.AddRange("Use Potion at #% HP", nil, 1, 100, 1, 8)
 		UI.AddToggle("Healthstone", nil, false)
 		UI.AddRange("Use Healthstone at #% HP", nil, 10, 100, 1, 50, true)	
 		UI.AddToggle("Use Bandages", nil, false)
 		UI.AddRange("Use Bandages at #% HP", nil, 10, 100, 1, 50, true)
+		
+		
 		
 		UI.AddHeader("Engineering Stuff")
 		UI.AddToggle("Use Sapper Charge", "uses Sapper according to Setting", false)
@@ -241,5 +248,6 @@ function Warrior.Settings()
 	UI.AddToggle("Log","enables Log, pls activate rotation once", false)
 	UI.AddToggle("Print Target Armor","Prints the Calculated Target Armor....can be wrong on low level Mobs", false)
 	UI.AddToggle("Print Armormitigation","Prints the Armormitigation", false)
+	UI.AddToggle("Print WindfuryStatus","Prints the Windfury Status", false)
 	
 end
