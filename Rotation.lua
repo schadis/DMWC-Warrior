@@ -313,6 +313,7 @@ local function TableAndStanceReset()
 		stanceChangedSkill = nil
         stanceChangedSkillUnit = nil
         stanceChangedSkillTimer = nil
+		LastTargetFaced = nil
 	elseif stanceChangedSkillTimer
 	and DMW.Time - stanceChangedSkillTimer >= 0.5
 	then 
@@ -1827,6 +1828,12 @@ local function AggroEnemyCount()-- return normal enemies, elites
 	AggroEliteMobCount = 0
 	for _, Unit in pairs(DMW.Enemies) do
 		isTanking, threatStatus, threatPercent, rawThreatPercent, threatValue = Unit:UnitDetailedThreatSituation(Player)-- or nil, 0, nil, nil, 0	
+		if isTanking ~= nil then
+			isTanking, threatStatus, threatPercent, rawThreatPercent, threatValue = Unit:UnitDetailedThreatSituation(Player)
+		else
+			isTanking, threatStatus, threatPercent, rawThreatPercent, threatValue = nil, 0, 0, 0, 0
+		end	
+				
 		if isTanking 
 			then AggroMobCount = AggroMobCount + 1
 		end
@@ -1843,7 +1850,13 @@ local function AggroCheckLIP()
 
 	for _, Unit in pairs(DMW.Enemies) do
 		isTanking, threatStatus, threatPercent, rawThreatPercent, threatValue = Unit:UnitDetailedThreatSituation(Player) -- or nil, 0, nil, nil, 0	
-		if (((isTanking or threatStatus > 1 or threatPercent >= Setting("% of Aggro to use LIP"))and UnitIsUnit(Unit.Ppointer, Target.Pointer))
+		if isTanking ~= nil then
+			isTanking, threatStatus, threatPercent, rawThreatPercent, threatValue = Unit:UnitDetailedThreatSituation(Player)
+		else
+			isTanking, threatStatus, threatPercent, rawThreatPercent, threatValue = nil, 0, 0, 0, 0
+		end		
+		
+		if (((isTanking or threatStatus > 1 or threatPercent >= Setting("% of Aggro to use LIP"))and Target and UnitIsUnit(Unit.Pointer, Target.Pointer))
 		or (isTanking and Unit:IsBoss()))
 			then return true
 		end
@@ -1936,7 +1949,7 @@ local function AutoTargetAndFacing()
 
 -- Auto targets Enemy in Range
     if Setting("AutoTarget") 
-	and (not Target or not Target.ValidEnemy or Target.Dead or not ObjectIsFacing("Player", Target.Pointer, 100) or IsSpellInRange("Hamstring", "target") == 0)
+	and (not Target or not Target.ValidEnemy or Target.Dead or not UnitIsFacing("Player", Target.Pointer, 100) or IsSpellInRange("Hamstring", "target") == 0)
 		then 
 		for _, Unit in ipairs(Enemy5Y) do	
 			if GetRaidTargetIndex(Unit.Pointer) == 8 
@@ -1979,7 +1992,7 @@ local function AutoTargetAndFacing()
 				then 
 				TargetUnit(Unit.Pointer)
 				return true	
-			elseif Player:AutoTarget(5, true) 
+			elseif Player:AutoTarget(5, false) 
 				then return true 
 			
 			end
@@ -1994,7 +2007,7 @@ local function AutoTargetAndFacing()
 	and Target.ValidEnemy
 	and LastTargetFaced ~= Target.GUID
 	and IsSpellInRange("Hamstring", "target") == 1
-	and not ObjectIsFacing("Player", Target.Pointer, 100) then
+	and not UnitIsFacing("Player", Target.Pointer, 90) then
         FaceDirection(Target.Pointer, true)
 		LastTargetFaced = Target.GUID
 		return true 
@@ -2248,7 +2261,7 @@ local function Consumes()
 	if Setting("Use Bandages") then
 		if DMW.Player.HP <= Setting("Use Bandages at #% HP") 
 		and not Bandaged and (Enemy5YC == nil or Enemy5YC == 0) 
-		and ((Player.Combat and (Player:TimeStanding() >= 2)) or Player.CombatLeftTime >= 2)
+		and ((Player.Combat and (Player:TimeStanding() >= 2)) or Player.CombatLeftTime >= 3)
 		and (DMW.Time - ItemUsage) > 1.5 then
 			if GetItemCount(14530) >= 1 and GetItemCooldown(14530) == 0 then
 				name = GetItemInfo(14530)
@@ -2492,7 +2505,36 @@ local function fury()
 								then return true 
 							end
 						end
-					
+						
+						if Setting("First Global Sunder")
+						and not ExposeArmor
+						and Spell.SunderArmor:Known() 
+						and Spell.SunderArmor:CD() == 0
+						and Player.Power >= Spell.SunderArmor:Cost()
+						and SunderStacks <= 5
+						and Target.HealthMax >= (1000 * Setting("GCDSunder MaxHP"))
+						and TargetSundered ~= Target.GUID
+						then 
+							if smartCast("SunderArmor", Target)
+								then 
+								TargetSundered = Target.GUID
+								return true 
+							end
+						end
+						
+						if Setting("SunderArmor") 
+						and not Setting("First Global Sunder")
+						and not ExposeArmor						
+						and Spell.SunderArmor:Known() 
+						and Spell.SunderArmor:CD() == 0 
+						and Player.Power >= Spell.SunderArmor:Cost() 
+						and SunderStacks <= Setting("Apply Stacks of Sunder Armor")
+						then 
+							if smartCast("SunderArmor", Target)
+								then return true 
+							end
+						end
+						
 					else				
 						--first Global Sunder
 						

@@ -25,6 +25,11 @@
 
 ## Changelog
 
+## 12.10.2020
+
+* fixed LIP support
+* Autotarget and Autoface fixes
+
 ## 06.10.2020
 
 * fixed Stuck in stance dance
