@@ -478,23 +478,23 @@ local function GetWindfury()
 	hasMainHandEnchant, mainHandExpiration, _ , mainHandEnchantID, hasOffHandEnchant, offHandExpiration, _ , offHandEnchantId = GetWeaponEnchantInfo()
 	
 	if hasMainHandEnchant
-	and (mainHandEnchantID == 283 or mainHandEnchantID == 284 or mainHandEnchantID == 525 or mainHandEnchantID == 1669)
+	and (mainHandEnchantID == 563 or mainHandEnchantID == 564 or mainHandEnchantID == 1783)
 	and mainHandExpiration >= 0
 		then
 		WindFuryMainHand = true
 		WindFuryExTimeMainHand = DMW.Time + mainHandExpiration * 1000 
-	elseif (hasMainHandEnchant and (mainHandEnchantID ~= 283 or mainHandEnchantID ~= 284 or mainHandEnchantID ~= 525 or mainHandEnchantID ~= 1669)) or not hasMainHandEnchant
+	elseif (hasMainHandEnchant and (mainHandEnchantID ~= 563 or mainHandEnchantID ~= 564 or mainHandEnchantID ~= 1783)) or not hasMainHandEnchant
 		then
 		WindFuryMainHand = false
 		WindFuryExTimeMainHand = DMW.Time	
 	end	
 	if hasOffHandEnchant
-	and (offHandEnchantIdD == 283 or offHandEnchantId == 284 or offHandEnchantId == 525 or offHandEnchantId == 1669)
+	and (offHandEnchantIdD == 563 or offHandEnchantId == 564 or offHandEnchantId == 1783)
 	and offHandExpiration >= 0
 		then
 		WindFuryOffHand = true
 		WindFuryExTimeOffHand = DMW.Time + offHandExpiration * 1000 
-	elseif (hasOffHandEnchant and (offHandEnchantID ~= 283 or offHandEnchantID ~= 284 or offHandEnchantID ~= 525 or offHandEnchantID ~= 1669)) or not hasOffHandEnchant
+	elseif (hasOffHandEnchant and (offHandEnchantID ~= 563 or offHandEnchantID ~= 564 or offHandEnchantID ~= 1783)) or not hasOffHandEnchant
 		then
 		WindFuryOffHand = false
 		WindFuryExTimeOffHand = DMW.Time			
