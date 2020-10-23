@@ -1,4 +1,4 @@
-## Interface: 11320
+## Interface: 11305
 ## Title: DoMeWhen Classic - Warrior
 ## Author: Fisker
 ## Notes: Warrior Rotation for DoMeWhen Classic

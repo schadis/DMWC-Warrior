@@ -25,6 +25,10 @@
 
 ## Changelog
 
+## 23.10.2020
+
+* fixed addon out of date issue
+
 ## 12.10.2020
 
 * fixed LIP support

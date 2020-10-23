@@ -324,6 +324,18 @@ local function TableAndStanceReset()
 
 end
 
+-- local function NotInWWRangeWarning()
+
+	-- if Player.Combat
+	-- and Target
+	-- and Target.Distance > 8
+	-- and IsSpellInRange("Hamstring", Target.Pointer)
+		-- then
+		-- print("Target not in 8 yards WW-Range...Distance=  ", Target.Distance)	
+	-- end
+	
+-- end
+
 local function Locals()
     Player = DMW.Player
     Buff = Player.Buffs
@@ -356,6 +368,8 @@ local function Locals()
 	ArmorCalcThings()
 	
 	TableAndStanceReset()
+	
+	--NotInWWRangeWarning()
 
 end
 
@@ -471,10 +485,7 @@ local worldbufffound = false
 end
 
 local function GetWindfury()
-    -- 283 Windfury 1
-    -- 284 Windfury 2
-	-- 525 Windfury 3
-	-- 1669 Windfury 4
+
 	hasMainHandEnchant, mainHandExpiration, _ , mainHandEnchantID, hasOffHandEnchant, offHandExpiration, _ , offHandEnchantId = GetWeaponEnchantInfo()
 	
 	if hasMainHandEnchant
@@ -503,7 +514,6 @@ local function GetWindfury()
 	if Setting("Print WindfuryStatus")
 		then 
 		print("Windfurry Status Mainhand:   ", WindFuryMainHand)
-		print("Windfurry Status Offhand:   ", WindFuryOffHand)
 	end
 end
 
