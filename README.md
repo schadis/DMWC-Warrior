@@ -3,7 +3,6 @@
 * 2h Fury same as Furry and FuryProt and simple Leveling rota
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 * install details addon for rage calc of incoming dmg
-* There is a DMWC fork in my repo pls use it until merge to main git
 
 ## Feedback in Discord is welcome
 
@@ -19,11 +18,29 @@
 * MightyRagePotion
 * GreatRagePotion
 * SapperCharges
-* Nates and Dynamite (not all and this part need work)
+* Nates and Dynamite (not all and this part needs work)
 
 ## Todo: ???
 
 ## Changelog
+
+## 17.11.2020
+
+* added LIP instead of Healthpot on HP setting toggle
+* removed lifesaver (was not working reliable)
+* added spell tab for different Rotations (fury/prot&furyprot)
+* added rend in PVP for rogues
+* added ragecalc to also do the calculation for next Whirlwind
+* fixed exposed armor check
+* changed rage dump spellcasts back to regular cast (was looping)
+* fixed sunder dump for fury prot
+* fixed sunderstacks there was a wrong operator
+* added weaponswap menu
+* TESTING: added Viscidus rotation and weaponswap to frost weapons(swap not always working)
+* TESTING:(rotation only does autos in def stance swaps to bersi if you target a blob)
+* Known BUG: Pls use Fuck Rage Setting cause lost Rage on stance dance needs fix!!!
+
+* No guarantee that every change is documented!!!
 
 ## 23.10.2020
 

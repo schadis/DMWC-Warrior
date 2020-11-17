@@ -39,7 +39,13 @@ function Warrior.Settings()
             [2] = {Text = "Execute If <= 3 units |cFF00FF00", Tooltip = ""},
             [3] = {Text = "Execute |cFF00FF00Target", Tooltip = ""},
             [4] = {Text = "Execute |cFF00FF00Mix", Tooltip = ""},
-            [5] = {Text = "Execute |cffff0000Disabled", Tooltip = ""}
+            [5] = {Text = "Execute |cffff0000Disabled", Tooltip = ""},
+	    }
+    }	
+    UI.HUD.Options[4] = {
+        Spec = {
+            [1] = {Text = "|cFF00FF00Dps", Tooltip = ""},
+            [2] = {Text = "|cffff0000Tanky", Tooltip = ""}
 	    }
     }	
 
@@ -47,32 +53,31 @@ function Warrior.Settings()
     -- UI.AddDropdown("This Is A Dropdown", nil, {"Yay", "Nay"}, 1)
     -- UI.AddToggle("This Is A Toggle", "This is a tooltip", true)
     -- UI.AddRange("This Is A Range", "One more tooltip", 0, 100, 1, 70)
+	--UI.AddBlank()
 	
     UI.AddHeader("Usual Options")
-	    -- UI.AddToggle("Debug", nil, false)
-		UI.AddDropdown("RotationType", nil, {"2HFury/Fury","FuryProt","Leveling"}, 1)
-		UI.AddBlank()
+		UI.AddDropdown("RotationType", nil, {"2HFury/Fury","FuryProt"}, 1)
+		UI.AddToggle("Use Leveling Rotation", "Overwrites the RotationType with Leveling Rotation" , false)
+		UI.AddToggle("Use Viscidus Rotation", "Deffstance only autohits with frost weapons acc. settings to Bersi/Normal Weapons for Blobs" , false)
+		
+
+    UI.AddHeader("Auto Stuff")
 		UI.AddToggle("BattleStance NoCombat", "Switches to Battle Stance if we are not InCombat" , false)
         UI.AddToggle("Charge&Intercept", nil, false)
-		
-	 -- UI.AddHeader("What Stance to Check first")	
-        -- UI.AddDropdown("First check Stance", "", {"Battle","Defensive","Berserker"}, "Battle")
-        -- UI.AddDropdown("Second check Stance", "", {"Battle","Defensive","Berserker"}, "Berserker")
-        -- UI.AddDropdown("Third check Stance", "", {"Battle","Defensive","Berserker"}, "Defensive")
-
-		
-    UI.AddHeader("Auto Stuff")
         UI.AddToggle("AutoFace", "Makes you Face the Target all the Time", false)
-        UI.AddToggle("AutoTarget", "Targets the next Target automaticly", false)
+		UI.AddBlank()
+		UI.AddToggle("AutoTarget", "Targets the next Target automaticly", false)
+		UI.AddToggle("Don´t AutoTarget if tanking", "disables AutoTarget only for tanking", false)
         UI.AddToggle("BattleShout", nil, false)
         UI.AddToggle("Pummel/ShildBash", "Has to be checked for FuryProt swap option", false)
-        -- UI.AddToggle("Auto Disable SS", nil, false)
-		-- UI.AddToggle("AutoTreatTarget", nil, false) only in tank rota not supported atm
+
 		
+------------------------------------------------------------------------------------------------------------------------------		
 		
-    UI.AddHeader("DPS Shit/Spells")
-        -- UI.AddToggle("Rend", nil, false)	not programmed
-		-- UI.AddToggle("SweepingStrikes", nil, false) not programmed
+    UI.AddTab("Spells Fury&2h&Levling")
+
+		UI.AddToggle("Bloodrage", "Use Bloodrage when available", false)
+		UI.AddToggle("Berserker Rage", "Use Berserker Rage", false)
         UI.AddToggle("Bloodthirst", nil, false)
         UI.AddToggle("Whirlwind","Not used in FuryProt", false)
         UI.AddToggle("Overpower","Not used in FuryProt", false)
@@ -82,18 +87,46 @@ function Warrior.Settings()
 		UI.AddToggle("Execute", "Main toogle for Execute", false)
 		UI.AddToggle("Hamstring < 35% Enemy HP", nil, false)
 		UI.AddToggle("Hamstring PvP", nil, false)
+		UI.AddToggle("Rend in PvP","Uses Rend in Pvp on Rogues", false)
+
+
+    UI.AddTab("Spells FuryProt")
+		UI.AddToggle("Bloodrage_FP", "Use Bloodrage when available", false)
+		UI.AddToggle("Berserker Rage_FP", "Use Berserker Rage", false)
+        UI.AddToggle("Bloodthirst_FP", nil, false)
+		UI.AddToggle("MortalStrike_FP", nil, false)
+		UI.AddToggle("Heroic Strike_FP", "Will use Heroic Strike for Rage dump, else it will Cleave", false)
+		UI.AddToggle("Cleave_FP", "Will use Cleave for Rage dump when there are more targets", false)
+		UI.AddToggle("Execute_FP", "Main toogle for Execute", false)
+		UI.AddToggle("Hamstring < 35% Enemy HP_FP", nil, false)
+		UI.AddToggle("Hamstring PvP_FP", nil, false)	
+		UI.AddToggle("Revenge", "Auto use Revenge", false)
+        UI.AddToggle("Use ShieldBlock", nil, false)
+        UI.AddRange("Shieldblock HP", nil, 30, 100, 5, 50, true)
+		UI.AddToggle("Use Shielwall", nil, false)
+        UI.AddRange("Shieldwall HP", nil, 30, 100, 5, 50, true)		
 		
+		
+    UI.AddTab("Debuffs")
+		UI.AddToggle("First Global Sunder", "On new Target the first Global will be SunderArmor if not 5 Stacks", false)
+		UI.AddRange("GCDSunder MaxHP", "Will Sunder on first GCD only mobs with a bigger max health in tousands", 5, 100, 5 ,25)		
+		UI.AddToggle("SunderArmor", "Applies SunderArmor Spam on GCD if FuryProt", false)
+		UI.AddDropdown("Apply Stacks of Sunder Armor", "Apply # Stacks of Sunder Armor", {"1","2","3","4","5"}, "5")
+		UI.AddRange("PiercingHowl", "Units near w/o debuff", 0, 10, 1, 0)
+        UI.AddRange("ThunderClap", "Units near w/o debuff, take care will swap you in BattleStance", 0, 10, 1, 0)
+        UI.AddRange("DemoShout", "Units near w/o debuff", 0, 10, 1, 0)
+		
+
+------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------
 
     UI.AddTab("Rage Settings")
 	UI.AddHeader("Rage Settings")
-		UI.AddToggle("Bloodrage", "Use Bloodrage when available", false)
-		UI.AddToggle("Berserker Rage", "Use Berserker Rage", false)
         UI.AddToggle("Rage Dump?", "Shall we Dump the Rage that is too much", false)
         UI.AddRange("Rage Dump", "On witch Value do we have too much Rage", 30, 100, 1, 30)
         UI.AddToggle("Hamstring Dump", "Dumps Rage also with Hamstring, good with Windfury, not used in FuryProt", false)
 		UI.AddRange("Hamstring dump above # rage", "At what amount of rage Hamstring will also be used as dump", 0, 100, 1, 50)
-		UI.AddToggle("Only HString MHSwing >= GCD", "Uses Hamstring only when MH swing duration is at min. a GCD", false)
+		UI.AddToggle("Only HString MHSwing > 0.5", "Uses Hamstring only when MH swing duration is at min. 0.5", false)
 		UI.AddBlank()
 		UI.AddToggle("Use Slam", "For 2H Slam Spec", false)
 		UI.AddRange("Use Slam above # rage", "At what amount of rage Slam will also be used as dump", 0, 100, 1, 50)
@@ -118,10 +151,10 @@ function Warrior.Settings()
 
 
 		UI.AddHeader("Consumables")
-		UI.AddToggle("Use LIP", "Uses lesser invulnerability Potion on conditions")
+		UI.AddToggle("Use LIP", "Uses lesser invulnerability Potion on conditions",false)
 		UI.AddRange("Elite Mobs AggroCount", nil, 1, 15, 1, 5)
 		UI.AddRange("% of Aggro to use LIP", nil, 90, 100, 1, 98)
-		UI.AddBlank()
+		UI.AddToggle("Use LIP instead of HP Potion", "Uses lesser invulnerability Potion on HP Pot conditions",false)
 		UI.AddRange("Use Potion at #% HP", nil, 1, 100, 1, 8)
 		UI.AddToggle("Use Best HP Potion", "Check back for Potions and use best available one")
 		UI.AddRange("Use Potion at #% HP", nil, 1, 100, 1, 8)
@@ -138,7 +171,7 @@ function Warrior.Settings()
 		UI.AddDropdown("Use Trowables", "Select the item to use", {"None","All","DenseDynamite","EZThroDynamitII","ThoriumGrenade","IronGrenade"},1)
 		UI.AddRange("Enemys 5Y around Target", "Enemys in 5 around Target", 0, 15, 1, 8)	
 
-		--UI.AddBlank()
+
 		
     UI.AddTab("CDs Auto Mode")
 		UI.AddHeader("Settings for Auto use of CDs")
@@ -169,66 +202,30 @@ function Warrior.Settings()
 
 ------------------------------------------------------------------------------------------------------------------------------	
 
-	UI.AddTab("Tanky")
-    UI.AddHeader("Tanky & Debuffs")
-		UI.AddToggle("First Global Sunder", "On new Target the first Global will be SunderArmor if not 5 Stacks", false)
-		UI.AddRange("GCDSunder MaxHP", "Will Sunder on first GCD only mobs with a bigger max health in tousands", 5, 100, 5 ,25)		
-		UI.AddToggle("SunderArmor", "Applies SunderArmor Spam on GCD if FuryProt", false)
-		UI.AddDropdown("Apply Stacks of Sunder Armor", "Apply # Stacks of Sunder Armor", {"1","2","3","4","5"}, "5")
-		
-		UI.AddToggle("Revenge", "Auto use Revenge", false)
-		UI.AddBlank()
-        UI.AddToggle("Use ShieldBlock", nil, false)
-        UI.AddRange("Shieldblock HP", nil, 30, 100, 5, 50, true)
-		UI.AddToggle("Use Shielwall", nil, false)
-        UI.AddRange("Shieldwall HP", nil, 30, 100, 5, 50, true)
-		UI.AddHeader("Debuffs")
-		UI.AddRange("PiercingHowl", "Units near w/o debuff", 0, 10, 1, 0)
-        UI.AddRange("ThunderClap", "Units near w/o debuff, take care will swap you in BattleStance", 0, 10, 1, 0)
-        UI.AddRange("DemoShout", "Units near w/o debuff", 0, 10, 1, 0)
-		
-	
 
-		-- UI.AddDropdown("ItemType for Offhand", "Searches for the first item it can equip with selected Type", {"One-Handed Axes","One-Handed Maces","One-Handed Swords","Daggers"}, 1)
-		-- UI.AddBlank()
-		-- UI.AddDropdown("Min Q. gear for Kick Gear","Searches for the first item it can equip with selected Quality", {"white","green","blue","purple"}, 3)
-       
-
-	    -- UI.AddToggle("MockingBlow", nil, false)
-        -- UI.AddToggle("Taunt", nil, false)
 		
-    UI.AddTab("Lifesaver Weapon and Rotation Changes")
-		-- UI.AddHeader("Swap in a Shield to kick")
-		-- UI.AddToggle("Swap to shield for kick","Swaps back to 1h after... Pummel/ShildBash has to be activ", false)
+    UI.AddTab("Weapon Changes")
+
+		UI.AddToggle("Swap Weapons", "Will swap weapons according settings", false)
+		UI.AddToggle("Equip 1h and shield", "Equips 1 hander and Shield", false)
 		
-		UI.AddHeader("Lifesaver Weapon and Rotation Changes")
-		UI.AddToggle("Lifesaver", "Will swap to defensive rotation", false)
-		UI.AddToggle("Lifes. allways", "Will trigger lifesaver allways on Aggro", false)
-		UI.AddToggle("Lifesaver only in Raid", "Will use this only in a Raid", false)
-		UI.AddBlank()
-		--UI.AddToggle("Lifes. Bossaggro", "Will trigger lifesaver only on Bossaggro", false)
-		UI.AddToggle("Lifes. Enemy Level", "Will activate Lifesaver on Enemy LVL", false)
-		UI.AddRange("EnemyLvl", "Will trigger lifesaver only on Enemies Lvl", 0, 63, 1 ,61)
-		UI.AddToggle("Lifes. Enemy Max HP", "Will activate Lifesaver on Max Hp", false)
-		UI.AddRange("MaxHP in tousands", "Will trigger lifesaver only on Enemies with more ... max health in kilo", 5, 100, 5 ,20)
-
-
-		UI.AddToggle("Equip 1h and shield when aggro", "Equips 1 hander and Shield on aggro", false)
-		UI.AddBlank()
 		UI.AddTextBox("ItemID DefMainhand", "Put in the ItemID of your Defensive Mainhand", 0.9, nil)		
 		UI.AddTextBox("ItemID Shield", "Put in the ItemID of you Shield", 0.9, nil)
 		
-		UI.AddToggle("Equip 2 x 1h after aggroloose", "Will equip 2 x 1 hander after aggroloose", false)
+		UI.AddToggle("Equip 2 x 1h", "Will equip 2 x 1 hander", false)
 		UI.AddBlank()
 		UI.AddTextBox("ItemID Mainhand", "Put in the ItemID of your Mainhand", 0.9, nil)
 		UI.AddTextBox("ItemID Offhand", "Put in the ItemID of your Offhand", 0.9, nil)
 		
-		UI.AddToggle("Equip 2H after aggroloose", "Will equip 2 hander after aggroloose", false)
+		UI.AddToggle("Equip Frost 2x1h ", "Will equip Frost 2 x 1 hander", false)
+		UI.AddBlank()
+		UI.AddTextBox("ItemID FrostMainhand", "Put in the ItemID of your Mainhand", 0.9, nil)
+		UI.AddTextBox("ItemID FrostOffhand", "Put in the ItemID of your Offhand", 0.9, nil)
+		
+		UI.AddToggle("Equip 2H", "Will equip 2 hander", false)
 		UI.AddTextBox("ItemID 2 Hander", "Put in the ItemID of you 2 Hander", 0.9, nil)
 
-	-- UI.AddHeader("Experiments")
-        -- UI.AddToggle("abuse", nil, false)
-        -- UI.AddRange("abuse range", "qwe", 0, 3, 0.01, 0.5)
+
 
 ------------------------------------------------------------------------------------------------------------------------------	
 
@@ -249,5 +246,40 @@ function Warrior.Settings()
 	UI.AddToggle("Print Target Armor","Prints the Calculated Target Armor....can be wrong on low level Mobs", false)
 	UI.AddToggle("Print Armormitigation","Prints the Armormitigation", false)
 	UI.AddToggle("Print WindfuryStatus","Prints the Windfury Status", false)
+	UI.AddToggle("Print WW Range Info","Prints the Distace if more then 8 yards", false)
 	
 end
+
+		-- UI.AddToggle("SweepingStrikes", nil, false) not programmed
+		
+		-- UI.AddHeader("What Stance to Check first")	
+        -- UI.AddDropdown("First check Stance", "", {"Battle","Defensive","Berserker"}, "Battle")
+        -- UI.AddDropdown("Second check Stance", "", {"Battle","Defensive","Berserker"}, "Berserker")
+        -- UI.AddDropdown("Third check Stance", "", {"Battle","Defensive","Berserker"}, "Defensive")
+        -- UI.AddToggle("Auto Disable SS", nil, false)
+		-- UI.AddToggle("AutoTreatTarget", nil, false) only in tank rota not supported atm
+		-- UI.AddDropdown("ItemType for Offhand", "Searches for the first item it can equip with selected Type", {"One-Handed Axes","One-Handed Maces","One-Handed Swords","Daggers"}, 1)
+		-- UI.AddBlank()
+		-- UI.AddDropdown("Min Q. gear for Kick Gear","Searches for the first item it can equip with selected Quality", {"white","green","blue","purple"}, 3)
+        -- UI.AddToggle("MockingBlow", nil, false)
+        -- UI.AddToggle("Taunt", nil, false)
+				
+		-- UI.AddHeader("Experiments")
+        -- UI.AddToggle("abuse", nil, false)
+        -- UI.AddRange("abuse range", "qwe", 0, 3, 0.01, 0.5)
+		
+		-- UI.AddHeader("Swap in a Shield to kick")
+		-- UI.AddToggle("Swap to shield for kick","Swaps back to 1h after... Pummel/ShildBash has to be activ", false)
+		
+		-- UI.AddHeader("Lifesaver Weapon and Rotation Changes")
+		-- UI.AddToggle("Lifesaver", "Will swap to defensive rotation", false)
+		-- UI.AddToggle("Lifes. allways", "Will trigger lifesaver allways on Aggro", false)
+		-- UI.AddToggle("Lifesaver only in Raid", "Will use this only in a Raid", false)
+		-- UI.AddBlank()
+		--UI.AddToggle("Lifes. Bossaggro", "Will trigger lifesaver only on Bossaggro", false)
+		-- UI.AddToggle("Lifes. Enemy Level", "Will activate Lifesaver on Enemy LVL", false)
+		-- UI.AddRange("EnemyLvl", "Will trigger lifesaver only on Enemies Lvl", 0, 63, 1 ,61)
+		-- UI.AddToggle("Lifes. Enemy Max HP", "Will activate Lifesaver on Max Hp", false)
+		-- UI.AddRange("MaxHP in tousands", "Will trigger lifesaver only on Enemies with more ... max health in kilo", 5, 100, 5 ,20)
+		
+		-- UI.AddToggle("Only HS with WF","Uses Hamstring only when you have Windfury",false)

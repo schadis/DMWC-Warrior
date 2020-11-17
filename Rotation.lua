@@ -255,7 +255,14 @@ end
 
 local function GetStanceAndChecks()
 
-	if Setting("RotationType") == 1 or Setting("RotationType") == 3
+	if Setting("Use Viscidus Rotation")
+	and Target
+	and Target.Name == "Viscidus"
+		then 
+		firstCheck = "Defensive"
+		secondCheck = "Battle"
+		thirdCheck = "Berserk"
+	elseif Setting("RotationType") == 1 or Setting("Use Leveling Rotation")
 		then 
 		firstCheck = "Berserk"
 		secondCheck = "Battle"
@@ -324,17 +331,19 @@ local function TableAndStanceReset()
 
 end
 
--- local function NotInWWRangeWarning()
+local function NotInWWRangeWarning()
 
-	-- if Player.Combat
-	-- and Target
-	-- and Target.Distance > 8
-	-- and IsSpellInRange("Hamstring", Target.Pointer)
-		-- then
-		-- print("Target not in 8 yards WW-Range...Distance=  ", Target.Distance)	
-	-- end
+	if Setting("Print WW Range Info")
+	and Player.Combat
+	and UnitInRaid("player") ~= nil
+	and Target
+	and Target:RawDistance() > 8
+	and IsSpellInRange("Hamstring", "target") == 1
+		then
+		print("Target not in 8 yards WW-Range...Distance=  ", round(Target:RawDistance(), 2))	
+	end 
 	
--- end
+end
 
 local function Locals()
     Player = DMW.Player
@@ -353,13 +362,27 @@ local function Locals()
     Enemy30Y, Enemy30YC = Player:GetEnemies(30)
     GCD = Player:GCDRemain()
     rageLeftAfterStance = Talent.TacticalMastery.Rank * 5
-    rageLost = Player.Power - rageLeftAfterStance
+
+	if (Player.Power - rageLeftAfterStance) == nil
+		then rageLost = 0
+	elseif(Player.Power - rageLeftAfterStance) < 0
+		then rageLost = 0
+	elseif (Player.Power - rageLeftAfterStance) >= 0
+		then rageLost = Player.Power - rageLeftAfterStance
+	end
+	
     dumpEnabled = false
     syncSS = false
     whatIsQueued = checkOnHit()
     if castTime == nil then castTime = DMW.Time end
 	local base, posBuff, negBuff = UnitAttackPower("player")
 	local effectiveAP = base + posBuff + negBuff  
+	
+	if HUD.Spec == 1 
+		then DMW.Settings.profile.Rotation.RotationType = 1
+	elseif HUD.Spec == 2
+		then DMW.Settings.profile.Rotation.RotationType = 2
+	end	
 	
 	CdTriggers()
 	
@@ -369,7 +392,8 @@ local function Locals()
 	
 	TableAndStanceReset()
 	
-	--NotInWWRangeWarning()
+	NotInWWRangeWarning()
+	
 
 end
 
@@ -720,15 +744,16 @@ local function stanceDanceCast(spell, dest, stance)
                 end
             end
         end
-    else
+      else
 	-- if not stance dance dump the rage thats too much
-		if Setting("RotationType") == 1 or Setting("RotationType") == 2
+		if (Setting("RotationType") == 1 or Setting("RotationType") == 2) and not Setting("Use Leveling Rotation")
 			then
-			dumpRage(Player.Power - Setting("Rage Dump"))
-		elseif Setting("RotationType") == 3
-			then 
-			dumpRageLeveling(Player.Power - Setting("Rage Dump"))
+			dumpRage(rageLost,true)
 		end
+		-- elseif Setting("Use Leveling Rotation")
+			-- then 
+			-- dumpRageLeveling(Player.Power)
+		-- end
 	end
     return true
 end
@@ -745,7 +770,7 @@ local function smartCast(spell, Unit, pool)
 
     if Spell[spell] ~= nil then
 
-        if (Setting("RotationType") == 1 or Setting("RotationType") == 2 or Setting("RotationType") == 3 ) 
+        if (Setting("RotationType") == 1 or Setting("RotationType") == 2 or Setting("Use Leveling Rotation")) 
 			then
             if stanceCheck[firstCheck][spell] then 
                 if Stance == firstCheck then
@@ -782,30 +807,53 @@ local function smartCast(spell, Unit, pool)
     end
 end
 
+local function UnitsInFrontOfUS()
+
+		local InFrontOfUsCount = 0
+		for _, Unit in ipairs(Enemy5Y) do
+			if Unit:IsInFront()
+			then
+				InFrontOfUsCount = InFrontOfUsCount + 1
+			end
+		end
+		return InFrontOfUsCount
+end
+
+
+
 -- Dumps Rage in first place with HS or Cleave -- if there is still rage it dumps it with the next part
-local function dumpRage(value)
+local function dumpRage(value,ignorecalc)
+	
+	local dumpvalue = value
+	if Setting("Calculate Rage")
+		then dumpvalue = Player.Power
+	end
 
 --------Slam Dump Harmstring over HS--------
 
 	if Setting("Slam")
 	and Setting("RotationType") == 1
 	and (Enemy5YC >= 2 or not Setting("Heroic Strike"))
+	and UnitsInFrontOfUS() >= 2
 	and Setting("Cleave")
 	and whatIsQueued == "NA"
-	and Player.Power >= Spell.Cleave:Cost()
+	and dumpvalue >= Spell.Cleave:Cost()
+	and (not Setting("Calculate Rage") or ignorecalc or (Player.Power - Spell.Cleave:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost()
+	or (Spell.Bloodthirst:CD() < Spell.Whirlwind:CD() and (Player.Power - Spell.Cleave:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost()))
 		then
 		RunMacroText("/cast Cleave")
-		DMW.Player.SwingDump = true
+		dumpvalue = dumpvalue - Spell.Cleave:Cost()
 	end
 
 	if Setting("Slam")
 	and Setting("Hamstring Dump")
 	and Setting("RotationType") == 1
-	and Setting("Only HString MHSwing >= GCD")
+	and (stance == "Battle" or stance == "Berserk")
+	and Setting("Only HString MHSwing > 0.5")
 	and Player.Power >= Setting("Hamstring dump above # rage") 
-	and Player.SwingMH > 1.5
+	and Player.SwingMH > 0.5
 	and Spell.Hamstring:Known()
-	and Player.Power >= Spell.Hamstring:Cost()
+	and dumpvalue >= Spell.Hamstring:Cost()
 	and GCD == 0 
 		then
         if Spell.Bloodthirst:Known()
@@ -813,27 +861,28 @@ local function dumpRage(value)
 		and Spell.Whirlwind:Known()
 		and Spell.Whirlwind:CD() >= 1.5
 			then
-			if smartCast("Hamstring", Target)  
+			if regularCast("Hamstring", Target)  
 				then
-				value = value - Spell.Hamstring:Cost()
+				dumpvalue = dumpvalue - Spell.Hamstring:Cost()
 			end
 		elseif Spell.MortalStrike:Known()
 		and Spell.MortalStrike:CD() >= 1.5
 		and Spell.Whirlwind:Known()
 		and Spell.Whirlwind:CD() >= 1.5
 			then
-			if smartCast("Hamstring", Target)  
+			if regularCast("Hamstring", Target)  
 				then
-				value = value - Spell.Hamstring:Cost()
+				dumpvalue = dumpvalue - Spell.Hamstring:Cost()
 			end
 		end
 	elseif Setting("Slam")
 	and Setting("Hamstring Dump")	
 	and Setting("RotationType") == 1
-	and not Setting("Only HString MHSwing >= GCD")
+	and (stance == "Battle" or stance == "Berserk")
+	and not Setting("Only HString MHSwing > 0.5")
 	and Player.Power >= Setting("Hamstring dump above # rage") 
 	and Spell.Hamstring:Known()
-	and Player.Power >= Spell.Hamstring:Cost()
+	and dumpvalue >= Spell.Hamstring:Cost()
 	and GCD == 0 
 		then
         if Spell.Bloodthirst:Known()
@@ -841,18 +890,18 @@ local function dumpRage(value)
 		and Spell.Whirlwind:Known()
 		and Spell.Whirlwind:CD() >= 1.5
 			then
-			if smartCast("Hamstring", Target) 
+			if regularCast("Hamstring", Target) 
 				then
-				value = value - Spell.Hamstring:Cost()
+				dumpvalue = dumpvalue - Spell.Hamstring:Cost()
 			end
 		elseif Spell.MortalStrike:Known()
 		and Spell.MortalStrike:CD() >= 1.5
 		and Spell.Whirlwind:Known()
 		and Spell.Whirlwind:CD() >= 1.5
 			then
-			if smartCast("Hamstring", Target)  
+			if regularCast("Hamstring", Target)  
 				then
-				value = value - Spell.Hamstring:Cost()
+				dumpvalue = dumpvalue - Spell.Hamstring:Cost()
 			end
 		end
 	end
@@ -861,99 +910,104 @@ local function dumpRage(value)
 
 	if whatIsQueued == "NA" 
 		then
-        if (Setting("RotationType") == 1 or Setting("RotationType") == 2)
-		and (Enemy5YC >= 2 or not Setting("Heroic Strike"))
-		and Setting("Cleave")
-		and Player.Power >= Spell.Cleave:Cost()
-		and (not Setting("Calculate Rage") or (Player.Power - Spell.Cleave:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost())
+        if ((Setting("RotationType") == 1 and Setting("Cleave")) or (Setting("RotationType") == 2 and Setting("Cleave_FP")))
+		and (Enemy5YC >= 2 or ((Setting("RotationType") == 1 and not Setting("Heroic Strike")) or (Setting("RotationType") == 2 and not Setting("Heroic Strike"))))
+		and UnitsInFrontOfUS() >= 2
+		and dumpvalue >= Spell.Cleave:Cost()
+		and (not Setting("Calculate Rage") or ignorecalc or (Player.Power - Spell.Cleave:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost()
+		or (Spell.Bloodthirst:CD() < Spell.Whirlwind:CD() and (Player.Power - Spell.Cleave:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost()))
 			then 
 			RunMacroText("/cast Cleave")
-			value = value - Spell.Cleave:Cost()
-			DMW.Player.SwingDump = true
+			dumpvalue = dumpvalue - Spell.Cleave:Cost()
 
-		elseif Player.Power >= Spell.HeroicStrike:Cost()
-		and Setting("Heroic Strike")
+		elseif dumpvalue >= Spell.HeroicStrike:Cost()
+		and ((Setting("RotationType") == 1 and Setting("Heroic Strike")) or (Setting("RotationType") == 2 and Setting("Heroic Strike")))
 		then		
 			if  Spell.Bloodthirst:Known()
-			and (not Setting("Calculate Rage") or (Player.Power - Spell.HeroicStrike:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
+			and (not Setting("Calculate Rage") or ignorecalc or (Player.Power - Spell.HeroicStrike:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost()
+			or (Spell.Whirlwind:CD() < Spell.Bloodthirst:CD() and (Player.Power - Spell.HeroicStrike:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost()))
 				then
 				RunMacroText("/cast Heroic Strike")
-				value = value - Spell.HeroicStrike:Cost()
-				DMW.Player.SwingDump = true
+				dumpvalue = dumpvalue - Spell.HeroicStrike:Cost()
+
 			elseif Spell.MortalStrike:Known()
-			and (not Setting("Calculate Rage") or (Player.Power - Spell.HeroicStrike:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost())
+			and (not Setting("Calculate Rage") or ignorecalc or (Player.Power - Spell.HeroicStrike:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost()
+			or (Spell.Whirlwind:CD() < Spell.Bloodthirst:CD() and (Player.Power - Spell.HeroicStrike:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost()))
 				then
 				RunMacroText("/cast Heroic Strike")
-				value = value - Spell.HeroicStrike:Cost()
-				DMW.Player.SwingDump = true
+				dumpvalue = dumpvalue - Spell.HeroicStrike:Cost()
+
 			end
 
         end
-    else
+    -- else
 
-		if whatIsQueued == "HS" 
-			then
-			value = value - Spell.HeroicStrike:Cost()
-		elseif whatIsQueued == "CLEAVE" 
-			then
-			value = value - Spell.Cleave:Cost()
-        end
+		-- if whatIsQueued == "HS" 
+			-- then
+			-- dumpvalue = dumpvalue - Spell.HeroicStrike:Cost()
+		-- elseif whatIsQueued == "CLEAVE" 
+			-- then
+			-- dumpvalue = dumpvalue - Spell.Cleave:Cost()
+        -- end
 
     end
 
 	-- if there is still rage left dump it with BT OR WW or Harmstring 
 
-    if value > 0 
+    if dumpvalue > 0 
 		then
         if Spell.Bloodthirst:Known()
+		and ((Setting("RotationType") == 1 and Setting("Bloodthirst")) or (Setting("RotationType") == 2 and Setting("Bloodthirst_FP")))
 		and Player.Power >= Spell.Bloodthirst:Cost()
 		and Spell.Bloodthirst:CD() == 0
 		then
-            if smartCast("Bloodthirst", Target)  
+            if regularCast("Bloodthirst", Target)  
 				then
-				value = value - Spell.Bloodthirst:Cost()
+				dumpvalue = dumpvalue - Spell.Bloodthirst:Cost()
 			end
         elseif Spell.MortalStrike:Known()
+		and ((Setting("RotationType") == 1 and Setting("MortalStrike")) or (Setting("RotationType") == 2 and Setting("MortalStrike_FP")))
 		and Player.Power >= Spell.MortalStrike:Cost()
 		and Spell.MortalStrike:CD() == 0
 		then
-            if smartCast("MortalStrike", Target) 
+            if regularCast("MortalStrike", Target) 
 				then
-				value = value - Spell.MortalStrike:Cost()					
+				dumpvalue = dumpvalue - Spell.MortalStrike:Cost()					
 			end
 		elseif Setting("Whirlwind") 
 		and Setting("RotationType") == 1
+		and stance == "Berserk"
 		and Spell.Whirlwind:Known()
-		and Player.Power >= Spell.Whirlwind:Cost()
+		and dumpvalue >= Spell.Whirlwind:Cost()
 		and Spell.Whirlwind:CD() == 0
-		and (not Setting("Calculate Rage") or (Player.Power - Spell.Whirlwind:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
+		and (not Setting("Calculate Rage") or ignorecalc or (Player.Power - Spell.Whirlwind:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
 			then
-            if smartCast("Whirlwind", Target)
+            if regularCast("Whirlwind", Target)
 				then
-				value = value - Spell.Whirlwind:Cost()	
+				dumpvalue = dumpvalue - Spell.Whirlwind:Cost()	
 			end
 		elseif Setting("SunderArmor") 
 		and Setting("RotationType") == 2
 		and Spell.SunderArmor:Known()
 		and not ExposeArmor
-		and Player.Power >= Spell.SunderArmor:Cost()
+		and dumpvalue >= Spell.SunderArmor:Cost()
 		and Spell.SunderArmor:CD() == 0
 			then
 			if Spell.Bloodthirst:Known()
 			and Spell.Bloodthirst:CD() >= 1.5
-			and (not Setting("Calculate Rage") or (Player.Power - Spell.SunderArmor:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
+			and (not Setting("Calculate Rage") or ignorecalc or (Player.Power - Spell.SunderArmor:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
 				then
-				if smartCast("SunderArmor", Target)
+				if regularCast("SunderArmor", Target)
 					then
-					value = value - Spell.SunderArmor:Cost()
+					dumpvalue = dumpvalue - Spell.SunderArmor:Cost()
 				end
 			elseif Spell.MortalStrike:Known()
 			and Spell.MortalStrike:CD() >= 1.5
-			and (not Setting("Calculate Rage") or (Player.Power - Spell.SunderArmor:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost())
+			and (not Setting("Calculate Rage") or ignorecalc or (Player.Power - Spell.SunderArmor:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost())
 				then
-				if smartCast("SunderArmor", Target) 
+				if regularCast("SunderArmor", Target) 
 					then
-					value = value - Spell.SunderArmor:Cost()
+					dumpvalue = dumpvalue - Spell.SunderArmor:Cost()
 				end
 			end
 		elseif Setting("SunderArmor")
@@ -961,33 +1015,34 @@ local function dumpRage(value)
 		and ExposeArmor				
 		and Spell.BattleShout:Known() 
 		and Spell.BattleShout:CD() == 0
-		and Player.Power >= Spell.BattleShou:Cost()
+		and dumpvalue >= Spell.BattleShout:Cost()
 		then 
 			if Spell.Bloodthirst:Known()
 			and Spell.Bloodthirst:CD() >= 1.5
-			and (not Setting("Calculate Rage") or (Player.Power - Spell.BattleShout:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
+			and (not Setting("Calculate Rage") or ignorecalc or (Player.Power - Spell.BattleShout:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
 				then
 				if Spell.BattleShout:Cast(Player) 
 					then 
-					value = value - Spell.BattleShout:Cost() 
+					dumpvalue = dumpvalue - Spell.BattleShout:Cost() 
 				end
 			elseif Spell.MortalStrike:Known()
 			and Spell.MortalStrike:CD() >= 1.5
-			and (not Setting("Calculate Rage") or (Player.Power - Spell.BattleShout:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost())
+			and (not Setting("Calculate Rage") or ignorecalc or (Player.Power - Spell.BattleShout:Cost() + ragegain(Spell.MortalStrike:CD())) >= Spell.MortalStrike:Cost())
 				then
 				if Spell.BattleShout:Cast(Player)  
 					then 
-					value = value - Spell.BattleShout:Cost() 
+					dumpvalue = dumpvalue - Spell.BattleShout:Cost() 
 				end
 			end 	
 		elseif Setting("Hamstring Dump")
 		and Setting("RotationType") == 1
+		and (stance == "Battle" or stance == "Berserk")
 		and Setting("Only HString MHSwing >= GCD")
-		and Player.SwingMH > 1.5
+		and Player.SwingMH > 0.5
 		and Player.Power >= Setting("Hamstring dump above # rage") 
 		and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
 		and Spell.Hamstring:Known()
-		and Player.Power >= Spell.Hamstring:Cost()
+		and dumpvalue >= Spell.Hamstring:Cost()
 		and GCD == 0 
 			then
 			if Spell.Bloodthirst:Known()
@@ -995,27 +1050,28 @@ local function dumpRage(value)
 			and Spell.Whirlwind:Known()
 			and Spell.Whirlwind:CD() >= 1.5
 				then
-				if smartCast("Hamstring", Target)   
+				if regularCast("Hamstring", Target)   
 					then
-					value = value - Spell.Hamstring:Cost()
+					dumpvalue = dumpvalue - Spell.Hamstring:Cost()
 				end
 			elseif Spell.MortalStrike:Known()
 			and Spell.MortalStrike:CD() >= 1.5
 			and Spell.Whirlwind:Known()
 			and Spell.Whirlwind:CD() >= 1.5
 				then
-				if smartCast("Hamstring", Target)  
+				if regularCast("Hamstring", Target)  
 					then
-					value = value - Spell.Hamstring:Cost()
+					dumpvalue = dumpvalue - Spell.Hamstring:Cost()
 				end
 			end
 		elseif Setting("Hamstring Dump")	
 		and Setting("RotationType") == 1
+		and (stance == "Battle" or stance == "Berserk")
 		and not Setting("Only HString MHSwing >= GCD")
 		and Player.Power >= Setting("Hamstring dump above # rage") 
 		and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
 		and Spell.Hamstring:Known()
-		and Player.Power >= Spell.Hamstring:Cost()
+		and dumpvalue >= Spell.Hamstring:Cost()
 		and GCD == 0 
 			then
 			if Spell.Bloodthirst:Known()
@@ -1023,25 +1079,24 @@ local function dumpRage(value)
 			and Spell.Whirlwind:Known()
 			and Spell.Whirlwind:CD() >= 1.5
 				then
-				if smartCast("Hamstring", Target)  
+				if regularCast("Hamstring", Target)  
 					then
-					value = value - Spell.Hamstring:Cost()
+					dumpvalue = dumpvalue - Spell.Hamstring:Cost()
 				end
 			elseif Spell.MortalStrike:Known()
 			and Spell.MortalStrike:CD() >= 1.5
 			and Spell.Whirlwind:Known()
 			and Spell.Whirlwind:CD() >= 1.5
 				then
-				if smartCast("Hamstring", Target)  
+				if regularCast("Hamstring", Target)  
 					then
-					value = value - Spell.Hamstring:Cost()
+					dumpvalue = dumpvalue - Spell.Hamstring:Cost()
 				end
 			end 
 		end
-			
-        return true
-	end
 
+	end
+	return true
 end
 
 local function dumpRageLeveling(value)
@@ -1051,13 +1106,13 @@ local function dumpRageLeveling(value)
 	if whatIsQueued == "NA" 
 		then
 		if (Enemy5YC >= 2 or not Setting("Heroic Strike"))
+		and UnitsInFrontOfUS() >= 2
 		and Setting("Cleave")
 		and Spell.Cleave:Known()
 		and value >= Spell.Cleave:Cost()
 			then 
 			RunMacroText("/cast Cleave")
 			value = value - Spell.Cleave:Cost()
-			DMW.Player.SwingDump = true
 
 		elseif Spell.HeroicStrike:Known()
 		and value >= Spell.HeroicStrike:Cost()
@@ -1065,17 +1120,16 @@ local function dumpRageLeveling(value)
 		then		
 			RunMacroText("/cast Heroic Strike")
 			value = value - Spell.HeroicStrike:Cost()
-			DMW.Player.SwingDump = true
 		end
-    else
+    -- else
 	
- 		if whatIsQueued == "HS" 
-			then
-			value = value - Spell.HeroicStrike:Cost()
-		elseif whatIsQueued == "CLEAVE" 
-			then
-			value = value - Spell.Cleave:Cost()
-        end
+ 		-- if whatIsQueued == "HS" 
+			-- then
+			-- value = value - Spell.HeroicStrike:Cost()
+		-- elseif whatIsQueued == "CLEAVE" 
+			-- then
+			-- value = value - Spell.Cleave:Cost()
+        -- end
     end
 
 	-- if there is still rage left dump it with BT OR WW or Harmstring 
@@ -1086,7 +1140,7 @@ local function dumpRageLeveling(value)
 		and value >= Spell.Bloodthirst:Cost()
 		and Spell.Bloodthirst:CD() == 0
 		then
-            if smartCast("Bloodthirst", Target)  
+            if regularCast("Bloodthirst", Target)  
 				then
 				value = value - Spell.Bloodthirst:Cost()
 			end
@@ -1094,24 +1148,24 @@ local function dumpRageLeveling(value)
 		and value >= Spell.MortalStrike:Cost()
 		and Spell.MortalStrike:CD() == 0
 		then
-            if smartCast("MortalStrike", Target) 
+            if regularCast("MortalStrike", Target) 
 				then
 				value = value - Spell.MortalStrike:Cost()					
 			end
-		elseif Setting("Whirlwind") 
+		elseif Setting("Whirlwind")
+		and stance == "Berserk"		
 		and Spell.Whirlwind:Known()
 		and value >= Spell.Whirlwind:Cost()
 		and Spell.Whirlwind:CD() == 0
 		then
-            if smartCast("Whirlwind", Target)
+            if regularCast("Whirlwind", Target)
 				then
 				value = value - Spell.Whirlwind:Cost()	
 			end
 
 		end
-			
-        return true
 	end
+	return true
 end
 
 
@@ -1134,7 +1188,7 @@ local function AutoExecute()
 	--Getting Executable Tagets in 5yards Range
     -- if Player.Power >= 10 then
     local exeCount = 0
-    if Setting("Execute")
+    if (Setting("RotationType") == 1 and Setting("Execute")) or (Setting("RotationType") == 2 and Setting("Execute_FP"))
 	and	(HUD.Execute == 1 or HUD.Execute == 2 or HUD.Execute == 3 or HUD.Execute == 4)
 		then
         for _, Unit in ipairs(Enemy5Y) do
@@ -1143,7 +1197,7 @@ local function AutoExecute()
             end
         end
     end
-    if Setting("Execute") 
+    if (Setting("RotationType") == 1 and Setting("Execute")) or (Setting("RotationType") == 2 and Setting("Execute_FP"))
 	and HUD.Execute == 1 
 		then
         if Spell.Execute:Known() 
@@ -1173,7 +1227,7 @@ local function AutoExecute()
             end
         end
 
-    elseif Setting("Execute") 
+    elseif (Setting("RotationType") == 1 and Setting("Execute")) or (Setting("RotationType") == 2 and Setting("Execute_FP")) 
 	and HUD.Execute == 2
 
 	and exeCount >= 1	
@@ -1204,7 +1258,7 @@ local function AutoExecute()
                 end
             end
         end
-    elseif Setting("Execute") 
+    elseif (Setting("RotationType") == 1 and Setting("Execute")) or (Setting("RotationType") == 2 and Setting("Execute_FP")) 
 	and HUD.Execute == 3 
 		then
         if Target 
@@ -1242,7 +1296,7 @@ local function AutoExecute()
 				then return true 
 			end		
 		end
-	elseif Setting("Execute") 
+	elseif (Setting("RotationType") == 1 and Setting("Execute")) or (Setting("RotationType") == 2 and Setting("Execute_FP")) 
 	and HUD.Execute == 4
         then
 		if Enemy5YC <= 6 
@@ -1313,17 +1367,42 @@ local function AutoExecute()
 	end
 end
 
+
+				
+
+
+
+
+
 -- Auto Overpower
 local function AutoOverpower()
-	-- print("autoover")
-    if Setting("Overpower") 
+	
+	--Swap back to main stance for spec if overpower was cast
+	if Setting("Overpower") 
+	and Spell.Overpower:LastCast(1)
+	and Stance ~= firstCheck
+		then  
+		if firstCheck == "Battle" 
+			then
+			if Spell.StanceBattle:Cast() then
+            end
+        elseif firstCheck == "Defensive" 
+			then
+            if Spell.StanceDefense:Cast() then
+			end
+        elseif firstCheck == "Berserk" then
+            if Spell.StanceBers:Cast() then
+			end
+		end			
+		
+    elseif Setting("Overpower") 
 	and Spell.Overpower:Known()
 	then
         for _, Unit in ipairs(Enemy5Y) do
 			if Player.OverpowerUnit[Unit.Pointer] ~= nil
-			and Player.Power <= 60 
-			and Unit.HP > 20 
-			and Player.SwingMH >= 0.5
+			and Player.Power <= 35 
+			and Unit.HP >= 20 
+			and Player.SwingMH >= 2.0
 			and ((Spell.Bloodthirst:Known() and Spell.Bloodthirst:CD() >= 2.5) or (Spell.MortalStrike:Known() and Spell.MortalStrike:CD() >= 2.5))
 			and Spell.Overpower:CD() < (Player.OverpowerUnit[Unit.Pointer].time - 0.5 - DMW.Time)
 			then
@@ -1718,7 +1797,7 @@ local function IsEquipped(itemID, slot)
 end
 
 
-local function weaponswap(def,off)
+local function weaponswap(def,off,frost)
 local MainhandName = select(1, GetItemInfo(Setting("ItemID Mainhand")))
 local DefMainhandName = select(1, GetItemInfo(Setting("ItemID DefMainhand")))
 local OffhandName = select(1, GetItemInfo(Setting("ItemID Offhand")))
@@ -1729,14 +1808,16 @@ local ItemIdDefMh = tonumber(Setting("ItemID DefMainhand"))
 local ItemIdOH = tonumber(Setting("ItemID Offhand"))
 local ItemIdS = tonumber(Setting("ItemID Shield"))
 local ItemIdTH = tonumber(Setting("ItemID 2 Hander"))
-local ItemIdFrost = 10761
+local ItemIdFMH =  tonumber(Setting("ItemID FrostMainhand"))
+local ItemIdFOH = tonumber(Setting("ItemID FrostOffhand"))
 
 
-	if (Setting("Equip 1h and shield when aggro") or Setting("Swap to shield for kick"))
+
+	if Setting("Equip 1h and shield") --or Setting("Swap to shield for kick"))
 	and def
 	and ItemIdDefMh ~= nil
 	and ItemIdS ~= nil
-	and ((not IsEquipped(ItemIdDefMh, 16) or not IsEquipped(ItemIdS, 17)) or (not IsEquipped(ItemIdFrost, 16) or not IsEquipped(ItemIdFrost, 17)))--16Mainhand 17Offhand
+	and (not IsEquipped(ItemIdDefMh, 16) or not IsEquipped(ItemIdS, 17))
 		then 
 		for bag = 0,4 do
 			for slot = 1,GetContainerNumSlots(bag) do
@@ -1758,11 +1839,11 @@ local ItemIdFrost = 10761
 			end
 		end
 		
-	elseif Setting("Equip 2 x 1h after aggroloose")
+	elseif Setting("Equip 2 x 1h")
 	and off
 	and ItemIdMH ~= nil
 	and ItemIdOH ~= nil
-	and ((not IsEquipped(ItemIdMH, 16) or not IsEquipped(ItemIdOH, 17))  or (not IsEquipped(ItemIdFrost, 16) or not IsEquipped(ItemIdFrost, 17)))--16Mainhand 17Offhand
+	and (not IsEquipped(ItemIdMH, 16) or not IsEquipped(ItemIdOH, 17))
 		then 
 		for bag = 0,4 do
 			for slot = 1,GetContainerNumSlots(bag) do
@@ -1781,13 +1862,14 @@ local ItemIdFrost = 10761
 					
 				end
 				if IsEquipped(ItemIdMH, 16) and IsEquipped(ItemIdOH, 17)
-				then return true end
+					then break 
+				end
 			end
 		end
-	elseif Setting("Equip 2H after aggroloose")
+	elseif Setting("Equip 2H")
 	and off
 	and ItemIdTH ~= nil
-	and (not IsEquipped(ItemIdTH, 16) or (not IsEquipped(ItemIdFrost, 16) or not IsEquipped(ItemIdFrost, 17))) --16Mainhand 17Offhand
+	and (not IsEquipped(ItemIdTH, 16) and (not IsEquipped(ItemIdFrost, 16) or not IsEquipped(ItemIdFrost, 17)))
 		then 
 		for bag = 0,4 do
 			for slot = 1,GetContainerNumSlots(bag) do
@@ -1800,35 +1882,37 @@ local ItemIdFrost = 10761
 					
 				end
 				if IsEquipped(ItemIdTH, 16)
-				then return true end
+					then break 
+				end
 			end
 		end
-	-- elseif Setting("Swap to shield for kick")
-	-- and off
-	-- and ItemIdOH ~= nil
-	-- and not IsEquipped(ItemIdOH, 17) --16Mainhand 17Offhand
-		-- then 
-		-- for bag = 0,4 do
-			-- for slot = 1,GetContainerNumSlots(bag) do
-				-- local item = GetContainerItemID(bag,slot)
+	elseif Setting("Equip Frost 2x1h")	
+	and frost
+	and ItemIdFMH ~= nil
+	and ItemIdFOH ~= nil
+	and (not IsEquipped(ItemIdFMH, 16) or not IsEquipped(ItemIdFOH, 17))
+		then 
+		for bag = 0,4 do
+			for slot = 1,GetContainerNumSlots(bag) do
+				local item = GetContainerItemID(bag,slot)
 
-				-- if item ~= nil
-				-- and item == ItemIdOH
-					-- then 
-					-- RunMacroText("/equipslot 17 " .. OffhandName)
+				if item ~= nil
+				and item == ItemIdFMH
+					then 
+					RunMacroText("/equipslot 16 " .. MainhandName)
 					
-				-- end
-				-- if IsEquipped(ItemIdOH, 17)
-				-- then return true end
-			-- end
-		-- end
-		
-	elseif (((Setting("Equip 1h and shield when aggro") or Setting("Swap to shield for kick")) and IsEquipped(ItemIdDefMh, 16) and IsEquipped(ItemIdS, 17))
-	or (Setting("Equip 2 x 1h after aggroloose") and IsEquipped(ItemIdMH, 16) and IsEquipped(ItemIdOH, 17))
-	or (Setting("Equip 2H after aggroloose") and IsEquipped(ItemIdTH, 16))
-	or (IsEquipped(ItemIdFrost, 16) or IsEquipped(ItemIdFrost, 17))) --or (Setting("Swap to shield for kick") and not def and IsEquipped(ItemIdOH, 17)) or (Setting("Swap to shield for kick") and def and IsEquipped(ItemIdS, 17))
-		then return true
-
+				end
+				if item ~= nil
+				and item == ItemIdFOH
+					then 
+					RunMacroText("/equipslot 17 " .. OffhandName)
+					
+				end
+				if IsEquipped(ItemIdMH, 16) and IsEquipped(ItemIdOH, 17)
+					then break 
+				end
+			end
+		end	
 	end	
 end
 
@@ -1876,89 +1960,89 @@ end
 
 
 
-local function lifesaver()
-	local WeHaveAggro = 0
+-- local function lifesaver()
+	-- local WeHaveAggro = 0
 	
-	if Target
-		then WeHaveAggro = select(2, UnitDetailedThreatSituation(Player.Pointer, Target.Pointer))
-	end
+	-- if Target
+		-- then WeHaveAggro = select(2, UnitDetailedThreatSituation(Player.Pointer, Target.Pointer))
+	-- end
 		
-	if WeHaveAggro == nil
-	then WeHaveAggro = 0
-	end
+	-- if WeHaveAggro == nil
+	-- then WeHaveAggro = 0
+	-- end
 	
-	if Target
-	and WeHaveAggro > 1
-	and not UnitPlayerControlled("target")
-	and (not Setting("Lifesaver only in Raid") or (Setting("Lifesaver only in Raid") and UnitInRaid("player") ~= nil))
-	and Setting("RotationType") == 1
-		then
-		if Setting("Lifes. allways")
-			then
-			if Setting("Equip 1h and shield when aggro")
-			then
-				if weaponswap(true,false)
-					then DMW.Settings.profile.Rotation.RotationType = 2 return true
-				end
-			else DMW.Settings.profile.Rotation.RotationType = 2 return true
-			end
-		elseif Setting("Lifes. Enemy Max HP")
-		and Target.HealthMax >= (1000 * Setting("MaxHP in tousands"))
-			then 
-			if Setting("Equip 1h and shield when aggro")
-			then
-				if weaponswap(true,false)
-					then DMW.Settings.profile.Rotation.RotationType = 2 return true
-				end
-			else DMW.Settings.profile.Rotation.RotationType = 2 return true
-			end
-		elseif Setting("Lifes. Enemy Level")
-		and Target.Level >= Setting("EnemyLvl")
-			then 
-			if Setting("Equip 1h and shield when aggro")
-			then
-				if weaponswap(true,false)
-					then DMW.Settings.profile.Rotation.RotationType = 2 return true
-				end
-			else DMW.Settings.profile.Rotation.RotationType = 2 return true
-			end			
-		elseif Setting("Lifes. Bossaggro")
-		and Target:IsBoss()
-			then 
-			if Setting("Equip 1h and shield when aggro")
-			then
-				if weaponswap(true,false)
-					then DMW.Settings.profile.Rotation.RotationType = 2 return true
-				end
-			else DMW.Settings.profile.Rotation.RotationType = 2 return true
-			end			
-		end
+	-- if Target
+	-- and WeHaveAggro > 1
+	-- and not UnitPlayerControlled("target")
+	-- and (not Setting("Lifesaver only in Raid") or (Setting("Lifesaver only in Raid") and UnitInRaid("player") ~= nil))
+	-- and Setting("RotationType") == 1
+		-- then
+		-- if Setting("Lifes. allways")
+			-- then
+			-- if Setting("Equip 1h and shield when aggro")
+			-- then
+				-- if weaponswap(true,false)
+					-- then DMW.Settings.profile.Rotation.RotationType = 2 return true
+				-- end
+			-- else DMW.Settings.profile.Rotation.RotationType = 2 return true
+			-- end
+		-- elseif Setting("Lifes. Enemy Max HP")
+		-- and Target.HealthMax >= (1000 * Setting("MaxHP in tousands"))
+			-- then 
+			-- if Setting("Equip 1h and shield when aggro")
+			-- then
+				-- if weaponswap(true,false)
+					-- then DMW.Settings.profile.Rotation.RotationType = 2 return true
+				-- end
+			-- else DMW.Settings.profile.Rotation.RotationType = 2 return true
+			-- end
+		-- elseif Setting("Lifes. Enemy Level")
+		-- and Target.Level >= Setting("EnemyLvl")
+			-- then 
+			-- if Setting("Equip 1h and shield when aggro")
+			-- then
+				-- if weaponswap(true,false)
+					-- then DMW.Settings.profile.Rotation.RotationType = 2 return true
+				-- end
+			-- else DMW.Settings.profile.Rotation.RotationType = 2 return true
+			-- end			
+		-- elseif Setting("Lifes. Bossaggro")
+		-- and Target:IsBoss()
+			-- then 
+			-- if Setting("Equip 1h and shield when aggro")
+			-- then
+				-- if weaponswap(true,false)
+					-- then DMW.Settings.profile.Rotation.RotationType = 2 return true
+				-- end
+			-- else DMW.Settings.profile.Rotation.RotationType = 2 return true
+			-- end			
+		-- end
 		
-	elseif Setting("RotationType") == 2 
-	and (( Target and not (WeHaveAggro > 1)) or not Player.Combat)
-		then
-		if Setting("Equip 2 x 1h after aggroloose")
-			then
-				if weaponswap(false,true)
-					then DMW.Settings.profile.Rotation.RotationType = 1 return true
-				end
-		elseif Setting("Equip 2H after aggroloose")
-			then
-				if weaponswap(false,true)
-					then DMW.Settings.profile.Rotation.RotationType = 1 return true
-				end
-		else DMW.Settings.profile.Rotation.RotationType = 1 return true
-		end
+	-- elseif Setting("RotationType") == 2 
+	-- and (( Target and not (WeHaveAggro > 1)) or not Player.Combat)
+		-- then
+		-- if Setting("Equip 2 x 1h after aggroloose")
+			-- then
+				-- if weaponswap(false,true)
+					-- then DMW.Settings.profile.Rotation.RotationType = 1 return true
+				-- end
+		-- elseif Setting("Equip 2H after aggroloose")
+			-- then
+				-- if weaponswap(false,true)
+					-- then DMW.Settings.profile.Rotation.RotationType = 1 return true
+				-- end
+		-- else DMW.Settings.profile.Rotation.RotationType = 1 return true
+		-- end
 
 
-	end 
-end
+	-- end 
+-- end
 
 
 local function AutoTargetAndFacing()
 
 -- Auto targets Enemy in Range
-    if Setting("AutoTarget") 
+    if Setting("AutoTarget") and not (Setting("RotationType") == 2 and Setting("Don´t AutoTarget if tanking"))
 	and (not Target or not Target.ValidEnemy or Target.Dead or not UnitIsFacing("Player", Target.Pointer, 100) or IsSpellInRange("Hamstring", "target") == 0)
 		then 
 		for _, Unit in ipairs(Enemy5Y) do	
@@ -2002,7 +2086,7 @@ local function AutoTargetAndFacing()
 				then 
 				TargetUnit(Unit.Pointer)
 				return true	
-			elseif Player:AutoTarget(5, false) 
+			elseif Player:AutoTarget(5, Facing) 
 				then return true 
 			
 			end
@@ -2234,7 +2318,14 @@ local function Consumes()
 	-- Use Best HP Pot
 	if Setting("Use Best HP Potion") then
 		if DMW.Player.HP <= Setting("Use Potion at #% HP") and Player.Combat and (DMW.Time - ItemUsage) > 1.5 then
-			if GetItemCount(Item.MajorHealingPotion.ItemID) >= 1 and Item.MajorHealingPotion:IsReady() 
+			if Setting("Use LIP instead of HP Potion")
+			and GetItemCount(Item.LimitedInvulnerabilityPotion.ItemID) >= 1
+			and GetItemCooldown(Item.LimitedInvulnerabilityPotion.ItemID) == 0
+			and Item.LimitedInvulnerabilityPotion:Use(Player)
+				then
+				ItemUsage = DMW.Time
+				return true 
+			elseif GetItemCount(Item.MajorHealingPotion.ItemID) >= 1 and Item.MajorHealingPotion:IsReady() 
 			and Item.MajorHealingPotion:Use(Player) 
 				then
 				ItemUsage = DMW.Time
@@ -2361,7 +2452,7 @@ local function ChargeIntercept()
 					then return true 
 				end
             elseif (HUD.Charge == 1 or HUD.Charge == 2) 
-			and Spell.Intercept:CD() == 0 
+			and Spell.Intercept:CD() == 0
 			and Player.Power >= 10 
 			and Spell.Intercept:Known()
 			and not Spell.Charge:LastCast(1) 
@@ -2379,6 +2470,11 @@ end
     -----------------FURY DW/2H PART--------------------FURY DW/2H PART--------------------FURY DW/2H PART--------------------FURY DW/2H PART------
 local function fury()
 
+		if (Setting("Swap Weapons") or Setting("Use Viscidus Rotation"))
+		and weaponswap(false,true,false) 
+			then return true
+		end
+
 		-- AutoAttack
 		if Target 
 		and not Target.Dead 
@@ -2388,6 +2484,21 @@ local function fury()
 			then
 			StartAttack()
         end
+
+		if Setting("Rend in PvP")
+		and Target 
+		and Target.Player 
+		and IsSpellInRange("Rend", "target") == 1 
+		and not Target.Dead 
+		and UnitCanAttack("player", Target.Pointer) 
+			then
+			if Target.Class == "ROGUE" and not Debuff.Rend:Exist(Target) 
+				then
+				smartCast("Rend", Target)
+				return true
+			end
+
+		end
 		
         if Player.Combat
 		and Enemy5YC ~= nil
@@ -2395,12 +2506,12 @@ local function fury()
 			then
 
 			-----life saver if aggro---------
-			if Setting("Lifesaver") 
-				then 
-				if lifesaver()
-					then return true
-				end
-			end
+			-- if Setting("Lifesaver") 
+				-- then 
+				-- if lifesaver()
+					-- then return true
+				-- end
+			-- end
 	
 			-- Bers Rage --
 			if Setting("Berserker Rage") 
@@ -2448,7 +2559,7 @@ local function fury()
 
 			--unqueue HS or Cleave when low rage
 			if Setting("Toggle HS")
-			and Player.Power < 20
+			and Player.Power < 30
 			and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
 			and Player.SwingMH <= 0.3
 			and Player.SwingMH > 0
@@ -2479,12 +2590,29 @@ local function fury()
             if (AutoExecute() or AutoBuff() or AutoOverpower()) 
 				then return true 
 			end
-
+			
+			
 			if Target
 			then			
 					if Enemy8YC ~= nil
 					and Enemy8YC >= 2 
 						then
+						
+						if Setting("First Global Sunder")
+						and not ExposeArmor
+						and Spell.SunderArmor:Known() 
+						and Spell.SunderArmor:CD() == 0
+						and Player.Power >= Spell.SunderArmor:Cost()
+						and SunderStacks < 5
+						and Target.HealthMax >= (1000 * Setting("GCDSunder MaxHP"))
+						and TargetSundered ~= Target.GUID
+						then 
+							if smartCast("SunderArmor", Target)
+								then 
+								TargetSundered = Target.GUID
+								return true 
+							end
+						end
 						
 						if Setting("Whirlwind")
 						and Spell.Whirlwind:Known()	
@@ -2499,6 +2627,7 @@ local function fury()
 						if Setting("Bloodthirst") 
 						and Spell.Bloodthirst:Known() 
 						and Spell.Bloodthirst:CD() == 0
+						and Spell.Whirlwind:CD() >= 1.5
 						and (not Setting("Calculate Rage") or (Player.Power - Spell.Bloodthirst:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost())
 						and  Player.Power >= Spell.Bloodthirst:Cost()
 							then 				
@@ -2509,41 +2638,13 @@ local function fury()
 						and Spell.MortalStrike:Known() 
 						and Spell.MortalStrike:CD() == 0 
 						and (not Setting("Calculate Rage") or (Player.Power - Spell.MortalStrike:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost())
-						and  Player.Power >= Spell.MortalStrike:Cost()
+						and Player.Power >= Spell.MortalStrike:Cost()
 							then
 							if smartCast("MortalStrike", Target, true) 
 								then return true 
 							end
-						end
-						
-						if Setting("First Global Sunder")
-						and not ExposeArmor
-						and Spell.SunderArmor:Known() 
-						and Spell.SunderArmor:CD() == 0
-						and Player.Power >= Spell.SunderArmor:Cost()
-						and SunderStacks <= 5
-						and Target.HealthMax >= (1000 * Setting("GCDSunder MaxHP"))
-						and TargetSundered ~= Target.GUID
-						then 
-							if smartCast("SunderArmor", Target)
-								then 
-								TargetSundered = Target.GUID
-								return true 
-							end
-						end
-						
-						if Setting("SunderArmor") 
-						and not Setting("First Global Sunder")
-						and not ExposeArmor						
-						and Spell.SunderArmor:Known() 
-						and Spell.SunderArmor:CD() == 0 
-						and Player.Power >= Spell.SunderArmor:Cost() 
-						and SunderStacks <= Setting("Apply Stacks of Sunder Armor")
-						then 
-							if smartCast("SunderArmor", Target)
-								then return true 
-							end
-						end
+						end		
+				
 						
 					else				
 						--first Global Sunder
@@ -2553,7 +2654,7 @@ local function fury()
 						and Spell.SunderArmor:Known() 
 						and Spell.SunderArmor:CD() == 0
 						and Player.Power >= Spell.SunderArmor:Cost()
-						and SunderStacks <= 5
+						and SunderStacks < 5
 						and Target.HealthMax >= (1000 * Setting("GCDSunder MaxHP"))
 						and TargetSundered ~= Target.GUID
 						then 
@@ -2564,19 +2665,6 @@ local function fury()
 							end
 						end
 						
-						if Setting("SunderArmor") 
-						and not Setting("First Global Sunder")
-						and not ExposeArmor						
-						and Spell.SunderArmor:Known() 
-						and Spell.SunderArmor:CD() == 0 
-						and Player.Power >= Spell.SunderArmor:Cost() 
-						and SunderStacks <= Setting("Apply Stacks of Sunder Armor")
-						then 
-							if smartCast("SunderArmor", Target)
-								then return true 
-							end
-						end
-
 						if Setting("Use Slam") 
 						and Setting("Use Slam over BT") 
 						and effectiveAP <= 1500
@@ -2611,6 +2699,9 @@ local function fury()
 						if Setting("Whirlwind") 
 						and Spell.Whirlwind:Known() 
 						and Spell.Whirlwind:CD() == 0 
+						and not Target.Name == "Eye of C'Thun" 
+						and not Target.Name == "C'Thun"
+						and Spell.Bloodthirst:CD() >= 1.5
 						and Player.Power >= Spell.Whirlwind:Cost() 
 							then
 							if Setting("Bloodthirst") 
@@ -2670,6 +2761,7 @@ local function fury()
 					
 			end		
         end
+		return true
 end
 
 
@@ -2680,13 +2772,17 @@ local function furyProt()
 		
 		
 		-- swap back to main weapons and rotation
-		if Setting("Lifesaver") 
-			then 
-			if lifesaver()
-				then return true
-			end
-		end	
-
+		-- if Setting("Lifesaver") 
+			-- then 
+			-- if lifesaver()
+				-- then return true
+			-- end
+		-- end
+		
+		if Setting("Swap Weapons")
+		and weaponswap(true,false,false) 
+			then return true
+		end
 
 		-- AutoAttack
 		if Target 
@@ -2718,19 +2814,28 @@ local function furyProt()
 		and Enemy5YC ~= nil
 		and Enemy5YC > 0 
 			then
-		
+			
+			-- Bers Rage --
+			if Setting("Berserker Rage_FP") 
+			and Spell.BersRage:CD() == 0 
+			and Spell.BersRage:Known() 
+				then	
+				if smartCast("BersRage", Player)
+					then return true 
+				end 
+			end		
 
 			
 			-- Bloodrage --
-			if Setting("Bloodrage")
+			if Setting("Bloodrage_FP")
 			and Spell.Bloodrage:Known()
 			and Spell.Bloodrage:CD() == 0
 			and Player.Power <= 50 
 			and Player.HP >= 30
 				then
 					if smartCast("Bloodrage", Target)
-					then 
-					return true end
+						then return true 
+					end
 			end
 			
 			
@@ -2759,7 +2864,7 @@ local function furyProt()
 
 			--unqueue HS or Cleave when low rage
 			if Setting("Toggle HS")
-			and Player.Power < 20
+			and Player.Power < 30
 			and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
 			and Player.SwingMH <= 0.3
 			and Player.SwingMH > 0
@@ -2808,14 +2913,14 @@ local function furyProt()
 
 			
 			-- Buffs Battleshout Casts Overpower or EXECUTE
-            if (AutoExecute() or AutoRevenge())
+            if (AutoExecute() or AutoRevenge() or AutoBuff())
 				then return true 
 			end
-
+			
 			if Target
 			then			
 		
-				if Setting("Bloodthirst") 
+				if Setting("Bloodthirst_FP") 
 				and Spell.Bloodthirst:Known() 
 				and Spell.Bloodthirst:CD() == 0 
 				and Player.Power >= Spell.Bloodthirst:Cost()
@@ -2823,7 +2928,7 @@ local function furyProt()
 					if smartCast("Bloodthirst", Target) 
 						then return true 
 					end						
-				elseif Setting("MortalStrike") 
+				elseif Setting("MortalStrike_FP") 
 				and Spell.MortalStrike:Known() 
 				and Spell.MortalStrike:CD() == 0 
 				and Player.Power >= Spell.MortalStrike:Cost() 
@@ -2876,13 +2981,10 @@ local function furyProt()
 						end
 					end 	
 				end
-				
-				if AutoBuff()
-					then return true 
-				end				
+
 
 				-- Hamstring --
-				if (Setting("Hamstring < 30% Enemy HP") or Setting("Hamstring PvP"))
+				if (Setting("Hamstring < 30% Enemy HP_FP") or Setting("Hamstring PvP_FP"))
 				and Spell.Hamstring:Known() 
 				and GCD == 0 
 				and Player.Combat 
@@ -2933,6 +3035,7 @@ local function furyProt()
 				
 			end		
 		end
+		return true
 end
 
 
@@ -3002,7 +3105,7 @@ local function leveling()
 
 			--unqueue HS or Cleave when low rage
 			if Setting("Toggle HS")
-			and Player.Power < 20
+			and Player.Power < 30
 			and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
 			and Player.SwingMH <= 0.3
 			and Player.SwingMH > 0
@@ -3069,50 +3172,20 @@ local function leveling()
 						end
 					
 					else				
-						--first Global Sunder
-						
-						if Setting("First Global Sunder")
-						and not ExposeArmor
-						and Spell.SunderArmor:Known() 
-						and Spell.SunderArmor:CD() == 0
-						and Player.Power >= Spell.SunderArmor:Cost()
-						and SunderStacks <= 5
-						and Target.HealthMax >= (1000 * Setting("GCDSunder MaxHP"))
-						and TargetSundered ~= Target.GUID
-						then 
-							if smartCast("SunderArmor", Target)
-								then 
-								TargetSundered = Target.GUID
-								return true 
-							end
-						end
+
 						
 						if Setting("SunderArmor") 
-						and not Setting("First Global Sunder")
 						and not ExposeArmor						
 						and Spell.SunderArmor:Known() 
 						and Spell.SunderArmor:CD() == 0 
 						and Player.Power >= Spell.SunderArmor:Cost() 
-						and SunderStacks <= Setting("Apply Stacks of Sunder Armor")
+						and SunderStacks < Setting("Apply Stacks of Sunder Armor")
 						then 
 							if smartCast("SunderArmor", Target)
 								then return true 
 							end
 						end
 
-						if Setting("Use Slam") 
-						and Setting("Use Slam over BT") 
-						and Spell.Slam:Known()
-						and effectiveAP <= 1500
-						and Player.Power >= Spell.Slam:Cost() 
-						and Spell.Slam:CD() == 0	
-						and CanSlam()
-							then
-							if smartCast("Slam", Target)
-								then return true
-							end
-						end
-						
 						if Setting("Bloodthirst") 
 						and Spell.Bloodthirst:Known() 
 						and Spell.Bloodthirst:CD() == 0 
@@ -3180,7 +3253,50 @@ local function leveling()
 					
 			end		
         end
+		return true
 end 
+
+local function viscidus()
+
+		if Setting("Swap Weapons")
+		and weaponswap(false,false,true) 
+			then return true
+		end
+		
+		if Stance ~= "Defensive"
+		and not Target.HP <= 20
+		and Spell.StanceDefense:IsReady() 
+			then
+            if Spell.StanceDefense:Cast()
+				then return true
+			end
+		end
+
+		-- AutoAttack
+		if Target 
+		and not Target.Dead 
+		and Target.Distance <= 5 
+		and Target.Attackable 
+		and not IsCurrentSpell(Spell.Attack.SpellID) 
+			then
+			StartAttack()
+        end
+
+		
+        if Player.Combat
+		and Enemy5YC ~= nil
+		and Enemy5YC > 0 
+			then
+			
+			-- Buffs Battleshout Casts Overpower or EXECUTE
+            if (AutoExecute() or AutoBuff()) 
+				then return true 
+			end
+			
+	
+        end
+		return true
+end
 
 
 function Warrior.Rotation()
@@ -3231,8 +3347,20 @@ function Warrior.Rotation()
 	if SomeDebuffs()
 		then return true 
 	end
-
-    if Setting("RotationType") == 1 --fury
+	
+	if Setting("Use Viscidus Rotation")
+	and Target
+	and Target.Name == "Viscidus"
+		then 
+		if viscidus()
+			then return true
+		end
+	elseif Setting("Use Leveling Rotation") --leveling
+		then
+		if leveling() 
+			then return true
+		end	
+    elseif Setting("RotationType") == 1 --fury
 		then
 		if fury() 
 			then return true
@@ -3242,11 +3370,6 @@ function Warrior.Rotation()
 		if furyProt() 
 			then return true
 		end
-	elseif Setting("RotationType") == 3 --leveling
-		then
-		if leveling() 
-			then return true
-		end	
 	end
 	
 end	
