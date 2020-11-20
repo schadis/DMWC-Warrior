@@ -24,6 +24,15 @@
 
 ## Changelog
 
+## 20.11.2020
+
+* trying to fix ragelost on stance dance that "Fuck Rage Lost Setting" is not needed anymore
+* changed ragecalc to also go after WW if WW is your next mainspell
+* removed ragecalc on fury for ww as mainspell cause dump was used before ww and ww was not cast
+* fixed ww on Cthun that it is not used cause of to much range to the hitbox
+* splited of Cleave and HS ragedump for furyprot to seperate lines cause of ragecalc
+* TESTING: Viscidus rotation and weaponswap to frost weapons(swap not always working)
+
 ## 17.11.2020
 
 * added LIP instead of Healthpot on HP setting toggle

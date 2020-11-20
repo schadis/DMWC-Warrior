@@ -133,7 +133,7 @@ function Warrior.Settings()
 		UI.AddToggle("Use Slam over BT", "Uses Slam over BT when we have less then 1500AP", false)
 		UI.AddToggle("Toggle HS", "Will queue and unque HS ... when its needed", false)
 		UI.AddToggle("Queue HS/ExecutePhase", "Will queue HS in Execute Phase when there is more rage than Excost", false)
-		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 0, 100, 1, 30)
+		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 26, 100, 1, 30)
 		UI.AddToggle("Calculate Rage", "Will use ragecalc for next swings", true)
 		UI.AddToggle("FuckRage&StanceDance", "Will dance Stances no matter what rage lvl you are", false)
 ------------------------------------------------------------------------------------------------------------------------------
