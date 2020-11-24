@@ -3,7 +3,7 @@ local Warrior = DMW.Rotations.WARRIOR
 local Rotation = DMW.Helpers.Rotation
 local Setting = DMW.Helpers.Rotation.Setting
 local Player, Buff, Debuff, Spell, Stance, Target, Talent, Item, GCD, CDs, HUD, Enemy5Y, Enemy5YC, Enemy10Y, Enemy10YC, Enemy30Y,
-      Enemy30YC, Enemy8Y, Enemy8YC, dumpEnabled, castTime, syncSS, combatLeftCheck, stanceChangedSkill,
+      Enemy30YC, Enemy8Y, Enemy8YC, dumpEnabled, castTime, rageLeftAfterStance, syncSS, combatLeftCheck, stanceChangedSkill,
       stanceChangedSkillTimer, stanceChangedSkillUnit, targetChange, whatIsQueued, oldTarget, firstCheck,
       secondCheck, thirdCheck, SwingMH, SwingOH, MHSpeed, PosX, PosY, PosZ, name
 local Enemy5YC = nil
@@ -285,8 +285,8 @@ local function GetStanceAndChecks()
 	
 end
 
-local function RageLostOnStanceDance()
-
+local function RageLostOnStanceDanceF()
+	
 	local RageLost = Player.Power - rageLeftAfterStance
 		
 	if not RageLost
@@ -301,6 +301,31 @@ local function RageLostOnStanceDance()
 	
 end
 
+local function StanceDanceDumpRageF()
+	
+	local DumpRage
+	if Talent.TacticalMastery.Rank == 0
+		then DumpRage = Player.Power
+		return DumpRage
+	elseif Talent.TacticalMastery.Rank == 1
+		then DumpRage = Player.Power
+		return DumpRage 
+	elseif Talent.TacticalMastery.Rank == 2
+		then DumpRage = Player.Power - 5
+		return DumpRage 
+	elseif Talent.TacticalMastery.Rank == 3
+		then DumpRage = Player.Power - 10
+		return DumpRage 
+	elseif Talent.TacticalMastery.Rank == 4
+		then DumpRage = Player.Power - 15
+		return DumpRage
+	elseif Talent.TacticalMastery.Rank == 5
+		then DumpRage = Player.Power - 20
+		return DumpRage 		
+	end
+
+
+end
 
 local function ArmorCalcThings()
 
@@ -380,6 +405,8 @@ local function Locals()
     dumpEnabled = false
     syncSS = false
     whatIsQueued = checkOnHit()
+
+	rageLeftAfterStance = Talent.TacticalMastery.Rank * 5
 	
     if castTime == nil then castTime = DMW.Time end
 	
