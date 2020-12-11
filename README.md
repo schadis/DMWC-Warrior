@@ -24,9 +24,16 @@
 
 ## Changelog
 
+## 11.12.2020
+
+* fixed typo at Only HString MHSwing > 0.5 in the rotation
+* trying to fix ragelost on stance dance that "Fuck Rage Lost Setting" is not needed anymore 
+* above fails if you are swap settings infight, going tank rotation as example (need new idea)
+
 ## 20.11.2020
 
-* trying to fix ragelost on stance dance that "Fuck Rage Lost Setting" is not needed anymore
+* trying to fix ragelost on stance dance that "Fuck Rage Lost Setting" is not needed anymore 
+(fails if you are swap settings infight, going tank rotation as example)
 * changed ragecalc to also go after WW if WW is your next mainspell
 * removed ragecalc on fury for ww as mainspell cause dump was used before ww and ww was not cast
 * fixed ww on Cthun that it is not used cause of to much range to the hitbox

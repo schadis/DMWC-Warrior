@@ -111,7 +111,7 @@ function Warrior.Settings()
 		UI.AddToggle("First Global Sunder", "On new Target the first Global will be SunderArmor if not 5 Stacks", false)
 		UI.AddRange("GCDSunder MaxHP", "Will Sunder on first GCD only mobs with a bigger max health in tousands", 5, 100, 5 ,25)		
 		UI.AddToggle("SunderArmor", "Applies SunderArmor Spam on GCD if FuryProt", false)
-		UI.AddDropdown("Apply Stacks of Sunder Armor", "Apply # Stacks of Sunder Armor", {"1","2","3","4","5"}, "5")
+		UI.AddDropdown("Apply Stacks of Sunder Armor", "Apply # Stacks of Sunder Armor", {"1","2","3","4","5"}, 5)
 		UI.AddRange("PiercingHowl", "Units near w/o debuff", 0, 10, 1, 0)
         UI.AddRange("ThunderClap", "Units near w/o debuff, take care will swap you in BattleStance", 0, 10, 1, 0)
         UI.AddRange("DemoShout", "Units near w/o debuff", 0, 10, 1, 0)
@@ -136,6 +136,8 @@ function Warrior.Settings()
 		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 26, 100, 1, 30)
 		UI.AddToggle("Calculate Rage", "Will use ragecalc for next swings", true)
 		UI.AddToggle("FuckRage&StanceDance", "Will dance Stances no matter what rage lvl you are", false)
+		UI.AddDropdown("Tactical Mastery", "Talent Points in Tactical Mastery", {"0","1","2","3","4","5"}, 1)
+		
 ------------------------------------------------------------------------------------------------------------------------------
 
     UI.AddTab("CDs & Consumables")
@@ -224,9 +226,7 @@ function Warrior.Settings()
 		
 		UI.AddToggle("Equip 2H", "Will equip 2 hander", false)
 		UI.AddTextBox("ItemID 2 Hander", "Put in the ItemID of you 2 Hander", 0.9, nil)
-
-
-
+		
 ------------------------------------------------------------------------------------------------------------------------------	
 
 	UI.AddTab("Buff Sniper")

@@ -6,6 +6,7 @@ local Player, Buff, Debuff, Spell, Stance, Target, Talent, Item, GCD, CDs, HUD, 
       Enemy30YC, Enemy8Y, Enemy8YC, dumpEnabled, castTime, rageLeftAfterStance, syncSS, combatLeftCheck, stanceChangedSkill,
       stanceChangedSkillTimer, stanceChangedSkillUnit, targetChange, whatIsQueued, oldTarget, firstCheck,
       secondCheck, thirdCheck, SwingMH, SwingOH, MHSpeed, PosX, PosY, PosZ, name
+local rageLeftAfterStance = 0	  
 local Enemy5YC = nil
 local Enemy10YC = nil
 local Enemy30YC = nil
@@ -286,10 +287,15 @@ local function GetStanceAndChecks()
 end
 
 local function RageLostOnStanceDanceF()
+	local PlayerPowerValue = Player.Power
 	
-	local RageLost = Player.Power - rageLeftAfterStance
+	if Player.Power == nil
+		then PlayerPowerValue = 0
+	end
+	
+	local RageLost = PlayerPowerValue - rageLeftAfterStance
 		
-	if not RageLost
+	if not RageLost or RageLost == nil
 		then RageLost = Player.Power
 		return RageLost
 	elseif RageLost <= 0
@@ -301,31 +307,34 @@ local function RageLostOnStanceDanceF()
 	
 end
 
-local function StanceDanceDumpRageF()
+-- local function StanceDanceDumpRageF()
 	
-	local DumpRage
-	if Talent.TacticalMastery.Rank == 0
-		then DumpRage = Player.Power
-		return DumpRage
-	elseif Talent.TacticalMastery.Rank == 1
-		then DumpRage = Player.Power
-		return DumpRage 
-	elseif Talent.TacticalMastery.Rank == 2
-		then DumpRage = Player.Power - 5
-		return DumpRage 
-	elseif Talent.TacticalMastery.Rank == 3
-		then DumpRage = Player.Power - 10
-		return DumpRage 
-	elseif Talent.TacticalMastery.Rank == 4
-		then DumpRage = Player.Power - 15
-		return DumpRage
-	elseif Talent.TacticalMastery.Rank == 5
-		then DumpRage = Player.Power - 20
-		return DumpRage 		
-	end
+	-- local DumpRage
+	-- if Talent.TacticalMastery.Rank == nil
+		-- then DumpRage = Player.Power
+		-- return DumpRage
+	-- elseif Talent.TacticalMastery.Rank == 0
+		-- then DumpRage = Player.Power
+		-- return DumpRage
+	-- elseif Talent.TacticalMastery.Rank == 1
+		-- then DumpRage = Player.Power
+		-- return DumpRage 
+	-- elseif Talent.TacticalMastery.Rank == 2
+		-- then DumpRage = Player.Power - 5
+		-- return DumpRage 
+	-- elseif Talent.TacticalMastery.Rank == 3
+		-- then DumpRage = Player.Power - 10
+		-- return DumpRage 
+	-- elseif Talent.TacticalMastery.Rank == 4
+		-- then DumpRage = Player.Power - 15
+		-- return DumpRage
+	-- elseif Talent.TacticalMastery.Rank == 5
+		-- then DumpRage = Player.Power - 20
+		-- return DumpRage 		
+	-- end
 
 
-end
+-- end
 
 local function ArmorCalcThings()
 
@@ -405,9 +414,8 @@ local function Locals()
     dumpEnabled = false
     syncSS = false
     whatIsQueued = checkOnHit()
+	rageLeftAfterStance = tonumber(Setting("Tactical Mastery")) * 5
 
-	rageLeftAfterStance = Talent.TacticalMastery.Rank * 5
-	
     if castTime == nil then castTime = DMW.Time end
 	
 	local base, posBuff, negBuff = UnitAttackPower("player")
@@ -429,7 +437,6 @@ local function Locals()
 	
 	NotInWWRangeWarning()
 	
-
 end
 
 -- Getting GetDebuffStacks
@@ -784,7 +791,7 @@ local function stanceDanceCast(spell, dest, stance)
         end
     elseif (Setting("RotationType") == 1 or Setting("RotationType") == 2) and not Setting("Use Leveling Rotation")
 		then
-		if dumpRage(StanceDanceDumpRageF(), true)
+		if dumpRage(RageLostOnStanceDanceF(), true)
 			then return true
 		end
 				
@@ -867,7 +874,7 @@ local function dumpRage(dumpvalue,ignorecalc)
 	if Setting("Slam")
 	and Setting("RotationType") == 1
 	and (Enemy5YC >= 2 or not Setting("Heroic Strike"))
-	and UnitsInFrontOfUS() >= 2
+	-- and UnitsInFrontOfUS() >= 2
 	and Setting("Cleave")
 	and whatIsQueued == "NA"
 	and dumpvalue >= Spell.Cleave:Cost()
@@ -946,7 +953,7 @@ local function dumpRage(dumpvalue,ignorecalc)
 		then
         if (Setting("RotationType") == 1 and Setting("Cleave"))
 		and (Enemy5YC >= 2 or (Setting("RotationType") == 1 and not Setting("Heroic Strike")))
-		and UnitsInFrontOfUS() >= 2
+		-- and UnitsInFrontOfUS() >= 2
 		and dumpvalue >= Spell.Cleave:Cost()
 		and (not Setting("Calculate Rage") or ignorecalc 
 		or (Spell.Whirlwind:CD() < Spell.Bloodthirst:CD() and (Player.Power - Spell.Cleave:Cost() + ragegain(Spell.Whirlwind:CD())) >= Spell.Whirlwind:Cost())
@@ -957,7 +964,7 @@ local function dumpRage(dumpvalue,ignorecalc)
 		
 		elseif (Setting("RotationType") == 2 and Setting("Cleave_FP"))
 		and Enemy5YC >= 2
-		and UnitsInFrontOfUS() >= 2
+		-- and UnitsInFrontOfUS() >= 2
 		and dumpvalue >= Spell.Cleave:Cost()
 		and (not Setting("Calculate Rage") or ignorecalc 
 		or (Player.Power - Spell.Cleave:Cost() + ragegain(Spell.Bloodthirst:CD())) >= Spell.Bloodthirst:Cost())
@@ -1110,7 +1117,7 @@ local function dumpRage(dumpvalue,ignorecalc)
 		if Setting("Hamstring Dump")
 		and Setting("RotationType") == 1
 		and (stance == "Battle" or stance == "Berserk")
-		and Setting("Only HString MHSwing >= GCD")
+		and Setting("Only HString MHSwing > 0.5")
 		and Player.SwingMH > 0.5
 		and Player.Power >= Setting("Hamstring dump above # rage") 
 		and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
@@ -1140,7 +1147,7 @@ local function dumpRage(dumpvalue,ignorecalc)
 		elseif Setting("Hamstring Dump")	
 		and Setting("RotationType") == 1
 		and (stance == "Battle" or stance == "Berserk")
-		and not Setting("Only HString MHSwing >= GCD")
+		and not Setting("Only HString MHSwing > 0.5")
 		and Player.Power >= Setting("Hamstring dump above # rage") 
 		and (whatIsQueued == "HS" or whatIsQueued == "CLEAVE")
 		and Spell.Hamstring:Known()
@@ -1179,7 +1186,7 @@ local function dumpRageLeveling(value)
 	if whatIsQueued == "NA" 
 		then
 		if (Enemy5YC >= 2 or not Setting("Heroic Strike"))
-		and UnitsInFrontOfUS() >= 2
+		-- and UnitsInFrontOfUS() >= 2
 		and Setting("Cleave")
 		and Spell.Cleave:Known()
 		and value >= Spell.Cleave:Cost()
@@ -1876,6 +1883,8 @@ local DefMainhandName = select(1, GetItemInfo(Setting("ItemID DefMainhand")))
 local OffhandName = select(1, GetItemInfo(Setting("ItemID Offhand")))
 local ShieldName = select(1, GetItemInfo(Setting("ItemID Shield")))
 local TwohanderName = select(1, GetItemInfo(Setting("ItemID 2 Hander")))
+local FrostMainhandName = select(1, GetItemInfo(Setting("ItemID FrostMainhand")))
+local FrostOffhandName = select(1, GetItemInfo(Setting("ItemID FrostOffhand")))
 local ItemIdMH =  tonumber(Setting("ItemID Mainhand"))
 local ItemIdDefMh = tonumber(Setting("ItemID DefMainhand"))
 local ItemIdOH = tonumber(Setting("ItemID Offhand"))
@@ -1972,16 +1981,16 @@ local ItemIdFOH = tonumber(Setting("ItemID FrostOffhand"))
 				if item ~= nil
 				and item == ItemIdFMH
 					then 
-					RunMacroText("/equipslot 16 " .. MainhandName)
+					RunMacroText("/equipslot 16 " .. FrostMainhandName)
 					
 				end
 				if item ~= nil
 				and item == ItemIdFOH
 					then 
-					RunMacroText("/equipslot 17 " .. OffhandName)
+					RunMacroText("/equipslot 17 " .. FrostOffhandName)
 					
 				end
-				if IsEquipped(ItemIdMH, 16) and IsEquipped(ItemIdOH, 17)
+				if IsEquipped(ItemIdFMH, 16) and IsEquipped(ItemIdFOH, 17)
 					then break 
 				end
 			end
@@ -2653,6 +2662,8 @@ local function fury()
 			and Spell.Pummel:Known()
 			and Spell.Pummel:CD() == 0
 			and Player.Power >= Spell.Pummel:Cost()
+			and Target.Name ~= "Eye of C'Thun"
+			and Target.Name ~= "Ouro" 			
 				then
 				for _, Unit in ipairs(Enemy5Y) do
 				local castName = Unit:CastingInfo()
@@ -2779,7 +2790,7 @@ local function fury()
 						if Setting("Whirlwind") 
 						and Spell.Whirlwind:Known() 
 						and Spell.Whirlwind:CD() == 0 
-						and Target.Name ~= "Eye of C'Thun" 
+						-- and Target.Name ~= "Eye of C'Thun" 
 						and Target.Name ~= "C'Thun"
 						and Spell.Bloodthirst:CD() >= 1.5
 						and Player.Power >= Spell.Whirlwind:Cost() 
