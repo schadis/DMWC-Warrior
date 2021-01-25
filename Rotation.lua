@@ -98,10 +98,10 @@ local interruptList = {
 }
 local SunderImmune = {["Totem"] = true, ["Mechanical"] = true}
 
-local function EnemiesAroundTarget()
+local function EnemiesAroundTarget5Y()
 	if Target
 		then 
-		return Target:GetEnemies(5)
+		return select(2, Target:GetEnemies(5))
 	else
 		return nil
 	end
@@ -413,7 +413,6 @@ local function Locals()
     Target = (Player.Target or false)
     HUD = DMW.Settings.profile.HUD
     CDs = Player:CDs()
-	Target5Y, Target5YC = EnemiesAroundTarget()
     Enemy5Y, Enemy5YC = Player:GetEnemies(5)
     Enemy8Y, Enemy8YC = Player:GetEnemies(8)
     Enemy10Y, Enemy10YC = Player:GetEnemies(10)
@@ -2528,8 +2527,8 @@ local function Consumes()
 	and Target
 	and Player.Combat
 	and (DMW.Time - ItemUsage) > 1.5 
-	and Target5YC ~= nil
-	and Target5YC >= Setting("Enemys 5Y around Target")
+	and EnemiesAroundTarget5Y() ~= nil
+	and EnemiesAroundTarget5Y() >= Setting("Enemys 5Y around Target")
 	and Target.Facing
 	then
 		if Setting("Use Trowables") == 2
