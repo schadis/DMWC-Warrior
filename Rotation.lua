@@ -3,21 +3,20 @@ local Warrior = DMW.Rotations.WARRIOR
 local Rotation = DMW.Helpers.Rotation
 local Setting = DMW.Helpers.Rotation.Setting
 local Player, Buff, Debuff, Spell, Stance, Target, Talent, Item, GCD, CDs, HUD, Enemy5Y, Enemy5YC, Enemy10Y, Enemy10YC, Enemy30Y,
-      Enemy30YC, Enemy8Y, Enemy8YC, dumpEnabled, castTime, rageLeftAfterStance, syncSS, combatLeftCheck, stanceChangedSkill,
+      Enemy30YC, Enemy8Y, Enemy8YC, dumpEnabled, castTime, syncSS, combatLeftCheck, stanceChangedSkill,
       stanceChangedSkillTimer, stanceChangedSkillUnit, targetChange, whatIsQueued, oldTarget, firstCheck,
       secondCheck, thirdCheck, SwingMH, SwingOH, MHSpeed, PosX, PosY, PosZ, name
-local rageLeftAfterStance = 0	  
 local Enemy5YC = nil
 local Enemy10YC = nil
 local Enemy30YC = nil
 local effectiveAP = 1500  
 local UseCDsTime = 0
-local SunderStacks = 0
 local ExposeArmor = false
 local Bandaged = false
-local SunderedMobStacks = {}
+local ExposedGUID = {}
 local ReadyCooldownCountValue
 local ItemUsage = GetTime()
+local PrintTime = GetTime()
 local armorMitigation = 0.5
 local TargetArmor = 3500
 local DmgModiBuffOrStance = 1
@@ -193,6 +192,20 @@ local function ReadyCooldown()
 				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
 			end
 			
+			if Setting("Trinkets") 
+			and Item.KissoftheSpider:Equipped() 
+			and Item.KissoftheSpider:CD() == 0	
+			then
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
+			end
+			
+			if Setting("Trinkets") 
+			and Item.SlayersCrest:Equipped() 
+			and Item.SlayersCrest:CD() == 0	
+			then
+				ReadyCooldownCountValue = ReadyCooldownCountValue + 1
+			end			
+			
 			if Setting("Racials")
 			and Spell.BloodFury:Known() 
 			and Spell.BloodFury:CD() <= 1.6
@@ -256,14 +269,7 @@ end
 
 local function GetStanceAndChecks()
 
-	if Setting("Use Viscidus Rotation")
-	and Target
-	and Target.Name == "Viscidus"
-		then 
-		firstCheck = "Defensive"
-		secondCheck = "Battle"
-		thirdCheck = "Berserk"
-	elseif Setting("RotationType") == 1 or Setting("Use Leveling Rotation")
+	if Setting("RotationType") == 1 or Setting("Use Leveling Rotation")
 		then 
 		firstCheck = "Berserk"
 		secondCheck = "Battle"
@@ -287,13 +293,14 @@ local function GetStanceAndChecks()
 end
 
 local function RageLostOnStanceDanceF()
-	local PlayerPowerValue = Player.Power
-	
-	if Player.Power == nil
-		then PlayerPowerValue = 0
+
+	local TacticalM =  0
+	if Setting("Tactical Mastery") ~= nil
+		then TacticalM = Setting("Tactical Mastery")
 	end
+	-- Talent.TacticalMastery.Rank
 	
-	local RageLost = PlayerPowerValue - rageLeftAfterStance
+	local RageLost = Player.Power - TacticalM * 5
 		
 	if not RageLost or RageLost == nil
 		then RageLost = Player.Power
@@ -307,34 +314,6 @@ local function RageLostOnStanceDanceF()
 	
 end
 
--- local function StanceDanceDumpRageF()
-	
-	-- local DumpRage
-	-- if Talent.TacticalMastery.Rank == nil
-		-- then DumpRage = Player.Power
-		-- return DumpRage
-	-- elseif Talent.TacticalMastery.Rank == 0
-		-- then DumpRage = Player.Power
-		-- return DumpRage
-	-- elseif Talent.TacticalMastery.Rank == 1
-		-- then DumpRage = Player.Power
-		-- return DumpRage 
-	-- elseif Talent.TacticalMastery.Rank == 2
-		-- then DumpRage = Player.Power - 5
-		-- return DumpRage 
-	-- elseif Talent.TacticalMastery.Rank == 3
-		-- then DumpRage = Player.Power - 10
-		-- return DumpRage 
-	-- elseif Talent.TacticalMastery.Rank == 4
-		-- then DumpRage = Player.Power - 15
-		-- return DumpRage
-	-- elseif Talent.TacticalMastery.Rank == 5
-		-- then DumpRage = Player.Power - 20
-		-- return DumpRage 		
-	-- end
-
-
--- end
 
 local function ArmorCalcThings()
 
@@ -366,7 +345,10 @@ local function TableAndStanceReset()
 
 	if not Player.Combat
 		then
-		table.wipe(SunderedMobStacks)
+		if next(ExposedGUID) ~= nil --then empty it
+			then		
+			table.wipe(ExposedGUID)
+		end
 		stanceChangedSkill = nil
         stanceChangedSkillUnit = nil
         stanceChangedSkillTimer = nil
@@ -380,6 +362,32 @@ local function TableAndStanceReset()
 	end	
 
 end
+
+local function HasTargetExposedDebuff()
+	
+	if Target 
+	and next(ExposedGUID) ~= nil
+	and Player.Combat
+	and Target.Distance < 30
+	then
+		for k, v in pairs(ExposedGUID) do
+			if k == UnitGUID("target")
+				and v == true 
+					then
+					ExposeArmor = true
+					break
+				elseif k == UnitGUID("target")
+				and v ~= true
+					then
+					ExposeArmor = false
+					break
+			end
+		end
+	else
+	ExposeArmor = false	
+	end
+end
+
 
 local function NotInWWRangeWarning()
 
@@ -414,7 +422,6 @@ local function Locals()
     dumpEnabled = false
     syncSS = false
     whatIsQueued = checkOnHit()
-	rageLeftAfterStance = tonumber(Setting("Tactical Mastery")) * 5
 
     if castTime == nil then castTime = DMW.Time end
 	
@@ -435,6 +442,11 @@ local function Locals()
 	
 	TableAndStanceReset()
 	
+	if Setting("ExposedArmorRogue")
+		then
+		HasTargetExposedDebuff()
+	end
+	
 	NotInWWRangeWarning()
 	
 end
@@ -443,29 +455,18 @@ end
 local function GetDebuffStacks()
 	--local timeStamp, subEvent, _, sourceID, sourceName, _, _, targetID = ...;
 	
-		if DMW.Player.Target ~= nil 
-		and DMW.Player.Target.Distance < 50 then
-			for i = 1, 16 do
-				if UnitGUID("target") == nil then
-					break		
-				elseif DMW.Player.Target.ValidEnemy and UnitDebuff("target", i) == "Sunder Armor" then
-					SunderedMobStacks[UnitGUID("target")] = select(3, UnitDebuff("target", i))
-					break
-				elseif DMW.Player.Target.ValidEnemy and UnitDebuff("target", i) ~= "Sunder Armor" then
-					SunderedMobStacks[UnitGUID("target")] = 0
-				end
-			end
-		end
-		if DMW.Player.Target ~= nil 
-		and DMW.Player.Target.Distance < 50 then
-			for i = 1, 16 do
-				if UnitGUID("target") == nil then
-					break		
-				elseif DMW.Player.Target.ValidEnemy and UnitDebuff("target", i) == "Expose Armor" then
-					ExposeArmor = true
-					break
-				elseif DMW.Player.Target.ValidEnemy and UnitDebuff("target", i) ~= "Expose Armor" then
-					ExposeArmor = false
+		if Setting("ExposedArmorRogue")
+		and select(2, DMW.Player:GetEnemies(30)) ~= nil 
+		and select(2, DMW.Player:GetEnemies(30)) > 0
+		then
+			for _, Unit in ipairs(DMW.Player:GetEnemies(30)) do
+				for i = 1, 16 do
+					if UnitDebuff(Unit.Pointer, i) == "Expose Armor" then
+						ExposedGUID[UnitGUID(Unit.Pointer)] = true
+						break
+					elseif UnitDebuff(Unit.Pointer, i) ~= "Expose Armor" then
+						ExposedGUID[UnitGUID(Unit.Pointer)] = false
+					end
 				end
 			end
 		end
@@ -482,26 +483,7 @@ local function GetDebuffStacks()
 				end
 			end
 		end
-		
-		
-		if DMW.Player.Target ~= nil 
-		and DMW.Player.Target.Distance < 50 then
-			for k, v in pairs(SunderedMobStacks) do
-				if k == UnitGUID("target")
-				and v == (0 or 1 or 2 or 3 or 4 or 5) 
-					then
-					SunderStacks = v
-					break
-				elseif k == UnitGUID("target")
-				and v ~= (0 or 1 or 2 or 3 or 4 or 5)
-					then
-					SunderStacks = 5
-					break
-				elseif k ~= UnitGUID("target") then
-				SunderStacks = 5
-				end
-			end	
-		end
+				
 end
 
 local function Buffsniper()
@@ -862,6 +844,24 @@ local function UnitsInFrontOfUS()
 			end
 		end
 		return InFrontOfUsCount
+end
+
+local function GetPlayersAroundCount(Yards)
+    local Table = {}
+    local Count = 0
+
+    for _, Unit in pairs(DMW.Units) do
+        if Unit.Player 
+		and not Unit.Dead 
+		and not UnitIsUnit("target", Unit.Pointer) 
+		and Unit:GetDistance(v) <= Yards 
+			then
+            table.insert(Table, v)
+            Count = Count + 1
+		end
+    end
+    return Count - 1
+
 end
 
 
@@ -1592,6 +1592,8 @@ local TTDDeathWish = Setting("TTD for DeathWish")
 local TTDEarthstrike = Setting("TTD for Earthstrike")
 local TTDJomGabbar = Setting("TTD for JomGabbar")
 local TTDBadgeoftheSwarmguard = Setting("TTD for BadgeoftheSwarmguard")
+local TTDKissoftheSpider = Setting("TTD for KissoftheSpider")
+local TTDSlayersCrest = Setting("TTD for SlayersCrest")
 local TTDBloodFury = Setting("TTD for BloodFury")
 local TTDBerserkingTroll = Setting("TTD for BerserkingTroll")
 local TTDRecklessness = Setting("TTD for Recklessness")
@@ -1601,25 +1603,82 @@ local SAKPDeathWish = Setting("Seconds after Keypress for DeathWish")
 local SAKPEarthstrike = Setting("Seconds after Keypress for Earthstrike")
 local SAKPJomGabbar = Setting("Seconds after Keypress for JomGabbar")
 local SAKPBadgeoftheSwarmguard = Setting("Seconds after Keypress for BadgeoftheSwarmguard")
+local SAKPKissoftheSpider = Setting("Seconds after Keypress for KissoftheSpider")
+local SAKPSlayersCrest = Setting("Seconds after Keypress for SlayersCrest")
 local SAKPBloodFury = Setting("Seconds after Keypress for BloodFury")
 local SAKPBerserkingTroll = Setting("Seconds after Keypress for BerserkingTroll")
 local SAKPRecklessness = Setting("Seconds after Keypress for Recklessness")
 local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 
-	-- if not Item.DiamondFlask:Equipped() --not equiped
-		-- and GetItemCount(20130) >= 1	--but in inventory cause of CD or whatever
-		-- then
-			-- SAKPDeathWish = 0
-			-- SAKPEarthstrike = 10
-			-- SAKPJomGabbar = 10
-			-- SAKPBadgeoftheSwarmguard = 2
-			-- SAKPBloodFury = 5
-			-- SAKPBerserkingTroll = 20
-			-- SAKPRecklessness = 15
-			-- SAKPRagePotion = 10
-	-- end
+
+	if Setting("Use CDs allways")
+		then
+		if Setting("Trinkets") 
+		and Item.DiamondFlask:Equipped() 
+		and Item.DiamondFlask:CD() == 0
+		then 
+			if Item.DiamondFlask:Use(Player) then return true end
+			
+		elseif Setting("DeathWish")
+		and Spell.DeathWish:Known()
+		and Player.Power >= 10
+		and Spell.DeathWish:CD() == 0 
+		then
+			if smartCast("DeathWish", Player, true) then return true end
+			
+		elseif Setting("Trinkets") 
+		and Item.Earthstrike:Equipped()
+		and Item.Earthstrike:CD() == 0 	
+		then
+			if Item.Earthstrike:Use(Player) then return true end
+			
+		elseif Setting("Trinkets")
+		and Item.JomGabbar:Equipped() 
+		and Item.JomGabbar:CD() == 0 	
+		then
+			if Item.JomGabbar:Use(Player) then return true end
+			
+		elseif Setting("Trinkets")
+		and Item.BadgeoftheSwarmguard:Equipped()
+		and	Item.BadgeoftheSwarmguard:CD() == 0 
+		then
+			if Item.BadgeoftheSwarmguard:Use(Player) then return true end
+		
+		elseif Setting("Trinkets")
+		and Item.KissoftheSpider:Equipped() 
+		and Item.KissoftheSpider:CD() == 0 	
+		then
+			if Item.KissoftheSpider:Use(Player) then return true end
+			
+		elseif Setting("Trinkets")
+		and Item.SlayersCrest:Equipped()
+		and	Item.SlayersCrest:CD() == 0 
+		then
+			if Item.SlayersCrest:Use(Player) then return true end
+					
+		elseif Setting("Racials")
+		and Spell.BloodFury:Known() 
+		and Spell.BloodFury:CD() == 0 
+		then
+			if Spell.BloodFury:Cast(Player) then return true end
+			
+		elseif Setting("Racials")
+		and Spell.BerserkingTroll:Known()
+		and Spell.BerserkingTroll:CD() == 0 
+		then
+			if Spell.BerserkingTroll:Cast(Player) then return true end
+		
+		elseif Setting("Recklessness")
+		and Spell.Recklessness:Known()
+		and Spell.Recklessness:CD() == 0 
+		then
+			if smartCast("Recklessness", Player, true) then return true end
 	
-	if Setting("CoolD Mode") == 2 
+		else return false
+		
+		end
+	
+	elseif Setting("CoolD Mode") == 2 
 		then 
 		
 		if Setting("Trinkets") 
@@ -1658,6 +1717,20 @@ local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 		then
 			if Item.BadgeoftheSwarmguard:Use(Player) then return true end
 			
+		elseif Setting("Trinkets")
+		and Item.KissoftheSpider:Equipped() 
+		and Item.KissoftheSpider:CD() == 0 	
+		and Player.Target.TTD <= TTDKissoftheSpider
+		then
+			if Item.KissoftheSpider:Use(Player) then return true end
+			
+		elseif Setting("Trinkets")
+		and Item.SlayersCrest:Equipped()
+		and	Item.SlayersCrest:CD() == 0 
+		and Player.Target.TTD <= TTDSlayersCrest
+		then
+			if Item.SlayersCrest:Use(Player) then return true end
+						
 		elseif Setting("Racials")
 		and Spell.BloodFury:Known() 
 		and Spell.BloodFury:CD() == 0 
@@ -1737,6 +1810,22 @@ local SAKPRagePotion = Setting("Seconds after Keypress for RagePotion")
 				then
 					if Item.JomGabbar:Use(Player) then return true end
 					
+				elseif Setting("Trinkets")
+				and Item.KissoftheSpider:Equipped() 
+				and Item.KissoftheSpider:CD() == 0
+				and UseCDsTime ~= 0
+				and (UseCDsTime + SAKPKissoftheSpider) <= GetTime()			
+				then
+					if Item.KissoftheSpider:Use(Player) then return true end
+				
+				elseif Setting("Trinkets")
+				and Item.SlayersCrest:Equipped() 
+				and Item.SlayersCrest:CD() == 0
+				and UseCDsTime ~= 0
+				and (UseCDsTime + SAKPSlayersCrest) <= GetTime()			
+				then
+					if Item.SlayersCrest:Use(Player) then return true end
+										
 				elseif Setting("Racials")
 				and Spell.BloodFury:Known()
 				and Spell.BloodFury:CD() == 0
@@ -1883,15 +1972,15 @@ local DefMainhandName = select(1, GetItemInfo(Setting("ItemID DefMainhand")))
 local OffhandName = select(1, GetItemInfo(Setting("ItemID Offhand")))
 local ShieldName = select(1, GetItemInfo(Setting("ItemID Shield")))
 local TwohanderName = select(1, GetItemInfo(Setting("ItemID 2 Hander")))
-local FrostMainhandName = select(1, GetItemInfo(Setting("ItemID FrostMainhand")))
-local FrostOffhandName = select(1, GetItemInfo(Setting("ItemID FrostOffhand")))
+-- local FrostMainhandName = select(1, GetItemInfo(Setting("ItemID FrostMainhand")))
+-- local FrostOffhandName = select(1, GetItemInfo(Setting("ItemID FrostOffhand")))
 local ItemIdMH =  tonumber(Setting("ItemID Mainhand"))
 local ItemIdDefMh = tonumber(Setting("ItemID DefMainhand"))
 local ItemIdOH = tonumber(Setting("ItemID Offhand"))
 local ItemIdS = tonumber(Setting("ItemID Shield"))
 local ItemIdTH = tonumber(Setting("ItemID 2 Hander"))
-local ItemIdFMH =  tonumber(Setting("ItemID FrostMainhand"))
-local ItemIdFOH = tonumber(Setting("ItemID FrostOffhand"))
+-- local ItemIdFMH =  tonumber(Setting("ItemID FrostMainhand"))
+-- local ItemIdFOH = tonumber(Setting("ItemID FrostOffhand"))
 
 
 
@@ -1917,10 +2006,63 @@ local ItemIdFOH = tonumber(Setting("ItemID FrostOffhand"))
 
 				end
 				if IsEquipped(ItemIdDefMh, 16) and IsEquipped(ItemIdS, 17)
-				then return true end
+					then return true 
+				end
 			end
 		end
-		
+	elseif Player.Combat
+	and off
+	and Setting("Equip 2 x 1h")
+	and Setting("Equip 2H for cleave")
+	and ItemIdMH ~= nil
+	and ItemIdOH ~= nil	
+	and ItemIdTH ~= nil
+		then 
+		if  Enemy5YC ~= nil
+		and Enemy5YC >= 3
+		and not IsEquipped(ItemIdTH, 16)
+			then 
+			for bag = 0,4 do
+				for slot = 1,GetContainerNumSlots(bag) do
+					local item = GetContainerItemID(bag,slot)
+
+					if item ~= nil
+					and item == ItemIdTH
+						then 
+						RunMacroText("/equipslot 16 " .. TwohanderName)
+						
+					end
+					if IsEquipped(ItemIdTH, 16)
+						then return true 
+					end
+				end
+			end
+		elseif Enemy5YC ~= nil
+		and Enemy5YC < 3
+		and (not IsEquipped(ItemIdMH, 16) or not IsEquipped(ItemIdOH, 17))
+			then 
+			for bag = 0,4 do
+				for slot = 1,GetContainerNumSlots(bag) do
+					local item = GetContainerItemID(bag,slot)
+
+					if item ~= nil
+					and item == ItemIdMH
+						then 
+						RunMacroText("/equipslot 16 " .. MainhandName)
+						
+					end
+					if item ~= nil
+					and item == ItemIdOH
+						then 
+						RunMacroText("/equipslot 17 " .. OffhandName)
+						
+					end
+					if IsEquipped(ItemIdMH, 16) and IsEquipped(ItemIdOH, 17)
+						then return true 
+					end
+				end
+			end
+		end			
 	elseif Setting("Equip 2 x 1h")
 	and off
 	and ItemIdMH ~= nil
@@ -1944,14 +2086,14 @@ local ItemIdFOH = tonumber(Setting("ItemID FrostOffhand"))
 					
 				end
 				if IsEquipped(ItemIdMH, 16) and IsEquipped(ItemIdOH, 17)
-					then break 
+					then return true 
 				end
 			end
 		end
 	elseif Setting("Equip 2H")
 	and off
 	and ItemIdTH ~= nil
-	and (not IsEquipped(ItemIdTH, 16) and (not IsEquipped(ItemIdFrost, 16) or not IsEquipped(ItemIdFrost, 17)))
+	and not IsEquipped(ItemIdTH, 16)
 		then 
 		for bag = 0,4 do
 			for slot = 1,GetContainerNumSlots(bag) do
@@ -1964,38 +2106,38 @@ local ItemIdFOH = tonumber(Setting("ItemID FrostOffhand"))
 					
 				end
 				if IsEquipped(ItemIdTH, 16)
-					then break 
+					then return true  
 				end
 			end
 		end
-	elseif Setting("Equip Frost 2x1h")	
-	and frost
-	and ItemIdFMH ~= nil
-	and ItemIdFOH ~= nil
-	and (not IsEquipped(ItemIdFMH, 16) or not IsEquipped(ItemIdFOH, 17))
-		then 
-		for bag = 0,4 do
-			for slot = 1,GetContainerNumSlots(bag) do
-				local item = GetContainerItemID(bag,slot)
-
-				if item ~= nil
-				and item == ItemIdFMH
-					then 
-					RunMacroText("/equipslot 16 " .. FrostMainhandName)
-					
-				end
-				if item ~= nil
-				and item == ItemIdFOH
-					then 
-					RunMacroText("/equipslot 17 " .. FrostOffhandName)
-					
-				end
-				if IsEquipped(ItemIdFMH, 16) and IsEquipped(ItemIdFOH, 17)
-					then break 
-				end
-			end
-		end	
 	end	
+	-- elseif Setting("Equip Frost 2x1h")	
+	-- and frost
+	-- and ItemIdFMH ~= nil
+	-- and ItemIdFOH ~= nil
+	-- and (not IsEquipped(ItemIdFMH, 16) or not IsEquipped(ItemIdFOH, 17))
+		-- then 
+		-- for bag = 0,4 do
+			-- for slot = 1,GetContainerNumSlots(bag) do
+				-- local item = GetContainerItemID(bag,slot)
+
+				-- if item ~= nil
+				-- and item == ItemIdFMH
+					-- then 
+					-- RunMacroText("/equipslot 16 " .. FrostMainhandName)
+					
+				-- end
+				-- if item ~= nil
+				-- and item == ItemIdFOH
+					-- then 
+					-- RunMacroText("/equipslot 17 " .. FrostOffhandName)
+					
+				-- end
+				-- if IsEquipped(ItemIdFMH, 16) and IsEquipped(ItemIdFOH, 17)
+					-- then break 
+				-- end
+			-- end
+		-- end	
 end
 
 local function AggroEnemyCount()-- return normal enemies, elites
@@ -2039,7 +2181,22 @@ local function AggroCheckLIP()
 	end
 end
 
-
+local function TargetAggro()
+	local WeHaveAggro = 0
+	
+	if Target
+		then
+		WeHaveAggro = select(2, UnitDetailedThreatSituation(Player.Pointer, Target.Pointer))
+		if WeHaveAggro == nil 
+			then WeHaveAggro = 0
+			return false		
+		elseif WeHaveAggro > 1
+		and not UnitPlayerControlled("target")
+			then
+			return true
+		end
+	end 
+end
 
 
 -- local function lifesaver()
@@ -2122,6 +2279,75 @@ end
 
 
 local function AutoTargetAndFacing()
+
+	-- if Setting("HighChiefWinterfall")
+		-- then
+		
+		-- if not Target
+		-- then 
+			 -- for _, Unit in ipairs(DMW.Attackable) do
+				-- if Unit.Distance <= 20 
+				-- and Unit.Name == "High Chief Winterfall"
+				-- and not Unit.Dead 
+				-- and not Unit.Target 
+				-- and not UnitIsTapDenied(Unit.Pointer) 
+					-- then
+					-- TargetUnit(Unit.Pointer)
+					-- DMW.Player.Target = Unit
+					-- return true
+				-- end
+			-- end
+		-- end
+		
+		-- if Target
+		-- then
+			-- if not Target.Dead 
+			-- and Target.Attackable 
+			-- and Target.Name == "High Chief Winterfall"
+			-- and LastTargetFaced ~= Target.GUID
+			-- and not UnitIsFacing("Player", Target.Pointer, 90) 
+				-- then
+				-- FaceDirection(Target.Pointer, true)
+				-- LastTargetFaced = Target.GUID
+				-- return true 
+			-- elseif not Target.Dead 
+			-- and Target.Attackable 
+			-- and Target.Name == "High Chief Winterfall"
+			-- and Target.Distance <= 5 
+			-- and not UnitIsTapDenied(Target.Pointer)
+			-- and not IsCurrentSpell(Spell.Attack.SpellID)
+			-- and GetPlayersAroundCount(20) >= 1
+			-- and (DMW.Time - ItemUsage) > 1.5
+			-- and GetItemCount(Item.CrystalCharge.ItemID) >= 1
+			-- and Item.CrystalCharge:CD() == 0
+				-- then 
+					-- if Item.CrystalCharge:Use(Player)
+						-- then 
+						-- ItemUsage = DMW.Time
+						-- StartAttack()
+						-- return true
+					-- end
+			-- elseif not Target.Dead 
+			-- and Target.Attackable 
+			-- and Target.Name == "High Chief Winterfall"
+			-- and Target.Distance <= 5
+			-- and not UnitIsTapDenied(Target.Pointer)
+			-- and not IsCurrentSpell(Spell.Attack.SpellID) 
+				-- then
+				-- StartAttack()
+				-- return true	
+				
+			-- elseif Target.Name == "High Chief Winterfall"
+			-- and (Target.Dead or UnitIsTapDenied(Target.Pointer))
+			-- and not UnitIsUnit("targettarget", "player")
+				-- then
+				-- ClearTarget()
+				-- return true
+			-- end
+		-- end
+		
+	-- end
+
 
 -- Auto targets Enemy in Range
     if Setting("AutoTarget") and not (Setting("RotationType") == 2 and Setting("Don´t AutoTarget if tanking"))
@@ -2407,6 +2633,12 @@ local function Consumes()
 				then
 				ItemUsage = DMW.Time
 				return true 
+			elseif Setting("Use Wipper")
+			and GetItemCount(Item.WhipperRootTuber.ItemID) >= 1 and Item.WhipperRootTuber:IsReady() 
+			and Item.WhipperRootTuber:Use(Player) 
+				then
+				ItemUsage = DMW.Time
+				return true 	
 			elseif GetItemCount(Item.MajorHealingPotion.ItemID) >= 1 and Item.MajorHealingPotion:IsReady() 
 			and Item.MajorHealingPotion:Use(Player) 
 				then
@@ -2550,9 +2782,18 @@ end
     -----------------FURY DW/2H PART--------------------FURY DW/2H PART--------------------FURY DW/2H PART--------------------FURY DW/2H PART------
     ---FURY DW/2H PART--------------------FURY DW/2H PART--------------------FURY DW/2H PART--------------------FURY DW/2H PART--------------------
     -----------------FURY DW/2H PART--------------------FURY DW/2H PART--------------------FURY DW/2H PART--------------------FURY DW/2H PART------
+	
 local function fury()
 
-		if (Setting("Swap Weapons") or Setting("Use Viscidus Rotation"))
+		if Setting("ProtRotIfAggro")
+		and Player.Combat
+		and TargetAggro()
+		and HUD.Spec == 1
+			then DMWHUDSPEC:Toggle(2)
+			return true
+		end
+
+		if Setting("Swap Weapons")
 		and weaponswap(false,true,false) 
 			then return true
 		end
@@ -2594,7 +2835,26 @@ local function fury()
 					-- then return true
 				-- end
 			-- end
-	
+			
+			
+			-- first global sunder
+			if Setting("First Global Sunder")
+			and Target
+			and not ExposeArmor
+			and Spell.SunderArmor:Known() 
+			and Spell.SunderArmor:CD() == 0
+			and Player.Power >= Spell.SunderArmor:Cost()
+			and (Debuff.SunderArmor:Stacks(Target) < 5 or (Debuff.SunderArmor:Exist(Target) and Debuff.SunderArmor:Remain(Target) <= 5))
+			and Target.HealthMax >= (1000 * Setting("GCDSunder MaxHP"))
+			and (TargetSundered ~= Target.GUID or (Debuff.SunderArmor:Exist(Target) and Debuff.SunderArmor:Remain(Target) <= 5))
+				then 
+				if smartCast("SunderArmor", Target)
+					then 
+					TargetSundered = Target.GUID
+					return true 
+				end
+			end
+			
 			-- Bers Rage --
 			if Setting("Berserker Rage") 
 			and Spell.BersRage:CD() == 0 
@@ -2637,6 +2897,14 @@ local function fury()
 				if CoolDowns() 
 					then 
 				end
+				
+			elseif Setting("Use CDs allways")
+			and Target 
+			and ReadyCooldown()
+				then 
+				if CoolDowns() 
+					then 
+				end
 			end
 
 			--unqueue HS or Cleave when low rage
@@ -2662,8 +2930,6 @@ local function fury()
 			and Spell.Pummel:Known()
 			and Spell.Pummel:CD() == 0
 			and Player.Power >= Spell.Pummel:Cost()
-			and Target.Name ~= "Eye of C'Thun"
-			and Target.Name ~= "Ouro" 			
 				then
 				for _, Unit in ipairs(Enemy5Y) do
 				local castName = Unit:CastingInfo()
@@ -2689,22 +2955,6 @@ local function fury()
 					if Enemy8YC ~= nil
 					and Enemy8YC >= 2 
 						then
-						
-						if Setting("First Global Sunder")
-						and not ExposeArmor
-						and Spell.SunderArmor:Known() 
-						and Spell.SunderArmor:CD() == 0
-						and Player.Power >= Spell.SunderArmor:Cost()
-						and SunderStacks < 5
-						and Target.HealthMax >= (1000 * Setting("GCDSunder MaxHP"))
-						and TargetSundered ~= Target.GUID
-						then 
-							if smartCast("SunderArmor", Target)
-								then 
-								TargetSundered = Target.GUID
-								return true 
-							end
-						end
 						
 						if Setting("Whirlwind")
 						and Spell.Whirlwind:Known()	
@@ -2738,23 +2988,6 @@ local function fury()
 				
 						
 					else				
-						--first Global Sunder
-						
-						if Setting("First Global Sunder")
-						and not ExposeArmor
-						and Spell.SunderArmor:Known() 
-						and Spell.SunderArmor:CD() == 0
-						and Player.Power >= Spell.SunderArmor:Cost()
-						and SunderStacks < 5
-						and Target.HealthMax >= (1000 * Setting("GCDSunder MaxHP"))
-						and TargetSundered ~= Target.GUID
-						then 
-							if smartCast("SunderArmor", Target)
-								then 
-								TargetSundered = Target.GUID
-								return true 
-							end
-						end
 						
 						if Setting("Use Slam") 
 						and Setting("Use Slam over BT") 
@@ -2790,9 +3023,8 @@ local function fury()
 						if Setting("Whirlwind") 
 						and Spell.Whirlwind:Known() 
 						and Spell.Whirlwind:CD() == 0 
-						-- and Target.Name ~= "Eye of C'Thun" 
 						and Target.Name ~= "C'Thun"
-						and Spell.Bloodthirst:CD() >= 1.5
+						and Spell.Bloodthirst:CD() >= 1.5 or not Setting("Bloodthirst") 
 						and Player.Power >= Spell.Whirlwind:Cost() 
 							then
 							if Spell.Bloodthirst:Known() 
@@ -2865,17 +3097,26 @@ end
 local function furyProt()
 		
 		
-		-- swap back to main weapons and rotation
-		-- if Setting("Lifesaver") 
-			-- then 
-			-- if lifesaver()
-				-- then return true
-			-- end
-		-- end
+		if Setting("ProtRotIfAggro")
+		and Player.Combat
+		and not TargetAggro()
+		and HUD.Spec == 2
+			then DMWHUDSPEC:Toggle(1)
+			return true
+		end
 		
 		if Setting("Swap Weapons")
 		and weaponswap(true,false,false) 
 			then return true
+		end
+		
+		if Stance ~= "Defensive"
+		and stanceChangedSkill == nil
+		and Spell.StanceDefense:IsReady() 
+			then
+            if Spell.StanceDefense:Cast()
+				then return true
+			end
 		end
 
 		-- AutoAttack
@@ -3103,8 +3344,7 @@ local function furyProt()
 				and Player.Power >= Spell.ShieldBlock:Cost()
 				then
 					for k, v in pairs(Enemy10Y) do
-						if UnitIsUnit(UnitTarget(v.Pointer), "player")
-						and Spell.ShieldBlock:Known()
+						if Spell.ShieldBlock:Known()
 						and Spell.ShieldBlock:CD() == 0
 						and Player.HP <= Setting("Shieldblock HP") 
 						and UnitIsUnit(v.Target, "player") 
@@ -3280,7 +3520,7 @@ local function leveling()
 						and Spell.SunderArmor:Known() 
 						and Spell.SunderArmor:CD() == 0 
 						and Player.Power >= Spell.SunderArmor:Cost() 
-						and SunderStacks < Setting("Apply Stacks of Sunder Armor")
+						and Debuff.SunderArmor:Stacks(Target) < Setting("Apply Stacks of Sunder Armor")
 						then 
 							if smartCast("SunderArmor", Target)
 								then return true 
@@ -3357,53 +3597,17 @@ local function leveling()
 		return true
 end 
 
-local function viscidus()
-
-		if Setting("Swap Weapons")
-		and weaponswap(false,false,true) 
-			then return true
-		end
-		
-		if Stance ~= "Defensive"
-		and not Target.HP <= 20
-		and Spell.StanceDefense:IsReady() 
-			then
-            if Spell.StanceDefense:Cast()
-				then return true
-			end
-		end
-
-		-- AutoAttack
-		if Target 
-		and not Target.Dead 
-		and Target.Distance <= 5 
-		and Target.Attackable 
-		and not IsCurrentSpell(Spell.Attack.SpellID) 
-			then
-			StartAttack()
-        end
-
-		
-        if Player.Combat
-		and Enemy5YC ~= nil
-		and Enemy5YC > 0 
-			then
-			
-			-- Buffs Battleshout Casts Overpower or EXECUTE
-            if (AutoExecute() or AutoBuff()) 
-				then return true 
-			end
-			
-	
-        end
-		return true
-end
-
-
 function Warrior.Rotation()
     
 	Locals()
-
+	
+	if Setting("Print PlayerCount 15yards")
+	and (DMW.Time - PrintTime) > 10
+		then 
+		print("Players Around: ",GetPlayersAroundCount(20))
+		PrintTime = DMW.Time
+	end
+	
 	--Debug and Log Info	
 	if Setting("Debug")
 	and not DMW.UI.Debug.Frame:IsShown() 
@@ -3449,14 +3653,7 @@ function Warrior.Rotation()
 		then return true 
 	end
 	
-	if Setting("Use Viscidus Rotation")
-	and Target
-	and Target.Name == "Viscidus"
-		then 
-		if viscidus()
-			then return true
-		end
-	elseif Setting("Use Leveling Rotation") --leveling
+	if Setting("Use Leveling Rotation") --leveling
 		then
 		if leveling() 
 			then return true

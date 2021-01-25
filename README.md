@@ -4,6 +4,8 @@
 * IF you wanna know what good settings are go to https://guybrushgit.github.io/WarriorSim/ and sim it
 * install details addon for rage calc of incoming dmg
 
+* If you change the rotation in Combat via HUD pls check the Setting "Fuck Rage Lost Setting" or lua errors will occur
+
 ## Feedback in Discord is welcome
 
 ## There is no PVP coding or Support
@@ -18,11 +20,21 @@
 * MightyRagePotion
 * GreatRagePotion
 * SapperCharges
+* KissoftheSpider
+* SlayersCrest
 * Nates and Dynamite (not all and this part needs work)
 
 ## Todo: ???
 
 ## Changelog
+
+## 25.01.2021
+
+* more prio to first global sunder (now its really the first global to the mob)
+* added "exposed armor rogue" Checkbox, if you have such a Rogue in your Raid check it
+* added trinket support for naxx trinkets (pls use my pull request on DMWC for Items.lua)
+* removement of trash code 
+
 
 ## 11.12.2020
 

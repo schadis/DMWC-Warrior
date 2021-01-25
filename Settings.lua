@@ -58,8 +58,6 @@ function Warrior.Settings()
     UI.AddHeader("Usual Options")
 		UI.AddDropdown("RotationType", nil, {"2HFury/Fury","FuryProt"}, 1)
 		UI.AddToggle("Use Leveling Rotation", "Overwrites the RotationType with Leveling Rotation" , false)
-		UI.AddToggle("Use Viscidus Rotation", "Deffstance only autohits with frost weapons acc. settings to Bersi/Normal Weapons for Blobs" , false)
-		
 
     UI.AddHeader("Auto Stuff")
 		UI.AddToggle("BattleStance NoCombat", "Switches to Battle Stance if we are not InCombat" , false)
@@ -70,6 +68,16 @@ function Warrior.Settings()
 		UI.AddToggle("Don´t AutoTarget if tanking", "disables AutoTarget only for tanking", false)
         UI.AddToggle("BattleShout", nil, false)
         UI.AddToggle("Pummel/ShildBash", "Has to be checked for FuryProt swap option", false)
+		
+	UI.AddHeader("Swap to Prot Rotation")	
+		UI.AddToggle("ProtRotIfAggro","Swaps to FuryProtRotation if you have aggro if your Target ", false)
+	
+	UI.AddHeader("Exposed Armor Rogue in raid")		
+		UI.AddToggle("ExposedArmorRogue", "Exposed Armor Rogue in raid", false)
+		
+	-- UI.AddHeader("TargetingHCWF")	
+		-- UI.AddToggle("HighChiefWinterfall", "Targets this Mob", false)
+		
 
 		
 ------------------------------------------------------------------------------------------------------------------------------		
@@ -107,15 +115,16 @@ function Warrior.Settings()
         UI.AddRange("Shieldwall HP", nil, 30, 100, 5, 50, true)		
 		
 		
-    UI.AddTab("Debuffs")
+    UI.AddTab("Debuffs&HelpfullCDs")
 		UI.AddToggle("First Global Sunder", "On new Target the first Global will be SunderArmor if not 5 Stacks", false)
-		UI.AddRange("GCDSunder MaxHP", "Will Sunder on first GCD only mobs with a bigger max health in tousands", 5, 100, 5 ,25)		
+		UI.AddRange("GCDSunder MaxHP", "Will Sunder on first GCD only mobs with a bigger max health in tousands", 1, 100, 5 ,25)		
 		UI.AddToggle("SunderArmor", "Applies SunderArmor Spam on GCD if FuryProt", false)
 		UI.AddDropdown("Apply Stacks of Sunder Armor", "Apply # Stacks of Sunder Armor", {"1","2","3","4","5"}, 5)
 		UI.AddRange("PiercingHowl", "Units near w/o debuff", 0, 10, 1, 0)
         UI.AddRange("ThunderClap", "Units near w/o debuff, take care will swap you in BattleStance", 0, 10, 1, 0)
         UI.AddRange("DemoShout", "Units near w/o debuff", 0, 10, 1, 0)
-		
+		-- UI.AddToggle("Retaliation", "Use Retaliation", false)
+		-- UI.AddRange("Use Retaliation at #% HP", nil, 10, 100, 1, 50, true)
 
 ------------------------------------------------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------------------------------------------------
@@ -135,28 +144,19 @@ function Warrior.Settings()
 		UI.AddToggle("Queue HS/ExecutePhase", "Will queue HS in Execute Phase when there is more rage than Excost", false)
 		UI.AddRange("RageLose on StanceChange", "What Amount of Rage can we waste for a StanceChange", 26, 100, 1, 30)
 		UI.AddToggle("Calculate Rage", "Will use ragecalc for next swings", true)
-		UI.AddToggle("FuckRage&StanceDance", "Will dance Stances no matter what rage lvl you are", false)
+		UI.AddToggle("FuckRage&StanceDance", "Will dance Stances no matter what rage lvl you are", true)
 		UI.AddDropdown("Tactical Mastery", "Talent Points in Tactical Mastery", {"0","1","2","3","4","5"}, 1)
 		
 ------------------------------------------------------------------------------------------------------------------------------
 
-    UI.AddTab("CDs & Consumables")
-		UI.AddHeader("Cooldowns")	
-		UI.AddToggle("Recklessness", "Use Recklessness in Auto/Keypress Mode", false)
-		UI.AddToggle("DeathWish", "Use DeathWish in Auto/Keypress Mode", false)
-		UI.AddToggle("Racials", "Use Racials in Auto/Keypress Mode", false)
-		UI.AddToggle("Trinkets", "Uses supportet Trinkets in Auto/Keypress Mode", false)
-		UI.AddBlank()
-		UI.AddToggle("Use Best Rage Potion", "Check back for Potions and use best available one", false)
-		UI.AddDropdown("CoolD Mode", "Use CDs automaticly or on Keypress", {"None","Auto","Keypress"},2)
-		UI.AddDropdown("Key for CDs", "Only in use with Keypress mode", {"None","LeftShift","LeftControl","LeftAlt","RightShift","RightControl","RightAlt"},1)
-
-
+    UI.AddTab("Consumables")
 		UI.AddHeader("Consumables")
 		UI.AddToggle("Use LIP", "Uses lesser invulnerability Potion on conditions",false)
 		UI.AddRange("Elite Mobs AggroCount", nil, 1, 15, 1, 5)
 		UI.AddRange("% of Aggro to use LIP", nil, 90, 100, 1, 98)
 		UI.AddToggle("Use LIP instead of HP Potion", "Uses lesser invulnerability Potion on HP Pot conditions",false)
+		UI.AddToggle("Use Wipper", "Uses Wipper bevore HP Pot on HP Pot conditions",false)
+		UI.AddBlank()
 		UI.AddRange("Use Potion at #% HP", nil, 1, 100, 1, 8)
 		UI.AddToggle("Use Best HP Potion", "Check back for Potions and use best available one")
 		UI.AddRange("Use Potion at #% HP", nil, 1, 100, 1, 8)
@@ -164,16 +164,25 @@ function Warrior.Settings()
 		UI.AddRange("Use Healthstone at #% HP", nil, 10, 100, 1, 50, true)	
 		UI.AddToggle("Use Bandages", nil, false)
 		UI.AddRange("Use Bandages at #% HP", nil, 10, 100, 1, 50, true)
-		
-		
-		
+
 		UI.AddHeader("Engineering Stuff")
 		UI.AddToggle("Use Sapper Charge", "uses Sapper according to Setting", false)
 		UI.AddRange("Enemys 10Y", "Enemys in 10 Yards Sapper Range", 0, 15, 1, 8)
 		UI.AddDropdown("Use Trowables", "Select the item to use", {"None","All","DenseDynamite","EZThroDynamitII","ThoriumGrenade","IronGrenade"},1)
 		UI.AddRange("Enemys 5Y around Target", "Enemys in 5 around Target", 0, 15, 1, 8)	
 
+------------------------------------------------------------------------------------------------------------------------------
 
+    UI.AddTab("CDs")
+		UI.AddHeader("Cooldowns")	
+		UI.AddToggle("Recklessness", "Use Recklessness in Auto/Keypress Mode", false)
+		UI.AddToggle("DeathWish", "Use DeathWish in Auto/Keypress Mode", false)
+		UI.AddToggle("Racials", "Use Racials in Auto/Keypress Mode", false)
+		UI.AddToggle("Trinkets", "Uses supportet Trinkets in Auto/Keypress Mode", false)
+		UI.AddToggle("Use Best Rage Potion", "Check back for Potions and use best available one", false)
+		UI.AddToggle("Use CDs allways", "Uses CDs allway in every fight as soon as possible", false)
+		UI.AddDropdown("CoolD Mode", "Use CDs automaticly or on Keypress", {"None","Auto","Keypress"},2)
+		UI.AddDropdown("Key for CDs", "Only in use with Keypress mode", {"None","LeftShift","LeftControl","LeftAlt","RightShift","RightControl","RightAlt"},1)
 		
     UI.AddTab("CDs Auto Mode")
 		UI.AddHeader("Settings for Auto use of CDs")
@@ -184,6 +193,8 @@ function Warrior.Settings()
 		UI.AddRange("TTD for Earthstrike", "Time to die -> use Earthstrike / duration=20s", 10, 60, 1, 35)
 		UI.AddRange("TTD for JomGabbar", "Time to die -> use JomGabbar / duration=20s", 10, 60, 1, 35)
 		UI.AddRange("TTD for BadgeoftheSwarmguard", "Time to die -> use BadgeoftheSwarmguard / duration=30s", 10, 60, 1, 40)
+		UI.AddRange("TTD for KissoftheSpider", "Time to die -> use KissoftheSpider / duration=15s", 10, 60, 1, 28)
+		UI.AddRange("TTD for SlayersCrest", "Time to die -> use SlayersCrest / duration=20s", 10, 60, 1, 35)		
 		UI.AddRange("TTD for BloodFury", "Time to die -> use BloodFury / duration=25s", 10, 60, 1, 38)
 		UI.AddRange("TTD for BerserkingTroll", "Time to die -> use BerserkingTroll / duration=10s", 10, 60, 1, 20)
 		UI.AddRange("TTD for Recklessness", "Time to die -> use Recklessness / duration=15s", 10, 60, 1, 28)
@@ -197,6 +208,8 @@ function Warrior.Settings()
 		UI.AddRange("Seconds after Keypress for Earthstrike", "duration=20s", 0, 60, 1, 33)
 		UI.AddRange("Seconds after Keypress for JomGabbar", "duration=20s", 0, 60, 1, 33)
 		UI.AddRange("Seconds after Keypress for BadgeoftheSwarmguard", "duration=30s", 0, 60, 1, 25)
+		UI.AddRange("Seconds after Keypress for KissoftheSpider", "duration=15s", 0, 60, 1, 35)
+		UI.AddRange("Seconds after Keypress for SlayersCrest", "duration=20s", 0, 60, 1, 33)	
 		UI.AddRange("Seconds after Keypress for BloodFury", "duration=25s", 0, 60, 1, 28)
 		UI.AddRange("Seconds after Keypress for BerserkingTroll", "duration=10s", 0, 60, 1, 43)
 		UI.AddRange("Seconds after Keypress for Recklessness", "duration=15s", 0, 60, 1, 35)
@@ -215,14 +228,9 @@ function Warrior.Settings()
 		UI.AddTextBox("ItemID Shield", "Put in the ItemID of you Shield", 0.9, nil)
 		
 		UI.AddToggle("Equip 2 x 1h", "Will equip 2 x 1 hander", false)
-		UI.AddBlank()
+		UI.AddToggle("Equip 2H for cleave", "Will equip 2 hander if you fight multible mobs in range", false)
 		UI.AddTextBox("ItemID Mainhand", "Put in the ItemID of your Mainhand", 0.9, nil)
 		UI.AddTextBox("ItemID Offhand", "Put in the ItemID of your Offhand", 0.9, nil)
-		
-		UI.AddToggle("Equip Frost 2x1h ", "Will equip Frost 2 x 1 hander", false)
-		UI.AddBlank()
-		UI.AddTextBox("ItemID FrostMainhand", "Put in the ItemID of your Mainhand", 0.9, nil)
-		UI.AddTextBox("ItemID FrostOffhand", "Put in the ItemID of your Offhand", 0.9, nil)
 		
 		UI.AddToggle("Equip 2H", "Will equip 2 hander", false)
 		UI.AddTextBox("ItemID 2 Hander", "Put in the ItemID of you 2 Hander", 0.9, nil)
@@ -247,6 +255,8 @@ function Warrior.Settings()
 	UI.AddToggle("Print Armormitigation","Prints the Armormitigation", false)
 	UI.AddToggle("Print WindfuryStatus","Prints the Windfury Status", false)
 	UI.AddToggle("Print WW Range Info","Prints the Distace if more then 8 yards", false)
+	UI.AddToggle("Print PlayerCount 15yards","PlayerCount 15yards", false)
+	
 	
 end
 
